@@ -12,7 +12,7 @@
             box-sizing: border-box;
         }
         body {
-            background-color: #121212;
+            background-color: #2a2a2a; /* Updated to match your screenshot's dark purple */
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -27,6 +27,8 @@
             max-width: 800px; /* Wider for landscape desktop */
             margin: 0 auto;
             padding: 40px 20px;
+            display: block; /* Ensure block-level centering */
+            position: relative; /* Ensures pseudo-elements are positioned correctly */
         }
         #landingPage .title, #signinForm .title, #inputForm .title {
             font-size: 48px;
@@ -114,6 +116,7 @@
             aspect-ratio: 16/9;
             border-radius: 10px;
             overflow: hidden;
+            display: none; /* Hidden by default */
         }
         #timerDisplay {
             position: fixed;
@@ -153,7 +156,17 @@
             position: fixed;
             top: 10px;
             right: 10px;
+            background: #8e2de2;
+            padding: 10px 20px;
+            border: none;
+            color: #fff;
+            border-radius: 8px;
             z-index: 103;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #restartBtn:hover {
+            background: #7a25c9;
         }
         #videoSidebar {
             position: fixed;
@@ -162,7 +175,7 @@
             width: 300px;
             height: 100%;
             background: rgba(0,0,0,0.9);
-            transition: 0.3s;
+            transition: right 0.3s ease;
             padding: 20px;
             overflow-y: auto;
             z-index: 102;
@@ -172,6 +185,7 @@
             margin-bottom: 10px;
             cursor: pointer;
             border: 2px solid transparent;
+            border-radius: 8px;
         }
         .thumbnail:hover {
             border-color: #8e2de2;
@@ -182,10 +196,11 @@
             right: 5px;
             background: none;
             border: none;
-            color: white;
+            color: #fff;
             cursor: pointer;
+            font-size: 18px;
         }
-        /* Gradient background for landing and sign-in pages */
+        /* Gradient background for pages */
         #landingPage::after, #signinForm::after, #inputForm::after {
             content: '';
             position: absolute;
@@ -223,6 +238,10 @@
             #player {
                 max-width: 100%;
             }
+            #restartBtn {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
         }
     </style>
 </head>
@@ -231,7 +250,7 @@
         <div class="title">Watch Videos without distraction like a <span>GIGACHAD!</span></div>
         <div class="subtitle"></div>
         <button onclick="showSignIn()">Get Started</button>
-        <button class="github-btn" onclick="window.open('https://github.com/yourusername/your-repo', '_blank')">GitHub</button>
+        <button class="github-btn" onclick="window.open('https://github.com/the-chosen-one-o5/UltraFocusModeYT', '_blank')">GitHub</button>
         <div id="features">
             <div class="feature"><i class="fas fa-ad"></i><p>Ad Free<br>We don’t give a F**k about money, just study, ffs.</p></div>
             <div class="feature"><i class="fas fa-moon"></i><p>Dark Mode<br>Save your eyes for the D-day.</p></div>
@@ -255,7 +274,7 @@
         <input type="file" id="audioUpload" accept="audio/*">
         <button onclick="startPlayback()">Start Focus Mode</button>
     </div>
-    <div id="player"></div>
+    <div id="player" style="display: none;"></div>
     <div id="timerDisplay">
         <button id="minimizeBtn" onclick="toggleMinimize()">-</button>
         <span id="timerText"></span>
@@ -267,7 +286,7 @@
     
     <audio id="customAudio" preload="auto" loop></audio>
 
-    <!-- Font Awesome for icons -->
+    <!-- Replace with your actual Font Awesome kit -->
     <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
 
     <script>
@@ -310,6 +329,7 @@
                 }
                 if (videoIds.length > 0) {
                     document.getElementById('inputForm').style.display = 'none';
+                    document.getElementById('player').style.display = 'block';
                     document.getElementById('restartBtn').style.display = 'block';
                     populateVideoSidebar();
                     loadYouTubeAPI();
@@ -400,9 +420,13 @@
         }
 
         function startPlayback() {
-            const urls = [url1.value, url2.value, url3.value].filter(url => url.trim() !== '');
-            videoIds = urls.map(url => extractVideoId(url)).filter(id => id !== null);
-            
+            const urls = [
+                document.getElementById('url1').value,
+                document.getElementById('url2').value,
+                document.getElementById('url3').value
+            ].filter(url => url.trim() !== '');
+            videoIds = urls.map(extractVideoId).filter(id => id !== null);
+
             if (videoIds.length === 0) {
                 alert('Please enter at least one valid YouTube URL');
                 return;
@@ -420,6 +444,7 @@
             }
 
             document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('player').style.display = 'block';
             enterFullscreen();
             startFocusBreakLoop();
             document.getElementById('restartBtn').style.display = 'block';
@@ -536,7 +561,7 @@
                 }
                 timerRemaining--;
                 document.getElementById('timerText').textContent = `${mode}: ${Math.floor(timerRemaining / 60)} min ${timerRemaining % 60} sec`;
-                document.getElementById('progressFill').style.width = ((duration / 1000 - timerRemaining) / (duration / 1000)) * 100 + "%";
+                document.getElementById('progressFill').style.width = ((duration / 1000 - timerRemaining) / (duration / 1000)) * 100 + '%';
                 saveState();
             }, 1000);
         }
@@ -554,6 +579,9 @@
             event.target.loadVideoById(videoIds[currentVideoIndex]);
             if (hasCustomAudio) {
                 player.setVolume(0);
+                document.getElementById('customAudio').play().catch(error => {
+                    console.error('Error playing audio:', error);
+                });
             }
         }
 
@@ -576,7 +604,9 @@
                 } else {
                     alert(`Stay focused! Distractions: ${distractionCount}`);
                 }
-                customAudio.play();
+                customAudio.play().catch(error => {
+                    console.error('Error playing audio:', error);
+                });
                 saveState();
             } else {
                 customAudio.pause();
@@ -659,6 +689,7 @@
                 player = null;
                 document.getElementById('player').innerHTML = '';
             }
+            document.getElementById('player').style.display = 'none';
         }
     </script>
 </body>
