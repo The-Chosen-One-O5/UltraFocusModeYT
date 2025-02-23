@@ -4,50 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Focus Mode YouTube Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background-color: black;
-            height: 100vh;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #121212;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
             overflow: hidden;
-            color: white;
-            font-family: Arial, sans-serif;
+        }
+        #landingPage, #signinForm, #inputForm {
+            text-align: center;
+            width: 100%;
+            max-width: 800px; /* Wider for landscape desktop */
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        #landingPage .title, #signinForm .title, #inputForm .title {
+            font-size: 48px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        #landingPage .title span, #signinForm .title span, #inputForm .title span {
+            color: #8e2de2;
+        }
+        #landingPage .subtitle, #signinForm .subtitle, #inputForm .subtitle {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+        #landingPage button, #signinForm button, #inputForm button {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            background: #8e2de2;
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background 0.3s, transform 0.2s;
+        }
+        #landingPage button:hover, #signinForm button:hover, #inputForm button:hover {
+            background: #7a25c9;
+            transform: scale(1.05);
+        }
+        #landingPage .github-btn, #signinForm .github-btn {
+            background: #333;
+            padding: 12px 30px;
+        }
+        #landingPage .github-btn:hover, #signinForm .github-btn:hover {
+            background: #444;
+        }
+        #features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        .feature {
+            background: #1e1e1e;
+            padding: 15px 20px;
+            border-radius: 10px;
+            width: 200px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        .feature i {
+            font-size: 24px;
+            color: #8e2de2;
+            margin-bottom: 10px;
+        }
+        .feature p {
+            font-size: 14px;
+            color: #fff;
+        }
+        #signinForm input, #inputForm input {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 10px auto;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #signinForm input:focus, #inputForm input:focus {
+            border-color: #8e2de2;
+            box-shadow: 0 0 5px rgba(142, 45, 226, 0.5);
         }
         #player {
             width: 100%;
             max-width: 1200px;
             aspect-ratio: 16/9;
-        }
-        #signinForm, #inputForm {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            padding: 20px;
-            color: white;
             border-radius: 10px;
-            text-align: center;
-            z-index: 100;
-        }
-        #inputForm {
-            display: none;
-        }
-        input, button {
-            margin: 10px;
-            padding: 10px;
-            width: 300px;
-        }
-        button {
-            background: #ff0000;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
+            overflow: hidden;
         }
         #timerDisplay {
             position: fixed;
@@ -80,7 +146,7 @@
         #progressFill {
             height: 100%;
             width: 0;
-            background: red;
+            background: #8e2de2;
         }
         #restartBtn {
             display: none;
@@ -108,7 +174,7 @@
             border: 2px solid transparent;
         }
         .thumbnail:hover {
-            border-color: red;
+            border-color: #8e2de2;
         }
         #minimizeBtn {
             position: absolute;
@@ -119,25 +185,74 @@
             color: white;
             cursor: pointer;
         }
+        /* Gradient background for landing and sign-in pages */
+        #landingPage::after, #signinForm::after, #inputForm::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(142, 45, 226, 0.2), transparent);
+            z-index: -1;
+            border-radius: 15px;
+        }
+        @media (max-width: 800px) {
+            #landingPage, #signinForm, #inputForm {
+                max-width: 400px;
+                padding: 20px 10px;
+            }
+            #landingPage .title, #signinForm .title, #inputForm .title {
+                font-size: 32px;
+            }
+            #landingPage .subtitle, #signinForm .subtitle, #inputForm .subtitle {
+                font-size: 16px;
+            }
+            #landingPage button, #signinForm button, #inputForm button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+            #features {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .feature {
+                width: 100%;
+                max-width: 200px;
+            }
+            #player {
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="signinForm">
-        <h2>Sign In to Unlock Focus Points</h2>
+    <div id="landingPage">
+        <div class="title">Watch Videos without distraction like a <span>GIGACHAD!</span></div>
+        <div class="subtitle"></div>
+        <button onclick="showSignIn()">Get Started</button>
+        <button class="github-btn" onclick="window.open('https://github.com/yourusername/your-repo', '_blank')">GitHub</button>
+        <div id="features">
+            <div class="feature"><i class="fas fa-ad"></i><p>Ad Free<br>We don’t give a F**k about money, just study, ffs.</p></div>
+            <div class="feature"><i class="fas fa-moon"></i><p>Dark Mode<br>Save your eyes for the D-day.</p></div>
+        </div>
+    </div>
+    <div id="signinForm" style="display: none;">
+        <div class="title">Sign In to Track Your Points</div>
+        <div class="subtitle"></div>
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
         <button onclick="signIn()">Sign In</button>
         <p>New? <button onclick="createAccount()">Create Account</button></p>
     </div>
-    <div id="inputForm">
-        <h2>Enter YouTube URLs</h2>
+    <div id="inputForm" style="display: none;">
+        <div class="title">Enter YouTube URLs</div>
+        <div class="subtitle"></div>
         <input type="text" id="url1" placeholder="YouTube URL 1" required>
         <input type="text" id="url2" placeholder="YouTube URL 2">
         <input type="text" id="url3" placeholder="YouTube URL 3">
-        <br>
-        <h2>Upload Custom Audio</h2>
+        <h2 style="font-size: 20px; margin: 20px 0 10px;">Upload Custom Audio</h2>
         <input type="file" id="audioUpload" accept="audio/*">
-        <br>
         <button onclick="startPlayback()">Start Focus Mode</button>
     </div>
     <div id="player"></div>
@@ -152,24 +267,26 @@
     
     <audio id="customAudio" preload="auto" loop></audio>
 
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+
     <script>
         let currentVideoIndex = 0;
         let player;
         let videoIds = [];
         let isFocusModeActive = false;
         let countdownInterval;
-        let distractionCount = 0; // Replaces distractionScore
-        let points = 0; // New points system
+        let distractionCount = 0;
+        let points = 0;
         let isSignedIn = false;
         let currentUser = null;
-        const focusDuration = 50 * 60 * 1000; // 50 minutes
-        const firstBreakDuration = 15 * 60 * 1000; // 15 minutes
-        const secondBreakDuration = 10 * 60 * 1000; // 10 minutes
+        const focusDuration = 50 * 60 * 1000;
+        const firstBreakDuration = 15 * 60 * 1000;
+        const secondBreakDuration = 10 * 60 * 1000;
         let hasCustomAudio = false;
         let timerMode = 'Focus Time';
         let timerRemaining = focusDuration / 1000;
 
-        /** Load state on page load */
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
             if (savedState) {
@@ -186,6 +303,7 @@
                 currentUser = state.currentUser || null;
 
                 if (isSignedIn && currentUser) {
+                    document.getElementById('landingPage').style.display = 'none';
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
@@ -206,10 +324,13 @@
                         toggleMinimize();
                     }
                 }
+            } else {
+                document.getElementById('landingPage').style.display = 'block';
+                document.getElementById('signinForm').style.display = 'none';
+                document.getElementById('inputForm').style.display = 'none';
             }
         };
 
-        /** Helper to convert data URL to Blob */
         function dataURLtoBlob(dataurl) {
             const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
             const bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -217,7 +338,12 @@
             return new Blob([u8arr], { type: mime });
         }
 
-        /** Sign-in function */
+        function showSignIn() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('signinForm').style.display = 'block';
+            document.getElementById('inputForm').style.display = 'none';
+        }
+
         function signIn() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -226,6 +352,7 @@
                 isSignedIn = true;
                 currentUser = username;
                 points = users[username].points || 0;
+                document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
@@ -235,7 +362,6 @@
             }
         }
 
-        /** Create account function */
         function createAccount() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -248,6 +374,7 @@
                 isSignedIn = true;
                 currentUser = username;
                 points = 0;
+                document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
@@ -257,7 +384,6 @@
             }
         }
 
-        /** Extract YouTube video ID from URL */
         function extractVideoId(url) {
             try {
                 let videoId = null;
@@ -273,7 +399,6 @@
             }
         }
 
-        /** Start playback and initialize focus mode */
         function startPlayback() {
             const urls = [url1.value, url2.value, url3.value].filter(url => url.trim() !== '');
             videoIds = urls.map(url => extractVideoId(url)).filter(id => id !== null);
@@ -303,7 +428,6 @@
             loadYouTubeAPI();
         }
 
-        /** Load YouTube IFrame API */
         function loadYouTubeAPI() {
             if (!window.YT) {
                 const tag = document.createElement('script');
@@ -312,7 +436,6 @@
             }
         }
 
-        /** Save state to localStorage */
         function saveState() {
             const audioData = hasCustomAudio ? document.getElementById('customAudio').src : null;
             const timerText = document.getElementById('timerText').textContent;
@@ -345,7 +468,6 @@
             }
         }
 
-        /** Populate video sidebar with thumbnails */
         function populateVideoSidebar() {
             const videoSidebar = document.getElementById('videoSidebar');
             videoSidebar.innerHTML = videoIds.map((id, index) => 
@@ -354,7 +476,6 @@
             ).join('');
         }
 
-        /** Change video when thumbnail is clicked */
         function changeVideo(videoId, index) {
             currentVideoIndex = index;
             if (player) {
@@ -364,12 +485,11 @@
             saveState();
         }
 
-        /** Manage focus and break cycle */
         function startFocusBreakLoop() {
             isFocusModeActive = true;
             timerMode = 'Focus Time';
             timerRemaining = focusDuration / 1000;
-            distractionCount = 0; // Reset distractions per session
+            distractionCount = 0;
             startTimer(focusDuration, timerMode);
             setTimeout(() => {
                 isFocusModeActive = false;
@@ -386,7 +506,7 @@
                     isFocusModeActive = true;
                     timerMode = 'Focus Time';
                     timerRemaining = focusDuration / 1000;
-                    distractionCount = 0; // Reset for next session
+                    distractionCount = 0;
                     startTimer(focusDuration, timerMode);
                     setTimeout(() => {
                         isFocusModeActive = false;
@@ -405,7 +525,6 @@
             }, focusDuration);
         }
 
-        /** Start and update the timer display */
         function startTimer(duration, mode) {
             timerRemaining = duration / 1000;
             timerMode = mode;
@@ -422,7 +541,6 @@
             }, 1000);
         }
 
-        /** Initialize YouTube player */
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
@@ -432,7 +550,6 @@
             });
         }
 
-        /** Handle player ready event */
         function onPlayerReady(event) {
             event.target.loadVideoById(videoIds[currentVideoIndex]);
             if (hasCustomAudio) {
@@ -440,7 +557,6 @@
             }
         }
 
-        /** Handle video end event */
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
                 currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
@@ -449,7 +565,6 @@
             }
         }
 
-        /** Play custom audio and deduct points on tab switch */
         document.addEventListener('visibilitychange', () => {
             const customAudio = document.getElementById('customAudio');
             if (document.hidden && isFocusModeActive && hasCustomAudio) {
@@ -468,12 +583,10 @@
             }
         });
 
-        /** Enter fullscreen mode */
         function enterFullscreen() {
             document.documentElement.requestFullscreen().catch(err => console.log('Fullscreen failed:', err));
         }
 
-        /** Draggable timer functionality */
         let isDragging = false;
         let offsetX, offsetY;
         const timerDisplay = document.getElementById('timerDisplay');
@@ -492,7 +605,6 @@
             isDragging = false;
         });
 
-        /** Minimize/maximize timer */
         function toggleMinimize() {
             const timerText = document.getElementById('timerText');
             const minimizeBtn = document.getElementById('minimizeBtn');
@@ -509,7 +621,6 @@
             saveState();
         }
 
-        /** Toggle video sidebar with 'T' key */
         document.addEventListener('keydown', (e) => {
             if (e.key === 'T' || e.key === 't') {
                 const videoSidebar = document.getElementById('videoSidebar');
@@ -517,14 +628,13 @@
             }
         });
 
-        /** Reset focus mode */
         function resetFocusMode() {
             localStorage.removeItem('focusModeState');
             videoIds = [];
             currentVideoIndex = 0;
             distractionCount = 0;
             if (isSignedIn) {
-                points = JSON.parse(localStorage.getItem('users'))[currentUser].points; // Keep user points
+                points = JSON.parse(localStorage.getItem('users'))[currentUser].points || 0;
             } else {
                 points = 0;
             }
@@ -535,6 +645,7 @@
             clearInterval(countdownInterval);
             document.getElementById('customAudio').src = '';
             document.getElementById('inputForm').style.display = 'block';
+            document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'none';
             document.getElementById('timerText').textContent = '';
