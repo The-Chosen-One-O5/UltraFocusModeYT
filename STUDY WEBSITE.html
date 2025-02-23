@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Mode YouTube Player</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #player {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16/9;
+        }
+        #signinForm, #inputForm {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+        }
+        #inputForm {
+            display: none;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            width: 300px;
+        }
+        button {
+            background: #ff0000;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #timerDisplay {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 24px;
+            z-index: 101;
+            cursor: move;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        #pointsDisplay {
+            position: fixed;
+            top: 50px;
+            left: 10px;
+            color: white;
+            font-size: 20px;
+            z-index: 101;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        #progressBar {
+            width: 200px;
+            height: 5px;
+            background: #444;
+            display: none;
+            margin-top: 5px;
+        }
+        #progressFill {
+            height: 100%;
+            width: 0;
+            background: red;
+        }
+        #restartBtn {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 103;
+        }
+        #videoSidebar {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            transition: 0.3s;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 102;
+        }
+        .thumbnail {
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .thumbnail:hover {
+            border-color: red;
+        }
+        #minimizeBtn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="signinForm">
+        <h2>Sign In to Unlock Focus Points</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="signIn()">Sign In</button>
+        <p>New? <button onclick="createAccount()">Create Account</button></p>
+    </div>
+    <div id="inputForm">
+        <h2>Enter YouTube URLs</h2>
+        <input type="text" id="url1" placeholder="YouTube URL 1" required>
+        <input type="text" id="url2" placeholder="YouTube URL 2">
+        <input type="text" id="url3" placeholder="YouTube URL 3">
+        <br>
+        <h2>Upload Custom Audio</h2>
+        <input type="file" id="audioUpload" accept="audio/*">
+        <br>
+        <button onclick="startPlayback()">Start Focus Mode</button>
+    </div>
+    <div id="player"></div>
+    <div id="timerDisplay">
+        <button id="minimizeBtn" onclick="toggleMinimize()">-</button>
+        <span id="timerText"></span>
+        <div id="progressBar"><div id="progressFill"></div></div>
+    </div>
+    <div id="pointsDisplay">Points: 0</div>
+    <button id="restartBtn" onclick="resetFocusMode()">Restart</button>
+    <div id="videoSidebar"></div>
+    
+    <audio id="customAudio" preload="auto" loop></audio>
+
+    <script>
+        let currentVideoIndex = 0;
+        let player;
+        let videoIds = [];
+        let isFocusModeActive = false;
+        let countdownInterval;
+        let distractionCount = 0; // Replaces distractionScore
+        let points = 0; // New points system
+        let isSignedIn = false;
+        let currentUser = null;
+        const focusDuration = 50 * 60 * 1000; // 50 minutes
+        const firstBreakDuration = 15 * 60 * 1000; // 15 minutes
+        const secondBreakDuration = 10 * 60 * 1000; // 10 minutes
+        let hasCustomAudio = false;
+        let timerMode = 'Focus Time';
+        let timerRemaining = focusDuration / 1000;
+
+        /** Load state on page load */
+        window.onload = function() {
+            const savedState = localStorage.getItem('focusModeState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                videoIds = state.videoIds || [];
+                currentVideoIndex = state.currentVideoIndex || 0;
+                distractionCount = state.distractionCount || 0;
+                points = state.points || 0;
+                hasCustomAudio = state.hasCustomAudio || false;
+                timerMode = state.timerMode || 'Focus Time';
+                timerRemaining = state.timerRemaining || (focusDuration / 1000);
+                isFocusModeActive = state.isFocusModeActive || false;
+                isSignedIn = state.isSignedIn || false;
+                currentUser = state.currentUser || null;
+
+                if (isSignedIn && currentUser) {
+                    document.getElementById('signinForm').style.display = 'none';
+                    document.getElementById('inputForm').style.display = 'block';
+                    document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                }
+                if (videoIds.length > 0) {
+                    document.getElementById('inputForm').style.display = 'none';
+                    document.getElementById('restartBtn').style.display = 'block';
+                    populateVideoSidebar();
+                    loadYouTubeAPI();
+                    if (hasCustomAudio && state.audioData) {
+                        const audioBlob = dataURLtoBlob(state.audioData);
+                        document.getElementById('customAudio').src = URL.createObjectURL(audioBlob);
+                    }
+                    if (isFocusModeActive) {
+                        startTimer(timerRemaining * 1000, timerMode);
+                    }
+                    if (state.isMinimized) {
+                        toggleMinimize();
+                    }
+                }
+            }
+        };
+
+        /** Helper to convert data URL to Blob */
+        function dataURLtoBlob(dataurl) {
+            const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
+            return new Blob([u8arr], { type: mime });
+        }
+
+        /** Sign-in function */
+        function signIn() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (users[username] && users[username].password === password) {
+                isSignedIn = true;
+                currentUser = username;
+                points = users[username].points || 0;
+                document.getElementById('signinForm').style.display = 'none';
+                document.getElementById('inputForm').style.display = 'block';
+                document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                saveState();
+            } else {
+                alert('Invalid username or password');
+            }
+        }
+
+        /** Create account function */
+        function createAccount() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (users[username]) {
+                alert('Username already exists');
+            } else if (username && password) {
+                users[username] = { password, points: 0 };
+                localStorage.setItem('users', JSON.stringify(users));
+                isSignedIn = true;
+                currentUser = username;
+                points = 0;
+                document.getElementById('signinForm').style.display = 'none';
+                document.getElementById('inputForm').style.display = 'block';
+                document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                saveState();
+            } else {
+                alert('Please enter a username and password');
+            }
+        }
+
+        /** Extract YouTube video ID from URL */
+        function extractVideoId(url) {
+            try {
+                let videoId = null;
+                const urlObj = new URL(url);
+                if (urlObj.hostname.includes("youtube.com")) {
+                    videoId = urlObj.searchParams.get("v");
+                } else if (urlObj.hostname.includes("youtu.be")) {
+                    videoId = urlObj.pathname.substring(1);
+                }
+                return videoId;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        /** Start playback and initialize focus mode */
+        function startPlayback() {
+            const urls = [url1.value, url2.value, url3.value].filter(url => url.trim() !== '');
+            videoIds = urls.map(url => extractVideoId(url)).filter(id => id !== null);
+            
+            if (videoIds.length === 0) {
+                alert('Please enter at least one valid YouTube URL');
+                return;
+            }
+
+            const audioUpload = document.getElementById('audioUpload');
+            if (audioUpload.files[0]) {
+                hasCustomAudio = true;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('customAudio').src = e.target.result;
+                    saveState();
+                };
+                reader.readAsDataURL(audioUpload.files[0]);
+            }
+
+            document.getElementById('inputForm').style.display = 'none';
+            enterFullscreen();
+            startFocusBreakLoop();
+            document.getElementById('restartBtn').style.display = 'block';
+            populateVideoSidebar();
+            saveState();
+            loadYouTubeAPI();
+        }
+
+        /** Load YouTube IFrame API */
+        function loadYouTubeAPI() {
+            if (!window.YT) {
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                document.body.appendChild(tag);
+            }
+        }
+
+        /** Save state to localStorage */
+        function saveState() {
+            const audioData = hasCustomAudio ? document.getElementById('customAudio').src : null;
+            const timerText = document.getElementById('timerText').textContent;
+            const timerMatch = timerText.match(/^(.*?): (\d+) min (\d+) sec$/);
+            let remaining = timerRemaining;
+            let mode = timerMode;
+            if (timerMatch) {
+                mode = timerMatch[1];
+                remaining = (parseInt(timerMatch[2]) * 60) + parseInt(timerMatch[3]);
+            }
+            const state = {
+                videoIds,
+                currentVideoIndex,
+                distractionCount,
+                points,
+                hasCustomAudio,
+                audioData,
+                timerMode: mode,
+                timerRemaining: remaining,
+                isFocusModeActive,
+                isSignedIn,
+                currentUser,
+                isMinimized: document.getElementById('timerText').style.display === 'none'
+            };
+            localStorage.setItem('focusModeState', JSON.stringify(state));
+            if (isSignedIn && currentUser) {
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                users[currentUser].points = points;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
+        /** Populate video sidebar with thumbnails */
+        function populateVideoSidebar() {
+            const videoSidebar = document.getElementById('videoSidebar');
+            videoSidebar.innerHTML = videoIds.map((id, index) => 
+                `<img class="thumbnail" src="https://img.youtube.com/vi/${id}/0.jpg" 
+                      onclick="changeVideo('${id}', ${index})" alt="Video ${index + 1}">`
+            ).join('');
+        }
+
+        /** Change video when thumbnail is clicked */
+        function changeVideo(videoId, index) {
+            currentVideoIndex = index;
+            if (player) {
+                player.loadVideoById(videoId);
+            }
+            document.getElementById('videoSidebar').style.right = '-320px';
+            saveState();
+        }
+
+        /** Manage focus and break cycle */
+        function startFocusBreakLoop() {
+            isFocusModeActive = true;
+            timerMode = 'Focus Time';
+            timerRemaining = focusDuration / 1000;
+            distractionCount = 0; // Reset distractions per session
+            startTimer(focusDuration, timerMode);
+            setTimeout(() => {
+                isFocusModeActive = false;
+                if (isSignedIn && distractionCount === 0) {
+                    points += 100;
+                    document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                    alert('Great job! +100 points for a distraction-free session!');
+                }
+                timerMode = 'Break Time';
+                timerRemaining = firstBreakDuration / 1000;
+                startTimer(firstBreakDuration, timerMode);
+                alert('Break time! Enjoy 15 minutes.');
+                setTimeout(() => {
+                    isFocusModeActive = true;
+                    timerMode = 'Focus Time';
+                    timerRemaining = focusDuration / 1000;
+                    distractionCount = 0; // Reset for next session
+                    startTimer(focusDuration, timerMode);
+                    setTimeout(() => {
+                        isFocusModeActive = false;
+                        if (isSignedIn && distractionCount === 0) {
+                            points += 100;
+                            document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                            alert('Great job! +100 points for a distraction-free session!');
+                        }
+                        timerMode = 'Break Time';
+                        timerRemaining = secondBreakDuration / 1000;
+                        startTimer(secondBreakDuration, timerMode);
+                        alert('Enjoy your 10-minute break!');
+                        setTimeout(startFocusBreakLoop, secondBreakDuration);
+                    }, focusDuration);
+                }, firstBreakDuration);
+            }, focusDuration);
+        }
+
+        /** Start and update the timer display */
+        function startTimer(duration, mode) {
+            timerRemaining = duration / 1000;
+            timerMode = mode;
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                if (timerRemaining <= 0) {
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                timerRemaining--;
+                document.getElementById('timerText').textContent = `${mode}: ${Math.floor(timerRemaining / 60)} min ${timerRemaining % 60} sec`;
+                document.getElementById('progressFill').style.width = ((duration / 1000 - timerRemaining) / (duration / 1000)) * 100 + "%";
+                saveState();
+            }, 1000);
+        }
+
+        /** Initialize YouTube player */
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+            });
+        }
+
+        /** Handle player ready event */
+        function onPlayerReady(event) {
+            event.target.loadVideoById(videoIds[currentVideoIndex]);
+            if (hasCustomAudio) {
+                player.setVolume(0);
+            }
+        }
+
+        /** Handle video end event */
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
+                player.loadVideoById(videoIds[currentVideoIndex]);
+                saveState();
+            }
+        }
+
+        /** Play custom audio and deduct points on tab switch */
+        document.addEventListener('visibilitychange', () => {
+            const customAudio = document.getElementById('customAudio');
+            if (document.hidden && isFocusModeActive && hasCustomAudio) {
+                distractionCount++;
+                if (isSignedIn) {
+                    points -= 10;
+                    document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                    alert(`Stay focused! -10 points. Distractions: ${distractionCount}`);
+                } else {
+                    alert(`Stay focused! Distractions: ${distractionCount}`);
+                }
+                customAudio.play();
+                saveState();
+            } else {
+                customAudio.pause();
+            }
+        });
+
+        /** Enter fullscreen mode */
+        function enterFullscreen() {
+            document.documentElement.requestFullscreen().catch(err => console.log('Fullscreen failed:', err));
+        }
+
+        /** Draggable timer functionality */
+        let isDragging = false;
+        let offsetX, offsetY;
+        const timerDisplay = document.getElementById('timerDisplay');
+        timerDisplay.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - timerDisplay.offsetLeft;
+            offsetY = e.clientY - timerDisplay.offsetTop;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                timerDisplay.style.left = `${e.clientX - offsetX}px`;
+                timerDisplay.style.top = `${e.clientY - offsetY}px`;
+            }
+        });
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        /** Minimize/maximize timer */
+        function toggleMinimize() {
+            const timerText = document.getElementById('timerText');
+            const minimizeBtn = document.getElementById('minimizeBtn');
+            const progressBar = document.getElementById('progressBar');
+            if (timerText.style.display === 'none') {
+                timerText.style.display = 'block';
+                minimizeBtn.textContent = '-';
+                progressBar.style.display = 'none';
+            } else {
+                timerText.style.display = 'none';
+                minimizeBtn.textContent = '+';
+                progressBar.style.display = 'block';
+            }
+            saveState();
+        }
+
+        /** Toggle video sidebar with 'T' key */
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'T' || e.key === 't') {
+                const videoSidebar = document.getElementById('videoSidebar');
+                videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
+            }
+        });
+
+        /** Reset focus mode */
+        function resetFocusMode() {
+            localStorage.removeItem('focusModeState');
+            videoIds = [];
+            currentVideoIndex = 0;
+            distractionCount = 0;
+            if (isSignedIn) {
+                points = JSON.parse(localStorage.getItem('users'))[currentUser].points; // Keep user points
+            } else {
+                points = 0;
+            }
+            hasCustomAudio = false;
+            isFocusModeActive = false;
+            timerMode = 'Focus Time';
+            timerRemaining = focusDuration / 1000;
+            clearInterval(countdownInterval);
+            document.getElementById('customAudio').src = '';
+            document.getElementById('inputForm').style.display = 'block';
+            document.getElementById('signinForm').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('timerText').textContent = '';
+            document.getElementById('progressFill').style.width = '0';
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('minimizeBtn').textContent = '-';
+            document.getElementById('timerText').style.display = 'block';
+            document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+            if (player) {
+                player.destroy();
+                player = null;
+                document.getElementById('player').innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
