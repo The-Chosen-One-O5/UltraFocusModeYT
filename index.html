@@ -91,7 +91,7 @@
             font-size: 14px;
             color: #fff;
         }
-        #signinForm input, #inputForm input {
+        #signinForm input, #inputForm input, #inputForm select {
             display: block;
             width: 100%;
             max-width: 320px;
@@ -106,7 +106,7 @@
             outline: none;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
-        #signinForm input:focus, #inputForm input:focus {
+        #signinForm input:focus, #inputForm input:focus, #inputForm select:focus {
             border-color: #8e2de2;
             box-shadow: 0 0 5px rgba(142, 45, 226, 0.5);
         }
@@ -211,6 +211,51 @@
             z-index: -1;
             border-radius: 15px;
         }
+        .url-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .url-container button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background: #ff4444;
+            font-size: 14px;
+        }
+        .url-container button:hover {
+            background: #cc3333;
+        }
+        #statsBtn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            background: #8e2de2;
+        }
+        #statsBtn:hover {
+            background: #7a25c9;
+        }
+        #analytics {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 100;
+        }
+        #analytics h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #8e2de2;
+        }
+        #analytics p {
+            font-size: 14px;
+            margin: 5px 0;
+        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -241,6 +286,21 @@
                 font-size: 14px;
                 padding: 8px 16px;
             }
+            #statsBtn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+            #analytics {
+                top: 40px;
+                left: 5px;
+                padding: 10px;
+            }
+            #analytics h3 {
+                font-size: 16px;
+            }
+            #analytics p {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -264,10 +324,24 @@
         <p>New? <button onclick="createAccount()">Create Account</button></p>
     </div>
     <div id="inputForm" style="display: none;">
+        <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
+        <div id="analytics">
+            <h3>Your Focus Stats</h3>
+            <p>Total Focus Time: <span id="totalFocusTime">0</span> min</p>
+            <p>Total Distractions: <span id="totalDistractions">0</span></p>
+            <p>Videos Watched: <span id="totalVideosWatched">0</span></p>
+        </div>
         <div class="title">Enter YouTube URLs</div>
         <div class="subtitle"></div>
+        <select id="playlistSelect" onchange="loadPlaylist()">
+            <option value="">Select a Playlist</option>
+        </select>
+        <input type="text" id="playlistName" placeholder="Playlist Name (optional)">
+        <button onclick="savePlaylist()">Save Playlist</button>
         <div id="urlInputs">
-            <input type="text" class="youtube-url" placeholder="YouTube URL" required>
+            <div class="url-container">
+                <input type="text" class="youtube-url" placeholder="YouTube URL" required>
+            </div>
         </div>
         <button onclick="addUrlInput()">Add Another URL</button>
         <button onclick="startPlayback()">Start Focus Mode</button>
@@ -303,6 +377,10 @@
         let timerRemaining = focusDuration / 1000;
         let completedVideos = new Set();
         let allVideosCompleted = false;
+        let totalFocusTime = 0; // In minutes
+        let totalDistractions = 0;
+        let totalVideosWatched = 0;
+        let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
 
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
@@ -319,13 +397,18 @@
                 currentUser = state.currentUser || null;
                 completedVideos = new Set(state.completedVideos || []);
                 allVideosCompleted = state.allVideosCompleted || false;
+                totalFocusTime = state.totalFocusTime || 0;
+                totalDistractions = state.totalDistractions || 0;
+                totalVideosWatched = state.totalVideosWatched || 0;
 
+                updateAnalytics();
                 if (isSignedIn && currentUser) {
                     document.getElementById('landingPage').style.display = 'none';
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                     restoreUrlInputs();
+                    populatePlaylistSelect();
                 }
                 if (videoIds.length > 0) {
                     document.getElementById('inputForm').style.display = 'none';
@@ -344,6 +427,7 @@
                 document.getElementById('landingPage').style.display = 'block';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'none';
+                updateAnalytics();
             }
         };
 
@@ -361,11 +445,16 @@
                 isSignedIn = true;
                 currentUser = username;
                 points = users[username].points || 0;
+                totalFocusTime = users[username].totalFocusTime || 0;
+                totalDistractions = users[username].totalDistractions || 0;
+                totalVideosWatched = users[username].totalVideosWatched || 0;
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                updateAnalytics();
                 saveState();
+                populatePlaylistSelect();
             } else {
                 alert('Invalid username or password');
             }
@@ -378,16 +467,21 @@
             if (users[username]) {
                 alert('Username already exists');
             } else if (username && password) {
-                users[username] = { password, points: 0 };
+                users[username] = { password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0 };
                 localStorage.setItem('users', JSON.stringify(users));
                 isSignedIn = true;
                 currentUser = username;
                 points = 0;
+                totalFocusTime = 0;
+                totalDistractions = 0;
+                totalVideosWatched = 0;
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                updateAnalytics();
                 saveState();
+                populatePlaylistSelect();
             } else {
                 alert('Please enter a username and password');
             }
@@ -395,31 +489,54 @@
 
         function addUrlInput() {
             const urlInputs = document.getElementById('urlInputs');
+            const container = document.createElement('div');
+            container.className = 'url-container';
             const newInput = document.createElement('input');
             newInput.type = 'text';
             newInput.className = 'youtube-url';
             newInput.placeholder = 'YouTube URL';
-            urlInputs.appendChild(newInput);
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'X';
+            removeBtn.onclick = () => {
+                if (urlInputs.children.length > 1) urlInputs.removeChild(container);
+            };
+            container.appendChild(newInput);
+            container.appendChild(removeBtn);
+            urlInputs.appendChild(container);
         }
 
         function restoreUrlInputs() {
             const urlInputs = document.getElementById('urlInputs');
-            urlInputs.innerHTML = ''; // Clear existing inputs
+            urlInputs.innerHTML = '';
             videoIds.forEach((id, index) => {
+                const container = document.createElement('div');
+                container.className = 'url-container';
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'youtube-url';
                 input.placeholder = 'YouTube URL';
-                input.value = `https://www.youtube.com/watch?v=${id}`; // Restore as full URL
-                urlInputs.appendChild(input);
+                input.value = `https://www.youtube.com/watch?v=${id}`;
+                container.appendChild(input);
+                if (index > 0) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = 'X';
+                    removeBtn.onclick = () => {
+                        if (urlInputs.children.length > 1) urlInputs.removeChild(container);
+                    };
+                    container.appendChild(removeBtn);
+                }
+                urlInputs.appendChild(container);
             });
             if (videoIds.length === 0) {
+                const container = document.createElement('div');
+                container.className = 'url-container';
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'youtube-url';
                 input.placeholder = 'YouTube URL';
                 input.required = true;
-                urlInputs.appendChild(input);
+                container.appendChild(input);
+                urlInputs.appendChild(container);
             }
         }
 
@@ -460,11 +577,71 @@
             loadYouTubeAPI();
         }
 
+        function savePlaylist() {
+            const playlistName = document.getElementById('playlistName').value.trim();
+            if (!playlistName) {
+                alert('Please enter a playlist name');
+                return;
+            }
+            const urlInputs = document.querySelectorAll('.youtube-url');
+            const urls = Array.from(urlInputs)
+                .map(input => input.value.trim())
+                .filter(url => url !== '');
+            const videoIdsForPlaylist = urls.map(extractVideoId).filter(id => id !== null);
+            if (videoIdsForPlaylist.length === 0) {
+                alert('Please enter at least one valid YouTube URL to save a playlist');
+                return;
+            }
+            playlists = playlists.filter(p => p.name !== playlistName); // Update if exists
+            playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist });
+            localStorage.setItem('playlists', JSON.stringify(playlists));
+            populatePlaylistSelect();
+            alert(`Playlist "${playlistName}" saved!`);
+            document.getElementById('playlistName').value = '';
+        }
+
+        function populatePlaylistSelect() {
+            const select = document.getElementById('playlistSelect');
+            select.innerHTML = '<option value="">Select a Playlist</option>';
+            playlists.forEach(playlist => {
+                const option = document.createElement('option');
+                option.value = playlist.name;
+                option.textContent = playlist.name;
+                select.appendChild(option);
+            });
+        }
+
+        function loadPlaylist() {
+            const playlistName = document.getElementById('playlistSelect').value;
+            if (!playlistName) return;
+            const playlist = playlists.find(p => p.name === playlistName);
+            if (playlist) {
+                videoIds = playlist.videoIds;
+                restoreUrlInputs();
+            }
+        }
+
         function loadYouTubeAPI() {
             if (!window.YT) {
                 const tag = document.createElement('script');
                 tag.src = "https://www.youtube.com/iframe_api";
                 document.body.appendChild(tag);
+            }
+        }
+
+        function updateAnalytics() {
+            document.getElementById('totalFocusTime').textContent = totalFocusTime;
+            document.getElementById('totalDistractions').textContent = totalDistractions;
+            document.getElementById('totalVideosWatched').textContent = totalVideosWatched;
+        }
+
+        function toggleStats() {
+            const analytics = document.getElementById('analytics');
+            if (analytics.style.display === 'block') {
+                analytics.style.display = 'none';
+            } else {
+                updateAnalytics(); // Ensure latest stats are shown
+                analytics.style.display = 'block';
             }
         }
 
@@ -489,12 +666,18 @@
                 currentUser,
                 completedVideos: Array.from(completedVideos),
                 allVideosCompleted,
+                totalFocusTime,
+                totalDistractions,
+                totalVideosWatched,
                 isMinimized: document.getElementById('timerText').style.display === 'none'
             };
             localStorage.setItem('focusModeState', JSON.stringify(state));
             if (isSignedIn && currentUser) {
                 const users = JSON.parse(localStorage.getItem('users') || '{}');
                 users[currentUser].points = points;
+                users[currentUser].totalFocusTime = totalFocusTime;
+                users[currentUser].totalDistractions = totalDistractions;
+                users[currentUser].totalVideosWatched = totalVideosWatched;
                 localStorage.setItem('users', JSON.stringify(users));
             }
         }
@@ -525,12 +708,14 @@
 
             setTimeout(() => {
                 isFocusModeActive = false;
+                totalFocusTime += 50; // Add 50 minutes to total focus time
                 if (isSignedIn && distractionCount === 0) {
                     points += 100;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                     alert('Great job! +100 points for a distraction-free session!');
-                    saveState();
                 }
+                updateAnalytics();
+                saveState();
                 timerMode = 'Break Time';
                 timerRemaining = firstBreakDuration / 1000;
                 startTimer(firstBreakDuration, timerMode);
@@ -545,12 +730,14 @@
 
                     setTimeout(() => {
                         isFocusModeActive = false;
+                        totalFocusTime += 50; // Add another 50 minutes
                         if (isSignedIn && distractionCount === 0) {
                             points += 100;
                             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                             alert('Great job! +100 points for a distraction-free session!');
-                            saveState();
                         }
+                        updateAnalytics();
+                        saveState();
                         timerMode = 'Break Time';
                         timerRemaining = secondBreakDuration / 1000;
                         startTimer(secondBreakDuration, timerMode);
@@ -575,6 +762,7 @@
                 document.getElementById('timerText').textContent = `${mode}: ${Math.floor(timerRemaining / 60)} min ${timerRemaining % 60} sec`;
                 document.getElementById('progressFill').style.width = ((duration / 1000 - timerRemaining) / (duration / 1000)) * 100 + '%';
                 saveState();
+                updateAnalytics(); // Live update during timer
             }, 1000);
         }
 
@@ -594,25 +782,31 @@
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
                 completedVideos.add(videoIds[currentVideoIndex]);
+                totalVideosWatched++;
                 
                 if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
                     points += 80;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                     alert('Awesome! +80 points for completing all videos!');
                     allVideosCompleted = true;
-                    saveState();
                 }
 
+                updateAnalytics();
+                saveState();
                 currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
                 player.loadVideoById(videoIds[currentVideoIndex]);
-                saveState();
             }
+        }
+
+        function enterFullscreen() {
+            document.documentElement.requestFullscreen().catch(err => console.log('Fullscreen failed:', err));
         }
 
         document.addEventListener('visibilitychange', () => {
             const focusAudio = document.getElementById('focusAudio');
             if (document.hidden && isFocusModeActive) {
                 distractionCount++;
+                totalDistractions++;
                 if (isSignedIn) {
                     points -= 10;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
@@ -620,6 +814,7 @@
                 } else {
                     alert(`Stay focused! Distractions: ${distractionCount}`);
                 }
+                updateAnalytics();
                 focusAudio.play().catch(error => {
                     console.error('Error playing audio:', error);
                 });
@@ -628,10 +823,6 @@
                 focusAudio.pause();
             }
         });
-
-        function enterFullscreen() {
-            document.documentElement.requestFullscreen().catch(err => console.log('Fullscreen failed:', err));
-        }
 
         let isDragging = false;
         let offsetX, offsetY;
@@ -682,9 +873,16 @@
             completedVideos.clear();
             allVideosCompleted = false;
             if (isSignedIn) {
-                points = JSON.parse(localStorage.getItem('users'))[currentUser].points || 0;
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                points = users[currentUser].points || 0;
+                totalFocusTime = users[currentUser].totalFocusTime || 0;
+                totalDistractions = users[currentUser].totalDistractions || 0;
+                totalVideosWatched = users[currentUser].totalVideosWatched || 0;
             } else {
                 points = 0;
+                totalFocusTime = 0;
+                totalDistractions = 0;
+                totalVideosWatched = 0;
             }
             isFocusModeActive = false;
             timerMode = 'Focus Time';
@@ -707,7 +905,10 @@
             }
             document.getElementById('player').style.display = 'none';
             const urlInputs = document.getElementById('urlInputs');
-            urlInputs.innerHTML = '<input type="text" class="youtube-url" placeholder="YouTube URL" required>';
+            urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
+            updateAnalytics();
+            populatePlaylistSelect();
+            document.getElementById('analytics').style.display = 'none'; // Hide stats on reset
         }
     </script>
 </body>
