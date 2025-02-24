@@ -12,7 +12,7 @@
             box-sizing: border-box;
         }
         body {
-            background-color: #2a2a2a; /* Updated to match your screenshot's dark purple */
+            background-color: #2a2a2a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,11 +24,11 @@
         #landingPage, #signinForm, #inputForm {
             text-align: center;
             width: 100%;
-            max-width: 800px; /* Wider for landscape desktop */
+            max-width: 800px;
             margin: 0 auto;
             padding: 40px 20px;
-            display: block; /* Ensure block-level centering */
-            position: relative; /* Ensures pseudo-elements are positioned correctly */
+            display: block;
+            position: relative;
         }
         #landingPage .title, #signinForm .title, #inputForm .title {
             font-size: 48px;
@@ -116,7 +116,7 @@
             aspect-ratio: 16/9;
             border-radius: 10px;
             overflow: hidden;
-            display: none; /* Hidden by default */
+            display: none;
         }
         #timerDisplay {
             position: fixed;
@@ -200,7 +200,6 @@
             cursor: pointer;
             font-size: 18px;
         }
-        /* Gradient background for pages */
         #landingPage::after, #signinForm::after, #inputForm::after {
             content: '';
             position: absolute;
@@ -270,8 +269,6 @@
         <input type="text" id="url1" placeholder="YouTube URL 1" required>
         <input type="text" id="url2" placeholder="YouTube URL 2">
         <input type="text" id="url3" placeholder="YouTube URL 3">
-        <h2 style="font-size: 20px; margin: 20px 0 10px;">Upload Custom Audio</h2>
-        <input type="file" id="audioUpload" accept="audio/*">
         <button onclick="startPlayback()">Start Focus Mode</button>
     </div>
     <div id="player" style="display: none;"></div>
@@ -284,9 +281,8 @@
     <button id="restartBtn" onclick="resetFocusMode()">Restart</button>
     <div id="videoSidebar"></div>
     
-    <audio id="customAudio" preload="auto" loop></audio>
+    <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
 
-    <!-- Replace with your actual Font Awesome kit -->
     <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
 
     <script>
@@ -302,7 +298,6 @@
         const focusDuration = 50 * 60 * 1000;
         const firstBreakDuration = 15 * 60 * 1000;
         const secondBreakDuration = 10 * 60 * 1000;
-        let hasCustomAudio = false;
         let timerMode = 'Focus Time';
         let timerRemaining = focusDuration / 1000;
 
@@ -314,7 +309,6 @@
                 currentVideoIndex = state.currentVideoIndex || 0;
                 distractionCount = state.distractionCount || 0;
                 points = state.points || 0;
-                hasCustomAudio = state.hasCustomAudio || false;
                 timerMode = state.timerMode || 'Focus Time';
                 timerRemaining = state.timerRemaining || (focusDuration / 1000);
                 isFocusModeActive = state.isFocusModeActive || false;
@@ -333,10 +327,6 @@
                     document.getElementById('restartBtn').style.display = 'block';
                     populateVideoSidebar();
                     loadYouTubeAPI();
-                    if (hasCustomAudio && state.audioData) {
-                        const audioBlob = dataURLtoBlob(state.audioData);
-                        document.getElementById('customAudio').src = URL.createObjectURL(audioBlob);
-                    }
                     if (isFocusModeActive) {
                         startTimer(timerRemaining * 1000, timerMode);
                     }
@@ -350,13 +340,6 @@
                 document.getElementById('inputForm').style.display = 'none';
             }
         };
-
-        function dataURLtoBlob(dataurl) {
-            const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
-            const bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while (n--) u8arr[n] = bstr.charCodeAt(n);
-            return new Blob([u8arr], { type: mime });
-        }
 
         function showSignIn() {
             document.getElementById('landingPage').style.display = 'none';
@@ -432,17 +415,6 @@
                 return;
             }
 
-            const audioUpload = document.getElementById('audioUpload');
-            if (audioUpload.files[0]) {
-                hasCustomAudio = true;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('customAudio').src = e.target.result;
-                    saveState();
-                };
-                reader.readAsDataURL(audioUpload.files[0]);
-            }
-
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('player').style.display = 'block';
             enterFullscreen();
@@ -462,7 +434,6 @@
         }
 
         function saveState() {
-            const audioData = hasCustomAudio ? document.getElementById('customAudio').src : null;
             const timerText = document.getElementById('timerText').textContent;
             const timerMatch = timerText.match(/^(.*?): (\d+) min (\d+) sec$/);
             let remaining = timerRemaining;
@@ -476,8 +447,6 @@
                 currentVideoIndex,
                 distractionCount,
                 points,
-                hasCustomAudio,
-                audioData,
                 timerMode: mode,
                 timerRemaining: remaining,
                 isFocusModeActive,
@@ -516,34 +485,40 @@
             timerRemaining = focusDuration / 1000;
             distractionCount = 0;
             startTimer(focusDuration, timerMode);
+
             setTimeout(() => {
                 isFocusModeActive = false;
                 if (isSignedIn && distractionCount === 0) {
                     points += 100;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                     alert('Great job! +100 points for a distraction-free session!');
+                    saveState();
                 }
                 timerMode = 'Break Time';
                 timerRemaining = firstBreakDuration / 1000;
                 startTimer(firstBreakDuration, timerMode);
                 alert('Break time! Enjoy 15 minutes.');
+
                 setTimeout(() => {
                     isFocusModeActive = true;
                     timerMode = 'Focus Time';
                     timerRemaining = focusDuration / 1000;
                     distractionCount = 0;
                     startTimer(focusDuration, timerMode);
+
                     setTimeout(() => {
                         isFocusModeActive = false;
                         if (isSignedIn && distractionCount === 0) {
                             points += 100;
                             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                             alert('Great job! +100 points for a distraction-free session!');
+                            saveState();
                         }
                         timerMode = 'Break Time';
                         timerRemaining = secondBreakDuration / 1000;
                         startTimer(secondBreakDuration, timerMode);
                         alert('Enjoy your 10-minute break!');
+
                         setTimeout(startFocusBreakLoop, secondBreakDuration);
                     }, focusDuration);
                 }, firstBreakDuration);
@@ -577,12 +552,6 @@
 
         function onPlayerReady(event) {
             event.target.loadVideoById(videoIds[currentVideoIndex]);
-            if (hasCustomAudio) {
-                player.setVolume(0);
-                document.getElementById('customAudio').play().catch(error => {
-                    console.error('Error playing audio:', error);
-                });
-            }
         }
 
         function onPlayerStateChange(event) {
@@ -594,8 +563,8 @@
         }
 
         document.addEventListener('visibilitychange', () => {
-            const customAudio = document.getElementById('customAudio');
-            if (document.hidden && isFocusModeActive && hasCustomAudio) {
+            const focusAudio = document.getElementById('focusAudio');
+            if (document.hidden && isFocusModeActive) {
                 distractionCount++;
                 if (isSignedIn) {
                     points -= 10;
@@ -604,12 +573,12 @@
                 } else {
                     alert(`Stay focused! Distractions: ${distractionCount}`);
                 }
-                customAudio.play().catch(error => {
+                focusAudio.play().catch(error => {
                     console.error('Error playing audio:', error);
                 });
                 saveState();
             } else {
-                customAudio.pause();
+                focusAudio.pause();
             }
         });
 
@@ -668,12 +637,10 @@
             } else {
                 points = 0;
             }
-            hasCustomAudio = false;
             isFocusModeActive = false;
             timerMode = 'Focus Time';
             timerRemaining = focusDuration / 1000;
             clearInterval(countdownInterval);
-            document.getElementById('customAudio').src = '';
             document.getElementById('inputForm').style.display = 'block';
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
