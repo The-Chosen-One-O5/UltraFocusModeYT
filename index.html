@@ -266,9 +266,10 @@
     <div id="inputForm" style="display: none;">
         <div class="title">Enter YouTube URLs</div>
         <div class="subtitle"></div>
-        <input type="text" id="url1" placeholder="YouTube URL 1" required>
-        <input type="text" id="url2" placeholder="YouTube URL 2">
-        <input type="text" id="url3" placeholder="YouTube URL 3">
+        <div id="urlInputs">
+            <input type="text" class="youtube-url" placeholder="YouTube URL" required>
+        </div>
+        <button onclick="addUrlInput()">Add Another URL</button>
         <button onclick="startPlayback()">Start Focus Mode</button>
     </div>
     <div id="player" style="display: none;"></div>
@@ -300,6 +301,8 @@
         const secondBreakDuration = 10 * 60 * 1000;
         let timerMode = 'Focus Time';
         let timerRemaining = focusDuration / 1000;
+        let completedVideos = new Set();
+        let allVideosCompleted = false;
 
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
@@ -314,12 +317,15 @@
                 isFocusModeActive = state.isFocusModeActive || false;
                 isSignedIn = state.isSignedIn || false;
                 currentUser = state.currentUser || null;
+                completedVideos = new Set(state.completedVideos || []);
+                allVideosCompleted = state.allVideosCompleted || false;
 
                 if (isSignedIn && currentUser) {
                     document.getElementById('landingPage').style.display = 'none';
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                    restoreUrlInputs();
                 }
                 if (videoIds.length > 0) {
                     document.getElementById('inputForm').style.display = 'none';
@@ -387,6 +393,36 @@
             }
         }
 
+        function addUrlInput() {
+            const urlInputs = document.getElementById('urlInputs');
+            const newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.className = 'youtube-url';
+            newInput.placeholder = 'YouTube URL';
+            urlInputs.appendChild(newInput);
+        }
+
+        function restoreUrlInputs() {
+            const urlInputs = document.getElementById('urlInputs');
+            urlInputs.innerHTML = ''; // Clear existing inputs
+            videoIds.forEach((id, index) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'youtube-url';
+                input.placeholder = 'YouTube URL';
+                input.value = `https://www.youtube.com/watch?v=${id}`; // Restore as full URL
+                urlInputs.appendChild(input);
+            });
+            if (videoIds.length === 0) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'youtube-url';
+                input.placeholder = 'YouTube URL';
+                input.required = true;
+                urlInputs.appendChild(input);
+            }
+        }
+
         function extractVideoId(url) {
             try {
                 let videoId = null;
@@ -403,11 +439,10 @@
         }
 
         function startPlayback() {
-            const urls = [
-                document.getElementById('url1').value,
-                document.getElementById('url2').value,
-                document.getElementById('url3').value
-            ].filter(url => url.trim() !== '');
+            const urlInputs = document.querySelectorAll('.youtube-url');
+            const urls = Array.from(urlInputs)
+                .map(input => input.value.trim())
+                .filter(url => url !== '');
             videoIds = urls.map(extractVideoId).filter(id => id !== null);
 
             if (videoIds.length === 0) {
@@ -452,6 +487,8 @@
                 isFocusModeActive,
                 isSignedIn,
                 currentUser,
+                completedVideos: Array.from(completedVideos),
+                allVideosCompleted,
                 isMinimized: document.getElementById('timerText').style.display === 'none'
             };
             localStorage.setItem('focusModeState', JSON.stringify(state));
@@ -556,6 +593,16 @@
 
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
+                completedVideos.add(videoIds[currentVideoIndex]);
+                
+                if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
+                    points += 80;
+                    document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                    alert('Awesome! +80 points for completing all videos!');
+                    allVideosCompleted = true;
+                    saveState();
+                }
+
                 currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
                 player.loadVideoById(videoIds[currentVideoIndex]);
                 saveState();
@@ -632,6 +679,8 @@
             videoIds = [];
             currentVideoIndex = 0;
             distractionCount = 0;
+            completedVideos.clear();
+            allVideosCompleted = false;
             if (isSignedIn) {
                 points = JSON.parse(localStorage.getItem('users'))[currentUser].points || 0;
             } else {
@@ -657,6 +706,8 @@
                 document.getElementById('player').innerHTML = '';
             }
             document.getElementById('player').style.display = 'none';
+            const urlInputs = document.getElementById('urlInputs');
+            urlInputs.innerHTML = '<input type="text" class="youtube-url" placeholder="YouTube URL" required>';
         }
     </script>
 </body>
