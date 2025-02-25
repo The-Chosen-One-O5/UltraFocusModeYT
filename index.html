@@ -377,7 +377,7 @@
         let timerRemaining = focusDuration / 1000;
         let completedVideos = new Set();
         let allVideosCompleted = false;
-        let totalFocusTime = 0; // In minutes
+        let totalFocusTime = 0;
         let totalDistractions = 0;
         let totalVideosWatched = 0;
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
@@ -592,7 +592,7 @@
                 alert('Please enter at least one valid YouTube URL to save a playlist');
                 return;
             }
-            playlists = playlists.filter(p => p.name !== playlistName); // Update if exists
+            playlists = playlists.filter(p => p.name !== playlistName);
             playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist });
             localStorage.setItem('playlists', JSON.stringify(playlists));
             populatePlaylistSelect();
@@ -640,7 +640,7 @@
             if (analytics.style.display === 'block') {
                 analytics.style.display = 'none';
             } else {
-                updateAnalytics(); // Ensure latest stats are shown
+                updateAnalytics();
                 analytics.style.display = 'block';
             }
         }
@@ -708,7 +708,7 @@
 
             setTimeout(() => {
                 isFocusModeActive = false;
-                totalFocusTime += 50; // Add 50 minutes to total focus time
+                totalFocusTime += 50;
                 if (isSignedIn && distractionCount === 0) {
                     points += 100;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
@@ -730,7 +730,7 @@
 
                     setTimeout(() => {
                         isFocusModeActive = false;
-                        totalFocusTime += 50; // Add another 50 minutes
+                        totalFocusTime += 50;
                         if (isSignedIn && distractionCount === 0) {
                             points += 100;
                             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
@@ -762,7 +762,7 @@
                 document.getElementById('timerText').textContent = `${mode}: ${Math.floor(timerRemaining / 60)} min ${timerRemaining % 60} sec`;
                 document.getElementById('progressFill').style.width = ((duration / 1000 - timerRemaining) / (duration / 1000)) * 100 + '%';
                 saveState();
-                updateAnalytics(); // Live update during timer
+                updateAnalytics();
             }, 1000);
         }
 
@@ -814,7 +814,7 @@
                 } else {
                     alert(`Stay focused! Distractions: ${distractionCount}`);
                 }
-                updateAnalytics();
+                focusAudio.loop = true; // Ensure looping is enabled
                 focusAudio.play().catch(error => {
                     console.error('Error playing audio:', error);
                 });
@@ -908,7 +908,7 @@
             urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
             updateAnalytics();
             populatePlaylistSelect();
-            document.getElementById('analytics').style.display = 'none'; // Hide stats on reset
+            document.getElementById('analytics').style.display = 'none';
         }
     </script>
 </body>
