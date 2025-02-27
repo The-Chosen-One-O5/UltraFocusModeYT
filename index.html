@@ -226,17 +226,14 @@
             background: #cc3333;
         }
         #statsBtn, #todoBtn {
-            position: absolute;
-            left: 10px;
             padding: 8px 16px;
             font-size: 14px;
             background: #8e2de2;
-        }
-        #todoBtn {
-            top: 10px; /* Positioned above stats button */
-        }
-        #statsBtn {
-            top: 50px; /* Adjusted to be below todo button */
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 5px 10px; /* Margin at the bottom to create space */
         }
         #statsBtn:hover, #todoBtn:hover {
             background: #7a25c9;
@@ -252,10 +249,10 @@
             z-index: 100;
         }
         #analytics {
-            top: 90px; /* Adjusted to be below todoList */
+            top: 90px;
         }
         #todoList {
-            top: 50px; /* Positioned below todoBtn */
+            top: 50px;
             width: 300px;
         }
         #analytics h3, #todoList h3 {
@@ -329,6 +326,7 @@
             #statsBtn, #todoBtn {
                 font-size: 12px;
                 padding: 6px 12px;
+                margin: 0 5px 5px; /* Reduced margin for smaller screens */
             }
             #analytics, #todoList {
                 top: 40px;
@@ -336,7 +334,7 @@
                 padding: 10px;
             }
             #analytics {
-                top: 80px; /* Adjusted for smaller screens */
+                top: 80px;
             }
             #todoList {
                 top: 40px;
@@ -384,6 +382,7 @@
     </div>
     <div id="inputForm" style="display: none;">
         <button id="todoBtn" onclick="toggleTodo()">To Do List</button>
+        <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
         <div id="todoList">
             <h3>To Do List</h3>
             <div id="tasks">
@@ -396,7 +395,6 @@
             <button onclick="addTask()">Add Task</button>
             <button onclick="saveTasks()">Save Notes</button>
         </div>
-        <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
         <div id="analytics">
             <h3>Your Focus Stats</h3>
             <p>Total Focus Time: <span id="totalFocusTime">0</span> min</p>
@@ -626,10 +624,12 @@
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'task-check';
+            checkbox.onchange = () => saveTasks(); // Save when checkbox changes
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'task-text';
             input.placeholder = 'Enter a task';
+            input.onchange = () => saveTasks(); // Save when input changes
             const removeBtn = document.createElement('button');
             removeBtn.textContent = 'X';
             removeBtn.onclick = () => removeTask(removeBtn);
@@ -643,6 +643,7 @@
             const tasksDiv = document.getElementById('tasks');
             if (tasksDiv.children.length > 1) {
                 tasksDiv.removeChild(button.parentElement);
+                saveTasks(); // Save after removal
             }
         }
 
@@ -659,10 +660,12 @@
                     checkbox.type = 'checkbox';
                     checkbox.className = 'task-check';
                     checkbox.checked = task.completed;
+                    checkbox.onchange = () => saveTasks();
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.className = 'task-text';
                     input.value = task.text;
+                    input.onchange = () => saveTasks();
                     const removeBtn = document.createElement('button');
                     removeBtn.textContent = 'X';
                     removeBtn.onclick = () => removeTask(removeBtn);
@@ -690,7 +693,6 @@
                 users[currentUser].tasks = tasks;
                 localStorage.setItem('users', JSON.stringify(users));
             }
-            alert('To-Do List saved!');
         }
 
         function toggleTodo() {
