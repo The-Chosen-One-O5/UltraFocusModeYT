@@ -518,23 +518,10 @@
 
         // List of Lo-Fi video IDs provided
         const lofiVideos = [
-            'zPyg4N7bcHM', // First video
-            'ehaHxdVMsbo',
-            'h0XI5RM_ro0',
-            'dQUA-thz0aM',
-            'WDLy6aNfkmg',
-            'nNlgn7yZD-I',
-            'fdf6keoAMzQ',
-            'sgoKS58rbiM',
-            'tw26TSQReAE',
-            '7ovH5_InVlA',
-            'eFj6YnftXe1M',
-            'rJTw_LmDS4Y',
-            'xSS0cS1Jg-w',
-            'hEnuG1Zp0Sg',
-            'bVKXiFrTcCg',
-            'Cj6YnftVMzY',
-            'VzsAR9tQn4U'
+            'zPyg4N7bcHM', 'ehaHxdVMsbo', 'h0XI5RM_ro0', 'dQUA-thz0aM', 'WDLy6aNfkmg',
+            'nNlgn7yZD-I', 'fdf6keoAMzQ', 'sgoKS58rbiM', 'tw26TSQReAE', '7ovH5_InVlA',
+            'eFj6YnftXe1M', 'rJTw_LmDS4Y', 'xSS0cS1Jg-w', 'hEnuG1Zp0Sg', 'bVKXiFrTcCg',
+            'Cj6YnftVMzY', 'VzsAR9tQn4U'
         ];
 
         // Initialize YouTube IFrame API
@@ -610,7 +597,7 @@
                 width: '0',
                 videoId: lofiVideos[musicIndex],
                 playerVars: {
-                    autoplay: 1,
+                    autoplay: 0, // Disable autoplay
                     controls: 0, // Hide default controls
                     modestbranding: 1,
                     rel: 0,
@@ -626,13 +613,14 @@
 
         function onMusicPlayerReady(event) {
             event.target.setVolume(20); // Set initial volume to 20%
-            event.target.playVideo(); // Start playing
+            // Do not auto-play; wait for user to click "Play"
         }
 
         function onMusicPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
                 musicIndex = (musicIndex + 1) % lofiVideos.length; // Move to next video, loop if at the end
-                musicPlayer.loadVideoById(lofiVideos[musicIndex]); // Load and play the next video
+                musicPlayer.loadVideoById(lofiVideos[musicIndex]); // Load the next video
+                musicPlayer.playVideo(); // Continue playing the next video
             }
         }
 
@@ -641,6 +629,7 @@
             // Skip to the next video on error
             musicIndex = (musicIndex + 1) % lofiVideos.length;
             musicPlayer.loadVideoById(lofiVideos[musicIndex]);
+            musicPlayer.playVideo(); // Continue playing the next video
         }
 
         function playMusic() {
@@ -1137,8 +1126,8 @@
                 saveState();
             } else {
                 focusAudio.pause();
-                // Resume background music when tab is visible
-                if (musicPlayer && musicPlayer.playVideo) {
+                // Resume background music if it was playing
+                if (musicPlayer && musicPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     musicPlayer.playVideo();
                 }
             }
