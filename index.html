@@ -849,6 +849,37 @@
             }, 3000);
         }
 
+        function onPlayerStateChange(event) {
+            console.log('Player state changed:', event.data);
+            if (event.data === YT.PlayerState.ENDED) {
+                console.log('Video ended:', videoIds[currentVideoIndex]);
+                completedVideos.add(videoIds[currentVideoIndex]);
+                totalVideosWatched++;
+                console.log('Completed videos:', Array.from(completedVideos));
+                console.log('Total videos:', videoIds.length);
+                
+                if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
+                    console.log('All videos completed, awarding 80 points');
+                    points += 80;
+                    document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                    alert('Awesome! +80 points for completing all videos!');
+                    allVideosCompleted = true;
+                } else {
+                    console.log('Not all videos completed yet or conditions not met:', {
+                        completedSize: completedVideos.size,
+                        totalVideos: videoIds.length,
+                        allVideosCompleted,
+                        isSignedIn
+                    });
+                }
+
+                updateAnalytics();
+                saveState();
+                currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
+                player.loadVideoById(videoIds[currentVideoIndex]);
+            }
+        }
+
         function initializeMusicPlayer() {
             if (musicPlayerInitialized) return;
             console.log('Initializing music player');
@@ -945,6 +976,7 @@
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
+                console.log('Signed in as:', username, 'isSignedIn:', isSignedIn);
             } else {
                 alert('Invalid username or password');
             }
@@ -975,6 +1007,7 @@
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
+                console.log('Account created for:', username, 'isSignedIn:', isSignedIn);
             } else {
                 alert('Please enter a username and password');
             }
@@ -1151,9 +1184,8 @@
                 console.log('No valid video IDs, using fallback');
                 videoIds = ['dQw4w9WgXcQ'];
                 alert('No valid YouTube URLs provided. Using a default video for testing.');
-            } else {
-                console.log('Playing video IDs:', videoIds);
             }
+            console.log('Video IDs to play:', videoIds);
 
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('player').style.display = 'block';
@@ -1379,25 +1411,6 @@
             }, 1000);
         }
 
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                completedVideos.add(videoIds[currentVideoIndex]);
-                totalVideosWatched++;
-                
-                if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
-                    points += 80;
-                    document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                    alert('Awesome! +80 points for completing all videos!');
-                    allVideosCompleted = true;
-                }
-
-                updateAnalytics();
-                saveState();
-                currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
-                player.loadVideoById(videoIds[currentVideoIndex]);
-            }
-        }
-
         function enterFullscreen() {
             document.documentElement.requestFullscreen().catch(err => console.log('Fullscreen failed:', err));
         }
@@ -1468,61 +1481,86 @@
         }
 
         function resetFocusMode() {
-            console.log('resetFocusMode called');
-            localStorage.removeItem('focusModeState');
-            videoIds = [];
-            currentVideoIndex = 0;
-            distractionCount = 0;
-            completedVideos.clear();
-            allVideosCompleted = false;
-            if (isSignedIn) {
-                const users = JSON.parse(localStorage.getItem('users') || '{}');
-                points = users[currentUser].points || 0;
-                totalFocusTime = users[currentUser].totalFocusTime || 0;
-                totalDistractions = users[currentUser].totalDistractions || 0;
-                totalVideosWatched = users[currentUser].totalVideosWatched || 0;
-                tasks = users[currentUser].tasks || [];
-            } else {
-                points = 0;
-                totalFocusTime = 0;
-                totalDistractions = 0;
-                totalVideosWatched = 0;
-                tasks = [];
+            console.log('resetFocusMode called - Starting reset');
+            try {
+                localStorage.removeItem('focusModeState');
+                console.log('Cleared focusModeState');
+                videoIds = [];
+                currentVideoIndex = 0;
+                distractionCount = 0;
+                completedVideos.clear();
+                allVideosCompleted = false;
+                console.log('Reset video tracking variables');
+
+                if (isSignedIn) {
+                    const users = JSON.parse(localStorage.getItem('users') || '{}');
+                    points = users[currentUser].points || 0;
+                    totalFocusTime = users[currentUser].totalFocusTime || 0;
+                    totalDistractions = users[currentUser].totalDistractions || 0;
+                    totalVideosWatched = users[currentUser].totalVideosWatched || 0;
+                    tasks = users[currentUser].tasks || [];
+                    console.log('Updated stats for signed-in user');
+                } else {
+                    points = 0;
+                    totalFocusTime = 0;
+                    totalDistractions = 0;
+                    totalVideosWatched = 0;
+                    tasks = [];
+                    console.log('Reset stats for non-signed-in user');
+                }
+
+                isFocusModeActive = false;
+                timerMode = 'Focus Time';
+                timerRemaining = focusDuration / 1000;
+                clearInterval(countdownInterval);
+                console.log('Reset focus mode state');
+
+                document.getElementById('inputForm').style.display = 'block';
+                document.getElementById('landingPage').style.display = 'none';
+                document.getElementById('signinForm').style.display = 'none';
+                document.getElementById('restartBtn').style.display = 'none';
+                document.getElementById('toggleSidebarBtn').style.display = 'none';
+                document.getElementById('clockDisplay').style.display = 'block';
+                document.getElementById('timerText').textContent = '';
+                document.getElementById('progressFill').style.width = '0';
+                document.getElementById('progressBar').style.display = 'none';
+                document.getElementById('minimizeBtn').textContent = '-';
+                document.getElementById('timerText').style.display = 'block';
+                document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                console.log('Updated UI elements');
+
+                if (player) {
+                    try {
+                        player.destroy();
+                        player = null;
+                        document.getElementById('player').innerHTML = '';
+                        console.log('Destroyed main player');
+                    } catch (e) {
+                        console.error('Error destroying main player:', e);
+                    }
+                }
+                if (musicPlayer) {
+                    try {
+                        musicPlayer.destroy();
+                        musicPlayer = null;
+                        document.getElementById('musicPlayer').innerHTML = '';
+                        console.log('Destroyed music player');
+                    } catch (e) {
+                        console.error('Error destroying music player:', e);
+                    }
+                }
+                document.getElementById('player').style.display = 'none';
+                const urlInputs = document.getElementById('urlInputs');
+                urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
+                updateAnalytics();
+                populatePlaylistSelect();
+                restoreTasks();
+                document.getElementById('analytics').style.display = 'none';
+                document.getElementById('todoList').style.display = 'none';
+                console.log('resetFocusMode completed');
+            } catch (e) {
+                console.error('Error in resetFocusMode:', e);
             }
-            isFocusModeActive = false;
-            timerMode = 'Focus Time';
-            timerRemaining = focusDuration / 1000;
-            clearInterval(countdownInterval);
-            document.getElementById('inputForm').style.display = 'block';
-            document.getElementById('landingPage').style.display = 'none';
-            document.getElementById('signinForm').style.display = 'none';
-            document.getElementById('restartBtn').style.display = 'none';
-            document.getElementById('toggleSidebarBtn').style.display = 'none';
-            document.getElementById('clockDisplay').style.display = 'block';
-            document.getElementById('timerText').textContent = '';
-            document.getElementById('progressFill').style.width = '0';
-            document.getElementById('progressBar').style.display = 'none';
-            document.getElementById('minimizeBtn').textContent = '-';
-            document.getElementById('timerText').style.display = 'block';
-            document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-            if (player) {
-                player.destroy();
-                player = null;
-                document.getElementById('player').innerHTML = '';
-            }
-            if (musicPlayer) {
-                musicPlayer.destroy();
-                musicPlayer = null;
-                document.getElementById('musicPlayer').innerHTML = '';
-            }
-            document.getElementById('player').style.display = 'none';
-            const urlInputs = document.getElementById('urlInputs');
-            urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
-            updateAnalytics();
-            populatePlaylistSelect();
-            restoreTasks();
-            document.getElementById('analytics').style.display = 'none';
-            document.getElementById('todoList').style.display = 'none';
         }
 
         function submitFeedback() {
