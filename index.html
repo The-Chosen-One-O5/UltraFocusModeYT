@@ -21,30 +21,41 @@
             color: #fff;
             overflow: hidden;
         }
-        /* Loading Screen Styles */
         #loadingScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #2a2a2a; /* Matches site background */
+            background: #2a2a2a;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 9999; /* Ensure it’s above all other elements */
+            z-index: 9999;
             opacity: 1;
-            transition: opacity 0.5s ease; /* Smooth fade-out */
+            transition: opacity 0.3s ease;
         }
         #loadingScreen video {
             width: 100%;
-            max-width: 400px; /* Limits the video size for better performance */
+            max-width: 400px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(142, 45, 226, 0.5); /* Purple glow to match theme */
+            box-shadow: 0 0 20px rgba(142, 45, 226, 0.5);
+        }
+        #loadingScreen .loading-fallback {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #8e2de2;
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         #loadingScreen.hidden {
             opacity: 0;
-            pointer-events: none; /* Prevents interaction after fading out */
+            pointer-events: none;
         }
         #landingPage, #signinForm, #inputForm {
             text-align: center;
@@ -52,7 +63,7 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 40px 20px;
-            display: none; /* Hidden until loading completes */
+            display: none;
             position: relative;
         }
         #landingPage .title, #signinForm .title, #inputForm .title {
@@ -81,6 +92,10 @@
             cursor: pointer;
             margin: 0 5px;
             transition: background 0.3s, transform 0.2s;
+            min-width: 48px;
+            min-height: 48px;
+            line-height: 48px;
+            text-align: center;
         }
         #landingPage button:hover, #signinForm button:hover, #inputForm button:hover {
             background: #7a25c9;
@@ -166,7 +181,7 @@
         }
         #clockDisplay {
             position: fixed;
-            top: 80px; /* Positioned below pointsDisplay (50px + 20px font + 10px gap) */
+            top: 80px;
             left: 10px;
             color: #fff;
             font-size: 20px;
@@ -175,10 +190,12 @@
             padding: 5px;
             background: rgba(0, 0, 0, 0.5);
             border-radius: 5px;
-            display: none; /* Hidden by default, shown on inputForm */
+            display: none;
+            width: 150px;
+            text-align: left;
         }
         #clockDisplay span {
-            color: #8e2de2; /* AM/PM in purple to match theme */
+            color: #8e2de2;
         }
         #progressBar {
             width: 200px;
@@ -205,6 +222,10 @@
             z-index: 103;
             cursor: pointer;
             transition: background 0.3s;
+            min-width: 48px;
+            min-height: 48px;
+            line-height: 48px;
+            text-align: center;
         }
         #restartBtn:hover {
             background: #7a25c9;
@@ -295,12 +316,12 @@
         #todoList {
             top: 50px;
             width: 300px;
-            max-height: 400px; /* Fixed maximum height for scrolling */
+            max-height: 400px;
         }
         #tasks {
-            overflow-y: auto; /* Enable vertical scrolling for tasks */
-            max-height: 300px; /* Max height for the scrollable task area */
-            margin-bottom: 10px; /* Space between tasks and buttons */
+            overflow-y: auto;
+            max-height: 300px;
+            margin-bottom: 10px;
         }
         #analytics h3, #todoList h3 {
             font-size: 20px;
@@ -340,13 +361,12 @@
             padding: 8px 16px;
             font-size: 14px;
         }
-        /* Styling for the audio-only background music player */
         #backgroundMusicPlayer {
             position: fixed;
             bottom: 10px;
             right: 10px;
             width: 280px;
-            height: 60px; /* Smaller height since no video visuals */
+            height: 60px;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -358,7 +378,7 @@
             padding: 5px;
         }
         #musicPlayer {
-            display: none; /* Hidden since we only want audio */
+            display: none;
         }
         #musicControls {
             display: flex;
@@ -373,6 +393,10 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            min-width: 48px;
+            min-height: 48px;
+            line-height: 48px;
+            text-align: center;
         }
         #musicControls button:hover {
             background: #7a25c9;
@@ -383,13 +407,26 @@
                 padding: 20px 10px;
             }
             #landingPage .title, #signinForm .title, #inputForm .title {
-                font-size: 32px;
+                font-size: 28px;
             }
             #landingPage .subtitle, #signinForm .subtitle, #inputForm .subtitle {
                 font-size: 16px;
             }
             #landingPage button, #signinForm button, #inputForm button {
                 padding: 10px 20px;
+                font-size: 16px;
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+            #inputForm input, #inputForm select {
+                max-width: 100%;
+                font-size: 14px;
+                padding: 10px;
+                margin: 8px auto;
+            }
+            #musicControls button {
+                padding: 8px 12px;
                 font-size: 16px;
             }
             #features {
@@ -406,6 +443,8 @@
             #restartBtn {
                 font-size: 14px;
                 padding: 8px 16px;
+                top: 5px;
+                right: 5px;
             }
             #statsBtn, #todoBtn, #pyqBtn {
                 font-size: 12px;
@@ -423,10 +462,10 @@
             #todoList {
                 top: 40px;
                 width: 250px;
-                max-height: 300px; /* Reduced max height for smaller screens */
+                max-height: 300px;
             }
             #tasks {
-                max-height: 200px; /* Reduced max height for tasks on smaller screens */
+                max-height: 200px;
             }
             #analytics h3, #todoList h3 {
                 font-size: 16px;
@@ -453,23 +492,24 @@
                 right: 5px;
             }
             #pointsDisplay {
-                top: 40px; /* Adjusted to make space for clock */
+                font-size: 16px;
+                top: 35px;
             }
             #clockDisplay {
-                top: 70px; /* Adjusted for mobile */
+                font-size: 16px;
+                top: 65px;
             }
             #loadingScreen video {
-                max-width: 300px; /* Smaller video size for mobile */
+                max-width: 300px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
     <div id="loadingScreen">
         <video preload="auto" autoplay loop muted playsinline>
             <source src="https://ultrafocusmode-yt.vercel.app/loading.mp4" type="video/mp4">
-            Your browser does not support the video tag.
+            <div class="loading-fallback"></div>
         </video>
     </div>
 
@@ -527,7 +567,6 @@
         </div>
         <button onclick="addUrlInput()">Add Another URL</button>
         <button onclick="startPlayback()">Start Focus Mode</button>
-        <!-- Audio-Only Background Music Player -->
         <div id="backgroundMusicPlayer">
             <div id="musicPlayer" style="display: none;"></div>
             <div id="musicControls">
@@ -547,11 +586,28 @@
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
 
-    <script src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous"></script>
+    <script defer src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous"></script>
     <script>
+        // Polyfill for padStart
+        if (!String.prototype.padStart) {
+            String.prototype.padStart = function padStart(targetLength, padString) {
+                targetLength = targetLength >> 0;
+                padString = String(padString || ' ');
+                if (this.length >= targetLength) {
+                    return String(this);
+                }
+                targetLength = targetLength - this.length;
+                if (targetLength > padString.length) {
+                    padString += padString.repeat(targetLength / padString.length);
+                }
+                return padString.slice(0, targetLength) + String(this);
+            };
+        }
+
         let currentVideoIndex = 0;
         let player;
         let musicPlayer;
+        let musicPlayerInitialized = false;
         let videoIds = [];
         let isFocusModeActive = false;
         let countdownInterval;
@@ -572,8 +628,8 @@
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
         let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
         let musicIndex = 0;
+        let lastVisibilityChange = 0;
 
-        // List of Lo-Fi video IDs provided
         const lofiVideos = [
             'zPyg4N7bcHM', 'ehaHxdVMsbo', 'h0XI5RM_ro0', 'dQUA-thz0aM', 'WDLy6aNfkmg',
             'nNlgn7yZD-I', 'fdf6keoAMzQ', 'sgoKS58rbiM', 'tw26TSQReAE', '7ovH5_InVlA',
@@ -581,34 +637,33 @@
             'Cj6YnftVMzY', 'VzsAR9tQn4U'
         ];
 
-        // Initialize YouTube IFrame API
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
+        tag.async = true;
+        tag.onerror = () => console.error('Failed to load YouTube API');
         const firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        // Function to update the digital clock
         function updateClock() {
             const now = new Date();
             let hours = now.getHours();
             const minutes = now.getMinutes().toString().padStart(2, '0');
             const seconds = now.getSeconds().toString().padStart(2, '0');
             const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; // Convert to 12-hour format
+            hours = hours % 12 || 12;
             const timeString = `${hours}:${minutes}:${seconds} <span>${ampm}</span>`;
-            document.getElementById('clockDisplay').innerHTML = timeString;
+            const clockDisplay = document.getElementById('clockDisplay');
+            if (clockDisplay.innerHTML !== timeString) {
+                clockDisplay.innerHTML = timeString;
+            }
         }
-
-        // Update clock every second
         setInterval(updateClock, 1000);
-        updateClock(); // Initial call to set the clock immediately
+        updateClock();
 
-        // Hide loading screen when page content is ready
         window.addEventListener('load', () => {
             const loadingScreen = document.getElementById('loadingScreen');
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
-                // Show the appropriate page after loading
                 const savedState = localStorage.getItem('focusModeState');
                 if (savedState) {
                     const state = JSON.parse(savedState);
@@ -633,7 +688,7 @@
                         document.getElementById('signinForm').style.display = 'none';
                         document.getElementById('inputForm').style.display = 'block';
                         document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                        document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
+                        document.getElementById('clockDisplay').style.display = 'block';
                         restoreUrlInputs();
                         populatePlaylistSelect();
                         restoreTasks();
@@ -642,7 +697,8 @@
                         document.getElementById('inputForm').style.display = 'none';
                         document.getElementById('player').style.display = 'block';
                         document.getElementById('restartBtn').style.display = 'block';
-                        document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on player page
+                        console.log('Restart button should be visible after load');
+                        document.getElementById('clockDisplay').style.display = 'none';
                         populateVideoSidebar();
                         loadYouTubeAPI();
                         if (isFocusModeActive) {
@@ -656,31 +712,62 @@
                     document.getElementById('landingPage').style.display = 'block';
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'none';
-                    document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on landing page
+                    document.getElementById('clockDisplay').style.display = 'none';
                     updateAnalytics();
                     restoreTasks();
                 }
-            }, 1000); // Optional delay to ensure loading screen is visible for at least 1 second
+            }, 1000);
         });
 
-        // Initialize the YouTube players
+        setTimeout(() => {
+            if (!window.YT || !window.YT.Player) {
+                console.error('YouTube API not loaded, retrying...');
+                loadYouTubeAPI();
+            }
+        }, 5000);
+
         function onYouTubeIframeAPIReady() {
-            // Initialize the main player for YouTube videos
+            console.log('onYouTubeIframeAPIReady called');
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
-                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
             });
+        }
 
-            // Initialize the background music player (audio-only)
+        function onPlayerReady(event) {
+            console.log('Main player ready');
+            const videoId = videoIds[currentVideoIndex];
+            if (videoId) {
+                event.target.loadVideoById(videoId);
+                setTimeout(() => {
+                    if (event.target.getPlayerState() !== YT.PlayerState.PLAYING) {
+                        console.log('Autoplay failed, attempting manual play');
+                        event.target.playVideo();
+                    }
+                }, 1000);
+            } else {
+                console.error('No video ID to play');
+                alert('No video to play. Please ensure a valid YouTube URL is provided.');
+            }
+        }
+
+        function onPlayerError(event) {
+            console.error('Main player error:', event.data);
+            alert('Failed to play video. Please try another URL.');
+        }
+
+        function initializeMusicPlayer() {
+            if (musicPlayerInitialized) return;
+            console.log('Initializing music player');
             musicPlayer = new YT.Player('musicPlayer', {
                 height: '0',
                 width: '0',
                 videoId: lofiVideos[musicIndex],
                 playerVars: {
-                    autoplay: 0, // Disable autoplay
-                    controls: 0, // Hide default controls
+                    autoplay: 0,
+                    controls: 0,
                     modestbranding: 1,
                     rel: 0,
                     showinfo: 0
@@ -691,30 +778,39 @@
                     'onError': onMusicPlayerError
                 }
             });
+            musicPlayerInitialized = true;
         }
 
         function onMusicPlayerReady(event) {
-            event.target.setVolume(20); // Set initial volume to 20%
-            // Do not auto-play; wait for user to click "Play"
+            console.log('Music player ready');
+            event.target.setVolume(20);
         }
 
         function onMusicPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
-                musicIndex = (musicIndex + 1) % lofiVideos.length; // Move to next video, loop if at the end
-                musicPlayer.loadVideoById(lofiVideos[musicIndex]); // Load the next video
-                musicPlayer.playVideo(); // Continue playing the next video
+                musicIndex = (musicIndex + 1) % lofiVideos.length;
+                musicPlayer.loadVideoById(lofiVideos[musicIndex]);
+                musicPlayer.playVideo();
             }
         }
 
         function onMusicPlayerError(event) {
             console.error('Background music player error:', event.data);
-            // Skip to the next video on error
             musicIndex = (musicIndex + 1) % lofiVideos.length;
             musicPlayer.loadVideoById(lofiVideos[musicIndex]);
-            musicPlayer.playVideo(); // Continue playing the next video
+            musicPlayer.playVideo();
+            const musicControls = document.getElementById('musicControls');
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Failed to load video, skipping to next...';
+            errorMessage.style.color = '#ff4444';
+            musicControls.appendChild(errorMessage);
+            setTimeout(() => errorMessage.remove(), 3000);
         }
 
         function playMusic() {
+            if (!musicPlayerInitialized) {
+                initializeMusicPlayer();
+            }
             if (musicPlayer && musicPlayer.playVideo) {
                 musicPlayer.playVideo();
             }
@@ -726,7 +822,6 @@
             }
         }
 
-        // Function to redirect to PYQs Practice site in a new tab
         function redirectToPYQs() {
             window.open('https://room.examgoal.com/', '_blank');
         }
@@ -735,7 +830,7 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
-            document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on sign-in page
+            document.getElementById('clockDisplay').style.display = 'none';
         }
 
         function signIn() {
@@ -754,7 +849,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
+                document.getElementById('clockDisplay').style.display = 'block';
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -784,7 +879,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
+                document.getElementById('clockDisplay').style.display = 'block';
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -945,11 +1040,13 @@
                 }
                 return videoId;
             } catch (e) {
+                console.error('Failed to extract video ID:', e);
                 return null;
             }
         }
 
         function startPlayback() {
+            console.log('startPlayback called');
             const urlInputs = document.querySelectorAll('.youtube-url');
             const urls = Array.from(urlInputs)
                 .map(input => input.value.trim())
@@ -957,16 +1054,18 @@
             videoIds = urls.map(extractVideoId).filter(id => id !== null);
 
             if (videoIds.length === 0) {
-                alert('Please enter at least one valid YouTube URL');
-                return;
+                console.log('No valid video IDs, using fallback');
+                videoIds = ['dQw4w9WgXcQ'];
+                alert('No valid YouTube URLs provided. Using a default video for testing.');
             }
 
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('player').style.display = 'block';
-            document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on player page
+            document.getElementById('clockDisplay').style.display = 'none';
             enterFullscreen();
             startFocusBreakLoop();
             document.getElementById('restartBtn').style.display = 'block';
+            console.log('Restart button should be visible');
             populateVideoSidebar();
             saveState();
             loadYouTubeAPI();
@@ -1020,6 +1119,8 @@
             if (!window.YT) {
                 const tag = document.createElement('script');
                 tag.src = "https://www.youtube.com/iframe_api";
+                tag.async = true;
+                tag.onerror = () => console.error('Failed to load YouTube API');
                 document.body.appendChild(tag);
             }
         }
@@ -1162,10 +1263,6 @@
             }, 1000);
         }
 
-        function onPlayerReady(event) {
-            event.target.loadVideoById(videoIds[currentVideoIndex]);
-        }
-
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
                 completedVideos.add(videoIds[currentVideoIndex]);
@@ -1190,6 +1287,9 @@
         }
 
         document.addEventListener('visibilitychange', () => {
+            const now = Date.now();
+            if (now - lastVisibilityChange < 1000) return;
+            lastVisibilityChange = now;
             const focusAudio = document.getElementById('focusAudio');
             if (document.hidden && isFocusModeActive) {
                 distractionCount++;
@@ -1205,14 +1305,12 @@
                 focusAudio.play().catch(error => {
                     console.error('Error playing audio:', error);
                 });
-                // Pause background music during distraction alert
                 if (musicPlayer && musicPlayer.pauseVideo) {
                     musicPlayer.pauseVideo();
                 }
                 saveState();
             } else {
                 focusAudio.pause();
-                // Resume background music only if it was playing
                 if (musicPlayer && musicPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     musicPlayer.playVideo();
                 }
@@ -1261,6 +1359,7 @@
         });
 
         function resetFocusMode() {
+            console.log('resetFocusMode called');
             localStorage.removeItem('focusModeState');
             videoIds = [];
             currentVideoIndex = 0;
@@ -1289,7 +1388,7 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'none';
-            document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
+            document.getElementById('clockDisplay').style.display = 'block';
             document.getElementById('timerText').textContent = '';
             document.getElementById('progressFill').style.width = '0';
             document.getElementById('progressBar').style.display = 'none';
