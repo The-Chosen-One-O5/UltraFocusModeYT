@@ -310,11 +310,33 @@
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #1e1e1e;
         }
-        #backgroundMusicPlayer iframe {
+        #backgroundMusicPlayer div {
             width: 100%;
             height: 100%;
+        }
+        #musicControls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 5px;
+            background: #1e1e1e;
+        }
+        #musicControls button {
+            padding: 5px 10px;
+            background: #8e2de2;
             border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #musicControls button:hover {
+            background: #7a25c9;
         }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
@@ -387,7 +409,7 @@
             }
             #backgroundMusicPlayer {
                 width: 200px;
-                height: 120px;
+                height: 180px;
                 bottom: 5px;
                 right: 5px;
             }
@@ -449,9 +471,13 @@
         </div>
         <button onclick="addUrlInput()">Add Another URL</button>
         <button onclick="startPlayback()">Start Focus Mode</button>
-        <!-- Embedded Lo-Fi Background Music Player -->
+        <!-- Background Music Player -->
         <div id="backgroundMusicPlayer">
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/zPyg4N7bcHM?list=PLcYUZwHVNgdBHe404pg0FbMGwOgd6kk20&autoplay=1&loop=1&controls=1&rel=0&modestbranding=1" title="Lo-Fi Background Music" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <div id="musicPlayer"></div>
+            <div id="musicControls">
+                <button onclick="playMusic()">Play</button>
+                <button onclick="pauseMusic()">Pause</button>
+            </div>
         </div>
     </div>
     <div id="player" style="display: none;"></div>
@@ -467,10 +493,10 @@
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
 
     <script src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous"></script>
-
     <script>
         let currentVideoIndex = 0;
         let player;
+        let musicPlayer;
         let videoIds = [];
         let isFocusModeActive = false;
         let countdownInterval;
@@ -490,6 +516,12 @@
         let totalVideosWatched = 0;
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
         let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+
+        // Initialize YouTube IFrame API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
@@ -541,6 +573,67 @@
                 restoreTasks();
             }
         };
+
+        // Initialize the background music player
+        function onYouTubeIframeAPIReady() {
+            // Initialize the main player for YouTube videos
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+            });
+
+            // Initialize the background music player
+            musicPlayer = new YT.Player('musicPlayer', {
+                height: '100%',
+                width: '100%',
+                playerVars: {
+                    listType: 'playlist',
+                    list: 'PLcYUZwHVNgdBHe404pg0FbMGwOgd6kk20', // Lo-Fi playlist ID
+                    autoplay: 1,
+                    loop: 1,
+                    controls: 0, // Hide default controls
+                    modestbranding: 1,
+                    rel: 0,
+                    showinfo: 0
+                },
+                events: {
+                    'onReady': onMusicPlayerReady,
+                    'onStateChange': onMusicPlayerStateChange,
+                    'onError': onMusicPlayerError
+                }
+            });
+        }
+
+        function onMusicPlayerReady(event) {
+            event.target.setVolume(20); // Set initial volume to 20%
+            event.target.playVideo(); // Start playing
+        }
+
+        function onMusicPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                // Loop the playlist by replaying
+                musicPlayer.playVideoAt(0);
+            }
+        }
+
+        function onMusicPlayerError(event) {
+            console.error('Background music player error:', event.data);
+            alert('The Lo-Fi playlist is unavailable. Please provide individual video URLs.');
+        }
+
+        function playMusic() {
+            if (musicPlayer && musicPlayer.playVideo) {
+                musicPlayer.playVideo();
+            }
+        }
+
+        function pauseMusic() {
+            if (musicPlayer && musicPlayer.pauseVideo) {
+                musicPlayer.pauseVideo();
+            }
+        }
 
         // Function to redirect to PYQs Practice site in a new tab
         function redirectToPYQs() {
@@ -972,15 +1065,6 @@
                 saveState();
                 updateAnalytics();
             }, 1000);
-        }
-
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
-                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
-            });
         }
 
         function onPlayerReady(event) {
