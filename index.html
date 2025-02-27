@@ -224,7 +224,7 @@
             border: none;
             color: #fff;
             border-radius: 8px;
-            z-index: 103;
+            z-index: 1000;
             cursor: pointer;
             transition: background 0.3s;
             min-width: 48px;
@@ -234,6 +234,18 @@
         }
         #restartBtn:hover {
             background: #7a25c9;
+        }
+        #toggleSidebarBtn {
+            display: none;
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background: #8e2de2;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1001;
         }
         #videoSidebar {
             position: fixed;
@@ -245,7 +257,7 @@
             transition: right 0.3s ease;
             padding: 20px;
             overflow-y: auto;
-            z-index: 102;
+            z-index: 1000;
         }
         .thumbnail {
             width: 100%;
@@ -406,6 +418,29 @@
         #musicControls button:hover {
             background: #7a25c9;
         }
+        #feedbackForm {
+            margin-top: 20px;
+        }
+        #feedbackForm h3 {
+            font-size: 20px;
+            color: #8e2de2;
+            margin-bottom: 10px;
+        }
+        #feedbackForm textarea {
+            width: 100%;
+            max-width: 320px;
+            height: 80px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            resize: none;
+        }
+        #feedbackForm button {
+            margin-top: 10px;
+        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -424,7 +459,7 @@
                 width: 100%;
                 margin: 10px 0;
             }
-            #inputForm input, #inputForm select {
+            #inputForm input, #inputForm select, #feedbackForm textarea {
                 max-width: 100%;
                 font-size: 14px;
                 padding: 10px;
@@ -451,6 +486,17 @@
                 top: 5px;
                 right: 5px;
             }
+            #toggleSidebarBtn {
+                display: block;
+                top: 40px;
+                right: 5px;
+                padding: 8px 12px;
+                font-size: 14px;
+                min-width: 48px;
+                min-height: 48px;
+                line-height: 48px;
+                text-align: center;
+            }
             #statsBtn, #todoBtn, #pyqBtn {
                 font-size: 12px;
                 padding: 6px 12px;
@@ -472,7 +518,7 @@
             #tasks {
                 max-height: 200px;
             }
-            #analytics h3, #todoList h3 {
+            #analytics h3, #todoList h3, #feedbackForm h3 {
                 font-size: 16px;
             }
             #analytics p {
@@ -579,7 +625,7 @@
                 <button onclick="pauseMusic()">Pause</button>
             </div>
         </div>
-        <div id="feedbackForm" style="margin-top: 20px;">
+        <div id="feedbackForm">
             <h3>Feedback</h3>
             <textarea id="feedbackText" placeholder="Let us know if you're facing issues"></textarea>
             <button onclick="submitFeedback()">Submit</button>
@@ -596,12 +642,14 @@
     </div>
     <div id="pointsDisplay">Points: 0</div>
     <div id="clockDisplay"></div>
+    <button id="restartBtn" onclick="resetFocusMode()">Restart</button>
+    <button id="toggleSidebarBtn" style="display: none;" onclick="toggleSidebar()">Toggle Videos</button>
+    <div id="videoSidebar"></div>
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
 
     <script defer src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous"></script>
     <script>
-        // Polyfill for padStart
         if (!String.prototype.padStart) {
             String.prototype.padStart = function padStart(targetLength, padString) {
                 targetLength = targetLength >> 0;
@@ -720,8 +768,14 @@
                     if (videoIds.length > 0) {
                         document.getElementById('inputForm').style.display = 'none';
                         document.getElementById('player').style.display = 'block';
-                        document.getElementById('restartBtn').style.display = 'block';
-                        console.log('Restart button should be visible after load');
+                        const restartBtn = document.getElementById('restartBtn');
+                        if (restartBtn) {
+                            restartBtn.style.display = 'block';
+                            console.log('Restart button should be visible after load');
+                        } else {
+                            console.error('Restart button element not found after load');
+                        }
+                        document.getElementById('toggleSidebarBtn').style.display = 'block';
                         document.getElementById('clockDisplay').style.display = 'none';
                         populateVideoSidebar();
                         loadYouTubeAPI();
@@ -1106,8 +1160,14 @@
             document.getElementById('clockDisplay').style.display = 'none';
             enterFullscreen();
             startFocusBreakLoop();
-            document.getElementById('restartBtn').style.display = 'block';
-            console.log('Restart button should be visible');
+            const restartBtn = document.getElementById('restartBtn');
+            if (restartBtn) {
+                restartBtn.style.display = 'block';
+                console.log('Restart button set to visible');
+            } else {
+                console.error('Restart button element not found');
+            }
+            document.getElementById('toggleSidebarBtn').style.display = 'block';
             populateVideoSidebar();
             saveState();
             loadYouTubeAPI();
@@ -1221,6 +1281,7 @@
                 `<img class="thumbnail" src="https://img.youtube.com/vi/${id}/0.jpg" 
                       onclick="changeVideo('${id}', ${index})" alt="Video ${index + 1}">`
             ).join('');
+            console.log('Video sidebar populated with', videoIds.length, 'videos');
         }
 
         function changeVideo(videoId, index) {
@@ -1231,6 +1292,25 @@
             document.getElementById('videoSidebar').style.right = '-320px';
             saveState();
         }
+
+        function toggleSidebar() {
+            const videoSidebar = document.getElementById('videoSidebar');
+            if (videoSidebar) {
+                videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
+                console.log('Video sidebar toggled to right:', videoSidebar.style.right);
+            } else {
+                console.error('Video sidebar element not found');
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            console.log('Key pressed:', e.key);
+            if (e.key === 'T' || e.key === 't') {
+                toggleSidebar();
+            }
+        });
+
+        document.getElementById('toggleSidebarBtn').addEventListener('click', toggleSidebar);
 
         function startFocusBreakLoop() {
             isFocusModeActive = true;
@@ -1387,13 +1467,6 @@
             saveState();
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'T' || e.key === 't') {
-                const videoSidebar = document.getElementById('videoSidebar');
-                videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
-            }
-        });
-
         function resetFocusMode() {
             console.log('resetFocusMode called');
             localStorage.removeItem('focusModeState');
@@ -1424,6 +1497,7 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('toggleSidebarBtn').style.display = 'none';
             document.getElementById('clockDisplay').style.display = 'block';
             document.getElementById('timerText').textContent = '';
             document.getElementById('progressFill').style.width = '0';
