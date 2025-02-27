@@ -225,20 +225,24 @@
         .url-container button:hover {
             background: #cc3333;
         }
-        #statsBtn {
+        #statsBtn, #todoBtn {
             position: absolute;
-            top: 10px;
             left: 10px;
             padding: 8px 16px;
             font-size: 14px;
             background: #8e2de2;
         }
-        #statsBtn:hover {
+        #todoBtn {
+            top: 10px; /* Positioned above stats button */
+        }
+        #statsBtn {
+            top: 50px; /* Adjusted to be below todo button */
+        }
+        #statsBtn:hover, #todoBtn:hover {
             background: #7a25c9;
         }
-        #analytics {
+        #analytics, #todoList {
             position: absolute;
-            top: 50px;
             left: 10px;
             background: #1e1e1e;
             padding: 15px;
@@ -247,7 +251,14 @@
             display: none;
             z-index: 100;
         }
-        #analytics h3 {
+        #analytics {
+            top: 90px; /* Adjusted to be below todoList */
+        }
+        #todoList {
+            top: 50px; /* Positioned below todoBtn */
+            width: 300px;
+        }
+        #analytics h3, #todoList h3 {
             font-size: 20px;
             margin-bottom: 10px;
             color: #8e2de2;
@@ -255,6 +266,35 @@
         #analytics p {
             font-size: 14px;
             margin: 5px 0;
+        }
+        .task-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .task-container input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+        }
+        .task-container input[type="text"] {
+            flex-grow: 1;
+            margin: 0;
+            max-width: none;
+        }
+        .task-container button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background: #ff4444;
+            font-size: 14px;
+        }
+        .task-container button:hover {
+            background: #cc3333;
+        }
+        #todoList button:not(.task-container button) {
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
         }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
@@ -286,19 +326,38 @@
                 font-size: 14px;
                 padding: 8px 16px;
             }
-            #statsBtn {
+            #statsBtn, #todoBtn {
                 font-size: 12px;
                 padding: 6px 12px;
             }
-            #analytics {
+            #analytics, #todoList {
                 top: 40px;
                 left: 5px;
                 padding: 10px;
             }
-            #analytics h3 {
+            #analytics {
+                top: 80px; /* Adjusted for smaller screens */
+            }
+            #todoList {
+                top: 40px;
+                width: 250px;
+            }
+            #analytics h3, #todoList h3 {
                 font-size: 16px;
             }
             #analytics p {
+                font-size: 12px;
+            }
+            .task-container input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+            }
+            .task-container button {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+            #todoList button:not(.task-container button) {
+                padding: 6px 12px;
                 font-size: 12px;
             }
         }
@@ -324,6 +383,19 @@
         <p>New? <button onclick="createAccount()">Create Account</button></p>
     </div>
     <div id="inputForm" style="display: none;">
+        <button id="todoBtn" onclick="toggleTodo()">To Do List</button>
+        <div id="todoList">
+            <h3>To Do List</h3>
+            <div id="tasks">
+                <div class="task-container">
+                    <input type="checkbox" class="task-check">
+                    <input type="text" class="task-text" placeholder="Enter a task">
+                    <button onclick="removeTask(this)">X</button>
+                </div>
+            </div>
+            <button onclick="addTask()">Add Task</button>
+            <button onclick="saveTasks()">Save Notes</button>
+        </div>
         <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
         <div id="analytics">
             <h3>Your Focus Stats</h3>
@@ -381,6 +453,7 @@
         let totalDistractions = 0;
         let totalVideosWatched = 0;
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
+        let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
 
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
@@ -409,6 +482,7 @@
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                     restoreUrlInputs();
                     populatePlaylistSelect();
+                    restoreTasks();
                 }
                 if (videoIds.length > 0) {
                     document.getElementById('inputForm').style.display = 'none';
@@ -428,6 +502,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'none';
                 updateAnalytics();
+                restoreTasks();
             }
         };
 
@@ -448,6 +523,7 @@
                 totalFocusTime = users[username].totalFocusTime || 0;
                 totalDistractions = users[username].totalDistractions || 0;
                 totalVideosWatched = users[username].totalVideosWatched || 0;
+                tasks = users[username].tasks || [];
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
@@ -455,6 +531,7 @@
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
+                restoreTasks();
             } else {
                 alert('Invalid username or password');
             }
@@ -467,7 +544,7 @@
             if (users[username]) {
                 alert('Username already exists');
             } else if (username && password) {
-                users[username] = { password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0 };
+                users[username] = { password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0, tasks: [] };
                 localStorage.setItem('users', JSON.stringify(users));
                 isSignedIn = true;
                 currentUser = username;
@@ -475,6 +552,7 @@
                 totalFocusTime = 0;
                 totalDistractions = 0;
                 totalVideosWatched = 0;
+                tasks = [];
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
@@ -482,6 +560,7 @@
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
+                restoreTasks();
             } else {
                 alert('Please enter a username and password');
             }
@@ -537,6 +616,89 @@
                 input.required = true;
                 container.appendChild(input);
                 urlInputs.appendChild(container);
+            }
+        }
+
+        function addTask() {
+            const tasksDiv = document.getElementById('tasks');
+            const container = document.createElement('div');
+            container.className = 'task-container';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'task-check';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'task-text';
+            input.placeholder = 'Enter a task';
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'X';
+            removeBtn.onclick = () => removeTask(removeBtn);
+            container.appendChild(checkbox);
+            container.appendChild(input);
+            container.appendChild(removeBtn);
+            tasksDiv.appendChild(container);
+        }
+
+        function removeTask(button) {
+            const tasksDiv = document.getElementById('tasks');
+            if (tasksDiv.children.length > 1) {
+                tasksDiv.removeChild(button.parentElement);
+            }
+        }
+
+        function restoreTasks() {
+            const tasksDiv = document.getElementById('tasks');
+            tasksDiv.innerHTML = '';
+            if (tasks.length === 0) {
+                addTask();
+            } else {
+                tasks.forEach(task => {
+                    const container = document.createElement('div');
+                    container.className = 'task-container';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'task-check';
+                    checkbox.checked = task.completed;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'task-text';
+                    input.value = task.text;
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = 'X';
+                    removeBtn.onclick = () => removeTask(removeBtn);
+                    container.appendChild(checkbox);
+                    container.appendChild(input);
+                    container.appendChild(removeBtn);
+                    tasksDiv.appendChild(container);
+                });
+            }
+        }
+
+        function saveTasks() {
+            const taskContainers = document.querySelectorAll('.task-container');
+            tasks = Array.from(taskContainers).map(container => {
+                const checkbox = container.querySelector('.task-check');
+                const input = container.querySelector('.task-text');
+                return {
+                    text: input.value.trim(),
+                    completed: checkbox.checked
+                };
+            }).filter(task => task.text !== '');
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            if (isSignedIn && currentUser) {
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                users[currentUser].tasks = tasks;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+            alert('To-Do List saved!');
+        }
+
+        function toggleTodo() {
+            const todoList = document.getElementById('todoList');
+            if (todoList.style.display === 'block') {
+                todoList.style.display = 'none';
+            } else {
+                todoList.style.display = 'block';
             }
         }
 
@@ -678,6 +840,7 @@
                 users[currentUser].totalFocusTime = totalFocusTime;
                 users[currentUser].totalDistractions = totalDistractions;
                 users[currentUser].totalVideosWatched = totalVideosWatched;
+                users[currentUser].tasks = tasks;
                 localStorage.setItem('users', JSON.stringify(users));
             }
         }
@@ -814,7 +977,7 @@
                 } else {
                     alert(`Stay focused! Distractions: ${distractionCount}`);
                 }
-                focusAudio.loop = true; // Ensure looping is enabled
+                focusAudio.loop = true;
                 focusAudio.play().catch(error => {
                     console.error('Error playing audio:', error);
                 });
@@ -878,11 +1041,13 @@
                 totalFocusTime = users[currentUser].totalFocusTime || 0;
                 totalDistractions = users[currentUser].totalDistractions || 0;
                 totalVideosWatched = users[currentUser].totalVideosWatched || 0;
+                tasks = users[currentUser].tasks || [];
             } else {
                 points = 0;
                 totalFocusTime = 0;
                 totalDistractions = 0;
                 totalVideosWatched = 0;
+                tasks = [];
             }
             isFocusModeActive = false;
             timerMode = 'Focus Time';
@@ -908,7 +1073,9 @@
             urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
             updateAnalytics();
             populatePlaylistSelect();
+            restoreTasks();
             document.getElementById('analytics').style.display = 'none';
+            document.getElementById('todoList').style.display = 'none';
         }
     </script>
 </body>
