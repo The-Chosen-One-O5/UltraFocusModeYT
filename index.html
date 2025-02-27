@@ -418,29 +418,6 @@
         #musicControls button:hover {
             background: #7a25c9;
         }
-        #feedbackForm {
-            margin-top: 20px;
-        }
-        #feedbackForm h3 {
-            font-size: 20px;
-            color: #8e2de2;
-            margin-bottom: 10px;
-        }
-        #feedbackForm textarea {
-            width: 100%;
-            max-width: 320px;
-            height: 80px;
-            padding: 10px;
-            border-radius: 8px;
-            background: #2a2a2a;
-            border: 2px solid #444;
-            color: #fff;
-            font-family: 'Poppins', sans-serif;
-            resize: none;
-        }
-        #feedbackForm button {
-            margin-top: 10px;
-        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -459,7 +436,7 @@
                 width: 100%;
                 margin: 10px 0;
             }
-            #inputForm input, #inputForm select, #feedbackForm textarea {
+            #inputForm input, #inputForm select {
                 max-width: 100%;
                 font-size: 14px;
                 padding: 10px;
@@ -518,7 +495,7 @@
             #tasks {
                 max-height: 200px;
             }
-            #analytics h3, #todoList h3, #feedbackForm h3 {
+            #analytics h3, #todoList h3 {
                 font-size: 16px;
             }
             #analytics p {
@@ -624,11 +601,6 @@
                 <button onclick="playMusic()">Play</button>
                 <button onclick="pauseMusic()">Pause</button>
             </div>
-        </div>
-        <div id="feedbackForm">
-            <h3>Feedback</h3>
-            <textarea id="feedbackText" placeholder="Let us know if you're facing issues"></textarea>
-            <button onclick="submitFeedback()">Submit</button>
         </div>
     </div>
     <div id="player" style="display: none;"></div>
@@ -953,6 +925,9 @@
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('clockDisplay').style.display = 'none';
+            const focusAudio = document.getElementById('focusAudio');
+            focusAudio.pause(); // Ensure audio is paused on sign-in page
+            console.log('Audio paused on sign-in page');
         }
 
         function signIn() {
@@ -976,7 +951,10 @@
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
+                const focusAudio = document.getElementById('focusAudio');
+                focusAudio.pause(); // Ensure audio is paused on input form page
                 console.log('Signed in as:', username, 'isSignedIn:', isSignedIn);
+                console.log('Audio paused on input form page');
             } else {
                 alert('Invalid username or password');
             }
@@ -1007,7 +985,10 @@
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
+                const focusAudio = document.getElementById('focusAudio');
+                focusAudio.pause(); // Ensure audio is paused on input form page
                 console.log('Account created for:', username, 'isSignedIn:', isSignedIn);
+                console.log('Audio paused on input form page');
             } else {
                 alert('Please enter a username and password');
             }
@@ -1186,6 +1167,9 @@
                 alert('No valid YouTube URLs provided. Using a default video for testing.');
             }
             console.log('Video IDs to play:', videoIds);
+
+            isFocusModeActive = true; // Set focus mode active when starting playback
+            console.log('Focus mode started, isFocusModeActive:', isFocusModeActive);
 
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('player').style.display = 'block';
@@ -1434,12 +1418,14 @@
                 focusAudio.play().catch(error => {
                     console.error('Error playing audio:', error);
                 });
+                console.log('Audio playing due to tab switch in focus mode');
                 if (musicPlayer && musicPlayer.pauseVideo) {
                     musicPlayer.pauseVideo();
                 }
                 saveState();
             } else {
                 focusAudio.pause();
+                console.log('Audio paused: tab visible or not in focus mode');
                 if (musicPlayer && musicPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     musicPlayer.playVideo();
                 }
@@ -1529,6 +1515,10 @@
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                 console.log('Updated UI elements');
 
+                const focusAudio = document.getElementById('focusAudio');
+                focusAudio.pause();
+                console.log('Audio paused on reset');
+
                 if (player) {
                     try {
                         player.destroy();
@@ -1560,17 +1550,6 @@
                 console.log('resetFocusMode completed');
             } catch (e) {
                 console.error('Error in resetFocusMode:', e);
-            }
-        }
-
-        function submitFeedback() {
-            const feedback = document.getElementById('feedbackText').value;
-            if (feedback) {
-                alert('Thank you for your feedback!');
-                console.log('User feedback:', feedback);
-                document.getElementById('feedbackText').value = '';
-            } else {
-                alert('Please enter your feedback.');
             }
         }
 
