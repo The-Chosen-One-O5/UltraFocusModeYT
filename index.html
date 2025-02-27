@@ -233,7 +233,7 @@
             color: #fff;
             border-radius: 8px;
             cursor: pointer;
-            margin: 0 5px 10px; /* Margin at the bottom to create space */
+            margin: 0 5px 10px;
         }
         #statsBtn:hover, #todoBtn:hover {
             background: #7a25c9;
@@ -254,6 +254,12 @@
         #todoList {
             top: 50px;
             width: 300px;
+            max-height: 400px; /* Fixed maximum height for scrolling */
+        }
+        #tasks {
+            overflow-y: auto; /* Enable vertical scrolling for tasks */
+            max-height: 300px; /* Max height for the scrollable task area */
+            margin-bottom: 10px; /* Space between tasks and buttons */
         }
         #analytics h3, #todoList h3 {
             font-size: 20px;
@@ -326,7 +332,7 @@
             #statsBtn, #todoBtn {
                 font-size: 12px;
                 padding: 6px 12px;
-                margin: 0 5px 5px; /* Reduced margin for smaller screens */
+                margin: 0 5px 5px;
             }
             #analytics, #todoList {
                 top: 40px;
@@ -339,6 +345,10 @@
             #todoList {
                 top: 40px;
                 width: 250px;
+                max-height: 300px; /* Reduced max height for smaller screens */
+            }
+            #tasks {
+                max-height: 200px; /* Reduced max height for tasks on smaller screens */
             }
             #analytics h3, #todoList h3 {
                 font-size: 16px;
@@ -624,12 +634,12 @@
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'task-check';
-            checkbox.onchange = () => saveTasks(); // Save when checkbox changes
+            checkbox.onchange = () => saveTasks();
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'task-text';
             input.placeholder = 'Enter a task';
-            input.onchange = () => saveTasks(); // Save when input changes
+            input.onchange = () => saveTasks();
             const removeBtn = document.createElement('button');
             removeBtn.textContent = 'X';
             removeBtn.onclick = () => removeTask(removeBtn);
@@ -643,7 +653,7 @@
             const tasksDiv = document.getElementById('tasks');
             if (tasksDiv.children.length > 1) {
                 tasksDiv.removeChild(button.parentElement);
-                saveTasks(); // Save after removal
+                saveTasks();
             }
         }
 
