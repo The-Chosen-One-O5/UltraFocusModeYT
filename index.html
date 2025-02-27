@@ -139,6 +139,22 @@
             padding: 5px;
             background: rgba(0, 0, 0, 0.5);
         }
+        #clockDisplay {
+            position: fixed;
+            top: 80px; /* Positioned below pointsDisplay (50px + 20px font + 10px gap) */
+            left: 10px;
+            color: #fff;
+            font-size: 20px;
+            font-family: 'Poppins', sans-serif;
+            z-index: 101;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            display: none; /* Hidden by default, shown on inputForm */
+        }
+        #clockDisplay span {
+            color: #8e2de2; /* AM/PM in purple to match theme */
+        }
         #progressBar {
             width: 200px;
             height: 5px;
@@ -411,6 +427,12 @@
                 bottom: 5px;
                 right: 5px;
             }
+            #pointsDisplay {
+                top: 40px; /* Adjusted to make space for clock */
+            }
+            #clockDisplay {
+                top: 70px; /* Adjusted for mobile */
+            }
         }
     </style>
 </head>
@@ -485,8 +507,7 @@
         <div id="progressBar"><div id="progressFill"></div></div>
     </div>
     <div id="pointsDisplay">Points: 0</div>
-    <button id="restartBtn" onclick="resetFocusMode()">Restart</button>
-    <div id="videoSidebar"></div>
+    <div id="clockDisplay"></div>
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
 
@@ -530,6 +551,22 @@
         const firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+        // Function to update the digital clock
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; // Convert to 12-hour format
+            const timeString = `${hours}:${minutes}:${seconds} <span>${ampm}</span>`;
+            document.getElementById('clockDisplay').innerHTML = timeString;
+        }
+
+        // Update clock every second
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call to set the clock immediately
+
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
             if (savedState) {
@@ -555,6 +592,7 @@
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                    document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
                     restoreUrlInputs();
                     populatePlaylistSelect();
                     restoreTasks();
@@ -563,6 +601,7 @@
                     document.getElementById('inputForm').style.display = 'none';
                     document.getElementById('player').style.display = 'block';
                     document.getElementById('restartBtn').style.display = 'block';
+                    document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on player page
                     populateVideoSidebar();
                     loadYouTubeAPI();
                     if (isFocusModeActive) {
@@ -576,6 +615,7 @@
                 document.getElementById('landingPage').style.display = 'block';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'none';
+                document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on landing page
                 updateAnalytics();
                 restoreTasks();
             }
@@ -653,6 +693,7 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on sign-in page
         }
 
         function signIn() {
@@ -671,6 +712,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -700,6 +742,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -878,6 +921,7 @@
 
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('player').style.display = 'block';
+            document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on player page
             enterFullscreen();
             startFocusBreakLoop();
             document.getElementById('restartBtn').style.display = 'block';
@@ -1126,7 +1170,7 @@
                 saveState();
             } else {
                 focusAudio.pause();
-                // Resume background music if it was playing
+                // Resume background music only if it was playing
                 if (musicPlayer && musicPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                     musicPlayer.playVideo();
                 }
@@ -1203,6 +1247,7 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
             document.getElementById('timerText').textContent = '';
             document.getElementById('progressFill').style.width = '0';
             document.getElementById('progressBar').style.display = 'none';
