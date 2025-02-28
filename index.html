@@ -985,7 +985,9 @@
 
         document.addEventListener('visibilitychange', () => {
             const focusAudio = document.getElementById('focusAudio');
-            if (document.hidden && isFocusModeActive) {
+            const playerDiv = document.getElementById('player');
+            // Only play audio if on the focus mode page (#player is visible), tab is hidden, and focus mode is active
+            if (document.hidden && isFocusModeActive && playerDiv.style.display === 'block') {
                 distractionCount++;
                 totalDistractions++;
                 if (isSignedIn) {
