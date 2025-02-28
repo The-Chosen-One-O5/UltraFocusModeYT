@@ -1049,12 +1049,21 @@
         });
 
         function resetFocusMode() {
+            // Stop the audio and reset its state
+            const focusAudio = document.getElementById('focusAudio');
+            focusAudio.pause();
+            focusAudio.currentTime = 0; // Reset audio to the beginning
+            focusAudio.loop = false; // Disable looping
+
+            // Clear local storage and reset state variables
             localStorage.removeItem('focusModeState');
             videoIds = [];
             currentVideoIndex = 0;
             distractionCount = 0;
             completedVideos.clear();
             allVideosCompleted = false;
+
+            // Reset user data if signed in
             if (isSignedIn) {
                 const users = JSON.parse(localStorage.getItem('users') || '{}');
                 points = users[currentUser].points || 0;
@@ -1069,10 +1078,16 @@
                 totalVideosWatched = 0;
                 tasks = [];
             }
+
+            // Reset focus mode state
             isFocusModeActive = false;
             timerMode = 'Focus Time';
             timerRemaining = focusDuration / 1000;
+
+            // Stop any running timers
             clearInterval(countdownInterval);
+
+            // Reset UI elements
             document.getElementById('inputForm').style.display = 'block';
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
@@ -1083,19 +1098,31 @@
             document.getElementById('minimizeBtn').textContent = '-';
             document.getElementById('timerText').style.display = 'block';
             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+            document.getElementById('videoSidebar').style.right = '-320px'; // Reset sidebar position
+
+            // Destroy the YouTube player if it exists
             if (player) {
                 player.destroy();
                 player = null;
                 document.getElementById('player').innerHTML = '';
             }
             document.getElementById('player').style.display = 'none';
+
+            // Reset URL inputs
             const urlInputs = document.getElementById('urlInputs');
             urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
+
+            // Update analytics and other UI elements
             updateAnalytics();
             populatePlaylistSelect();
             restoreTasks();
             document.getElementById('analytics').style.display = 'none';
             document.getElementById('todoList').style.display = 'none';
+
+            // Ensure the page exits fullscreen if active
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log('Exit fullscreen failed:', err));
+            }
         }
     </script>
 </body>
