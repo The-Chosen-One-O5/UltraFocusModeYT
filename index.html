@@ -933,7 +933,9 @@
         function startTimer(duration, mode) {
             timerRemaining = duration / 1000;
             timerMode = mode;
-            clearInterval(countdownInterval);
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
             countdownInterval = setInterval(() => {
                 if (timerRemaining <= 0) {
                     clearInterval(countdownInterval);
@@ -1085,7 +1087,10 @@
             timerRemaining = focusDuration / 1000;
 
             // Stop any running timers
-            clearInterval(countdownInterval);
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null; // Ensure timer is cleared
+            }
 
             // Reset UI elements
             document.getElementById('inputForm').style.display = 'block';
