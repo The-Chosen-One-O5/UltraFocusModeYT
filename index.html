@@ -434,7 +434,7 @@
         <div id="progressBar"><div id="progressFill"></div></div>
     </div>
     <div id="pointsDisplay">Points: 0</div>
-    <button id="restartBtn" onclick="resetFocusMode" style="display: none;">Restart</button>
+    <button id="restartBtn" onclick="resetFocusMode()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
@@ -464,7 +464,6 @@
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
         let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
 
-        // Variable to track if YouTube API is loaded
         let isYouTubeAPILoaded = false;
 
         window.onload = function() {
@@ -518,7 +517,6 @@
             }
         };
 
-        // Function to redirect to PYQs Practice site in a new tab
         function redirectToPYQs() {
             window.open('https://room.examgoal.com/', '_blank');
         }
@@ -759,11 +757,9 @@
             startFocusBreakLoop();
             saveState();
             
-            // Ensure the video plays after API is loaded
             if (isYouTubeAPILoaded) {
                 setupYouTubePlayer();
             } else {
-                // Wait for API to load if not ready
                 const checkAPI = setInterval(() => {
                     if (isYouTubeAPILoaded) {
                         clearInterval(checkAPI);
@@ -775,7 +771,7 @@
 
         function setupYouTubePlayer() {
             if (player) {
-                player.destroy(); // Destroy existing player if any
+                player.destroy();
             }
             player = new YT.Player('player', {
                 height: '100%',
@@ -786,7 +782,6 @@
                     'onStateChange': onPlayerStateChange,
                     'onError': (event) => {
                         console.error('YouTube Player Error:', event.data);
-                        // Retry loading the video
                         setTimeout(() => {
                             if (player && videoIds[currentVideoIndex]) {
                                 player.loadVideoById(videoIds[currentVideoIndex]);
@@ -1031,7 +1026,6 @@
         document.addEventListener('visibilitychange', () => {
             const focusAudio = document.getElementById('focusAudio');
             const playerDiv = document.getElementById('player');
-            // Only play audio if on the focus mode page (#player is visible), tab is hidden, and focus mode is active
             if (document.hidden && isFocusModeActive && playerDiv.style.display === 'block') {
                 distractionCount++;
                 totalDistractions++;
@@ -1094,14 +1088,13 @@
         });
 
         function resetFocusMode() {
+            console.log('Reset button clicked');
             try {
-                // Stop the audio and reset its state
                 const focusAudio = document.getElementById('focusAudio');
                 focusAudio.pause();
                 focusAudio.currentTime = 0;
                 focusAudio.loop = false;
 
-                // Clear local storage and reset state variables
                 localStorage.removeItem('focusModeState');
                 videoIds = [];
                 currentVideoIndex = 0;
@@ -1109,7 +1102,6 @@
                 completedVideos.clear();
                 allVideosCompleted = false;
 
-                // Reset user data if signed in
                 if (isSignedIn) {
                     const users = JSON.parse(localStorage.getItem('users') || '{}');
                     points = users[currentUser].points || 0;
@@ -1125,18 +1117,15 @@
                     tasks = [];
                 }
 
-                // Reset focus mode state
                 isFocusModeActive = false;
                 timerMode = 'Focus Time';
                 timerRemaining = focusDuration / 1000;
 
-                // Stop any running timers
                 if (countdownInterval) {
                     clearInterval(countdownInterval);
                     countdownInterval = null;
                 }
 
-                // Reset UI elements
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
@@ -1149,40 +1138,24 @@
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                 document.getElementById('videoSidebar').style.right = '-320px';
 
-                // Destroy the YouTube player if it exists
-                if (player) {
-                    try {
-                        player.destroy();
-                    } catch (destroyError) {
-                        console.error('Error destroying YouTube player:', destroyError);
-                    }
+                if (player && typeof player.destroy === 'function') {
+                    player.destroy();
                     player = null;
                     document.getElementById('player').innerHTML = '';
                 }
                 document.getElementById('player').style.display = 'none';
 
-                // Reset URL inputs
                 const urlInputs = document.getElementById('urlInputs');
                 urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
 
-                // Update analytics and other UI elements
                 updateAnalytics();
                 populatePlaylistSelect();
                 restoreTasks();
                 document.getElementById('analytics').style.display = 'none';
                 document.getElementById('todoList').style.display = 'none';
 
-                // Ensure the page exits fullscreen if active, with separate error handling
                 if (document.fullscreenElement) {
-                    try {
-                        document.exitFullscreen().then(() => {
-                            console.log('Successfully exited fullscreen');
-                        }).catch(err => {
-                            console.error('Error exiting fullscreen:', err);
-                        });
-                    } catch (fullscreenError) {
-                        console.error('Fullscreen exit failed:', fullscreenError);
-                    }
+                    document.exitFullscreen().catch(err => console.error('Fullscreen exit failed:', err));
                 }
             } catch (error) {
                 console.error('Error in resetFocusMode:', error);
