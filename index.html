@@ -434,7 +434,7 @@
         <div id="progressBar"><div id="progressFill"></div></div>
     </div>
     <div id="pointsDisplay">Points: 0</div>
-    <button id="restartBtn" onclick="resetFocusMode();" style="display: none;">Restart</button>
+    <button id="restartBtn" onclick="resetFocusMode" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
@@ -1151,7 +1151,11 @@
 
                 // Destroy the YouTube player if it exists
                 if (player) {
-                    player.destroy();
+                    try {
+                        player.destroy();
+                    } catch (destroyError) {
+                        console.error('Error destroying YouTube player:', destroyError);
+                    }
                     player = null;
                     document.getElementById('player').innerHTML = '';
                 }
@@ -1168,13 +1172,17 @@
                 document.getElementById('analytics').style.display = 'none';
                 document.getElementById('todoList').style.display = 'none';
 
-                // Ensure the page exits fullscreen if active
+                // Ensure the page exits fullscreen if active, with separate error handling
                 if (document.fullscreenElement) {
-                    document.exitFullscreen().then(() => {
-                        console.log('Exited fullscreen successfully');
-                    }).catch(err => {
-                        console.error('Error exiting fullscreen:', err);
-                    });
+                    try {
+                        document.exitFullscreen().then(() => {
+                            console.log('Successfully exited fullscreen');
+                        }).catch(err => {
+                            console.error('Error exiting fullscreen:', err);
+                        });
+                    } catch (fullscreenError) {
+                        console.error('Fullscreen exit failed:', fullscreenError);
+                    }
                 }
             } catch (error) {
                 console.error('Error in resetFocusMode:', error);
