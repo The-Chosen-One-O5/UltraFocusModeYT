@@ -54,7 +54,7 @@
             color: #fff;
             border-radius: 8px;
             cursor: pointer;
-            margin: 0 5px;
+            margin: 0 10px;
             transition: background 0.3s, transform 0.2s;
         }
         #landingPage button:hover, #signinForm button:hover, #inputForm button:hover {
@@ -138,22 +138,6 @@
             z-index: 101;
             padding: 5px;
             background: rgba(0, 0, 0, 0.5);
-        }
-        #clockDisplay {
-            position: fixed;
-            top: 80px; /* Positioned below pointsDisplay (50px + 20px font + 10px gap) */
-            left: 10px;
-            color: #fff;
-            font-size: 20px;
-            font-family: 'Poppins', sans-serif;
-            z-index: 101;
-            padding: 5px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            display: none; /* Hidden by default, shown on inputForm */
-        }
-        #clockDisplay span {
-            color: #8e2de2; /* AM/PM in purple to match theme */
         }
         #progressBar {
             width: 200px;
@@ -315,43 +299,6 @@
             padding: 8px 16px;
             font-size: 14px;
         }
-        /* Styling for the audio-only background music player */
-        #backgroundMusicPlayer {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            width: 280px;
-            height: 60px; /* Smaller height since no video visuals */
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #1e1e1e;
-            padding: 5px;
-        }
-        #musicPlayer {
-            display: none; /* Hidden since we only want audio */
-        }
-        #musicControls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        #musicControls button {
-            padding: 5px 10px;
-            background: #8e2de2;
-            border: none;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        #musicControls button:hover {
-            background: #7a25c9;
-        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -421,18 +368,6 @@
                 padding: 6px 12px;
                 font-size: 12px;
             }
-            #backgroundMusicPlayer {
-                width: 200px;
-                height: 50px;
-                bottom: 5px;
-                right: 5px;
-            }
-            #pointsDisplay {
-                top: 40px; /* Adjusted to make space for clock */
-            }
-            #clockDisplay {
-                top: 70px; /* Adjusted for mobile */
-            }
         }
     </style>
 </head>
@@ -491,14 +426,6 @@
         </div>
         <button onclick="addUrlInput()">Add Another URL</button>
         <button onclick="startPlayback()">Start Focus Mode</button>
-        <!-- Audio-Only Background Music Player -->
-        <div id="backgroundMusicPlayer">
-            <div id="musicPlayer" style="display: none;"></div>
-            <div id="musicControls">
-                <button onclick="playMusic()">Play</button>
-                <button onclick="pauseMusic()">Pause</button>
-            </div>
-        </div>
     </div>
     <div id="player" style="display: none;"></div>
     <div id="timerDisplay">
@@ -507,15 +434,16 @@
         <div id="progressBar"><div id="progressFill"></div></div>
     </div>
     <div id="pointsDisplay">Points: 0</div>
-    <div id="clockDisplay"></div>
+    <button id="restartBtn" onclick="resetFocusMode()">Restart</button>
+    <div id="videoSidebar"></div>
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
 
     <script src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous"></script>
+
     <script>
         let currentVideoIndex = 0;
         let player;
-        let musicPlayer;
         let videoIds = [];
         let isFocusModeActive = false;
         let countdownInterval;
@@ -535,37 +463,6 @@
         let totalVideosWatched = 0;
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
         let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-        let musicIndex = 0;
-
-        // List of Lo-Fi video IDs provided
-        const lofiVideos = [
-            'zPyg4N7bcHM', 'ehaHxdVMsbo', 'h0XI5RM_ro0', 'dQUA-thz0aM', 'WDLy6aNfkmg',
-            'nNlgn7yZD-I', 'fdf6keoAMzQ', 'sgoKS58rbiM', 'tw26TSQReAE', '7ovH5_InVlA',
-            'eFj6YnftXe1M', 'rJTw_LmDS4Y', 'xSS0cS1Jg-w', 'hEnuG1Zp0Sg', 'bVKXiFrTcCg',
-            'Cj6YnftVMzY', 'VzsAR9tQn4U'
-        ];
-
-        // Initialize YouTube IFrame API
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        // Function to update the digital clock
-        function updateClock() {
-            const now = new Date();
-            let hours = now.getHours();
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; // Convert to 12-hour format
-            const timeString = `${hours}:${minutes}:${seconds} <span>${ampm}</span>`;
-            document.getElementById('clockDisplay').innerHTML = timeString;
-        }
-
-        // Update clock every second
-        setInterval(updateClock, 1000);
-        updateClock(); // Initial call to set the clock immediately
 
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
@@ -592,7 +489,6 @@
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                    document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
                     restoreUrlInputs();
                     populatePlaylistSelect();
                     restoreTasks();
@@ -601,7 +497,6 @@
                     document.getElementById('inputForm').style.display = 'none';
                     document.getElementById('player').style.display = 'block';
                     document.getElementById('restartBtn').style.display = 'block';
-                    document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on player page
                     populateVideoSidebar();
                     loadYouTubeAPI();
                     if (isFocusModeActive) {
@@ -615,74 +510,10 @@
                 document.getElementById('landingPage').style.display = 'block';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'none';
-                document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on landing page
                 updateAnalytics();
                 restoreTasks();
             }
         };
-
-        // Initialize the YouTube players
-        function onYouTubeIframeAPIReady() {
-            // Initialize the main player for YouTube videos
-            player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
-                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
-            });
-
-            // Initialize the background music player (audio-only)
-            musicPlayer = new YT.Player('musicPlayer', {
-                height: '0',
-                width: '0',
-                videoId: lofiVideos[musicIndex],
-                playerVars: {
-                    autoplay: 0, // Disable autoplay
-                    controls: 0, // Hide default controls
-                    modestbranding: 1,
-                    rel: 0,
-                    showinfo: 0
-                },
-                events: {
-                    'onReady': onMusicPlayerReady,
-                    'onStateChange': onMusicPlayerStateChange,
-                    'onError': onMusicPlayerError
-                }
-            });
-        }
-
-        function onMusicPlayerReady(event) {
-            event.target.setVolume(20); // Set initial volume to 20%
-            // Do not auto-play; wait for user to click "Play"
-        }
-
-        function onMusicPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                musicIndex = (musicIndex + 1) % lofiVideos.length; // Move to next video, loop if at the end
-                musicPlayer.loadVideoById(lofiVideos[musicIndex]); // Load the next video
-                musicPlayer.playVideo(); // Continue playing the next video
-            }
-        }
-
-        function onMusicPlayerError(event) {
-            console.error('Background music player error:', event.data);
-            // Skip to the next video on error
-            musicIndex = (musicIndex + 1) % lofiVideos.length;
-            musicPlayer.loadVideoById(lofiVideos[musicIndex]);
-            musicPlayer.playVideo(); // Continue playing the next video
-        }
-
-        function playMusic() {
-            if (musicPlayer && musicPlayer.playVideo) {
-                musicPlayer.playVideo();
-            }
-        }
-
-        function pauseMusic() {
-            if (musicPlayer && musicPlayer.pauseVideo) {
-                musicPlayer.pauseVideo();
-            }
-        }
 
         // Function to redirect to PYQs Practice site in a new tab
         function redirectToPYQs() {
@@ -693,7 +524,6 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
-            document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on sign-in page
         }
 
         function signIn() {
@@ -712,7 +542,6 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -742,7 +571,6 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -921,7 +749,6 @@
 
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('player').style.display = 'block';
-            document.getElementById('clockDisplay').style.display = 'none'; // Hide clock on player page
             enterFullscreen();
             startFocusBreakLoop();
             document.getElementById('restartBtn').style.display = 'block';
@@ -1120,6 +947,15 @@
             }, 1000);
         }
 
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+            });
+        }
+
         function onPlayerReady(event) {
             event.target.loadVideoById(videoIds[currentVideoIndex]);
         }
@@ -1163,17 +999,9 @@
                 focusAudio.play().catch(error => {
                     console.error('Error playing audio:', error);
                 });
-                // Pause background music during distraction alert
-                if (musicPlayer && musicPlayer.pauseVideo) {
-                    musicPlayer.pauseVideo();
-                }
                 saveState();
             } else {
                 focusAudio.pause();
-                // Resume background music only if it was playing
-                if (musicPlayer && musicPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-                    musicPlayer.playVideo();
-                }
             }
         });
 
@@ -1247,7 +1075,6 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
             document.getElementById('restartBtn').style.display = 'none';
-            document.getElementById('clockDisplay').style.display = 'block'; // Show clock on inputForm
             document.getElementById('timerText').textContent = '';
             document.getElementById('progressFill').style.width = '0';
             document.getElementById('progressBar').style.display = 'none';
@@ -1258,11 +1085,6 @@
                 player.destroy();
                 player = null;
                 document.getElementById('player').innerHTML = '';
-            }
-            if (musicPlayer) {
-                musicPlayer.destroy();
-                musicPlayer = null;
-                document.getElementById('musicPlayer').innerHTML = '';
             }
             document.getElementById('player').style.display = 'none';
             const urlInputs = document.getElementById('urlInputs');
