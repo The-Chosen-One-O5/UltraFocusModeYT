@@ -318,6 +318,30 @@
             padding: 8px 16px;
             font-size: 14px;
         }
+        #lofiPlayer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 101;
+            display: none;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        #lofiPlayer button {
+            background: #8e2de2;
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        #lofiPlayer button:hover {
+            background: #7a25c9;
+        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -385,6 +409,13 @@
             }
             #todoList button:not(.task-container button) {
                 padding: 6px 12px;
+                font-size: 12px;
+            }
+            #lofiPlayer {
+                padding: 5px;
+            }
+            #lofiPlayer button {
+                padding: 3px 8px;
                 font-size: 12px;
             }
         }
@@ -456,8 +487,13 @@
     <div id="clockDisplay"></div>
     <button id="restartBtn" onclick="resetFocusMode()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
+    <div id="lofiPlayer">
+        <button id="lofiPlay" onclick="playLofi()">▶</button>
+        <button id="lofiPause" onclick="pauseLofi()">❚❚</button>
+    </div>
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
+    <audio id="lofiAudio" preload="none"></audio>
 
     <script src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous"></script>
 
@@ -485,6 +521,8 @@
         let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
 
         let isYouTubeAPILoaded = false;
+        const lofiAudio = document.getElementById('lofiAudio');
+        lofiAudio.src = "https://drive.google.com/uc?id=1gEwS7nJuUL-xp5FALgjBcaZHXIE68nn1&export=download";
 
         function updateClock() {
             const now = new Date();
@@ -492,10 +530,18 @@
             const minutes = now.getMinutes().toString().padStart(2, '0');
             const seconds = now.getSeconds().toString().padStart(2, '0');
             const period = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; // Convert to 12-hour format
+            hours = hours % 12 || 12;
             hours = hours.toString().padStart(2, '0');
             document.getElementById('clockDisplay').innerHTML = 
                 `<span class="time">${hours}:${minutes}:${seconds}</span> <span class="period">${period}</span>`;
+        }
+
+        function playLofi() {
+            lofiAudio.play();
+        }
+
+        function pauseLofi() {
+            lofiAudio.pause();
         }
 
         window.onload = function() {
@@ -524,6 +570,7 @@
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                     document.getElementById('clockDisplay').style.display = 'block';
+                    document.getElementById('lofiPlayer').style.display = 'block';
                     restoreUrlInputs();
                     populatePlaylistSelect();
                     restoreTasks();
@@ -533,7 +580,7 @@
                     document.getElementById('player').style.display = 'block';
                     document.getElementById('restartBtn').style.display = 'block';
                     document.getElementById('clockDisplay').style.display = 'none';
-                    populateVideoSidebar();
+                    document.getElementById('lofiPlayer').style.display = 'none';
                     loadYouTubeAPI();
                     if (isFocusModeActive) {
                         startTimer(timerRemaining * 1000, timerMode);
@@ -547,10 +594,10 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'none';
                 document.getElementById('clockDisplay').style.display = 'none';
+                document.getElementById('lofiPlayer').style.display = 'none';
                 updateAnalytics();
                 restoreTasks();
             }
-            // Start clock updates
             setInterval(updateClock, 1000);
             updateClock();
         };
@@ -564,6 +611,7 @@
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('clockDisplay').style.display = 'none';
+            document.getElementById('lofiPlayer').style.display = 'none';
         }
 
         function signIn() {
@@ -583,6 +631,7 @@
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                 document.getElementById('clockDisplay').style.display = 'block';
+                document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -613,6 +662,7 @@
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                 document.getElementById('clockDisplay').style.display = 'block';
+                document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -793,6 +843,8 @@
             document.getElementById('player').style.display = 'block';
             document.getElementById('restartBtn').style.display = 'block';
             document.getElementById('clockDisplay').style.display = 'none';
+            document.getElementById('lofiPlayer').style.display = 'none';
+            pauseLofi();
             populateVideoSidebar();
             loadYouTubeAPI();
             enterFullscreen();
@@ -808,6 +860,21 @@
                         setupYouTubePlayer();
                     }
                 }, 100);
+            }
+        }
+
+        function loadYouTubeAPI() {
+            if (!window.YT) {
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                tag.onload = () => {
+                    isYouTubeAPILoaded = true;
+                };
+                tag.onerror = () => {
+                    console.error('Failed to load YouTube Iframe API');
+                    alert('Failed to load YouTube API. Please check your internet connection and try again.');
+                };
+                document.body.appendChild(tag);
             }
         }
 
@@ -832,6 +899,11 @@
                     }
                 }
             });
+        }
+
+        function onYouTubeIframeAPIReady() {
+            isYouTubeAPILoaded = true;
+            setupYouTubePlayer();
         }
 
         function savePlaylist() {
@@ -875,21 +947,6 @@
             if (playlist) {
                 videoIds = playlist.videoIds;
                 restoreUrlInputs();
-            }
-        }
-
-        function loadYouTubeAPI() {
-            if (!window.YT) {
-                const tag = document.createElement('script');
-                tag.src = "https://www.youtube.com/iframe_api";
-                tag.onload = () => {
-                    isYouTubeAPILoaded = true;
-                };
-                tag.onerror = () => {
-                    console.error('Failed to load YouTube Iframe API');
-                    alert('Failed to load YouTube API. Please check your internet connection and try again.');
-                };
-                document.body.appendChild(tag);
             }
         }
 
@@ -1033,11 +1090,6 @@
             }, 1000);
         }
 
-        function onYouTubeIframeAPIReady() {
-            isYouTubeAPILoaded = true;
-            setupYouTubePlayer();
-        }
-
         function onPlayerReady(event) {
             event.target.loadVideoById(videoIds[currentVideoIndex]);
         }
@@ -1130,19 +1182,18 @@
         });
 
         function resetFocusMode() {
-            // Stop audio
             const focusAudio = document.getElementById('focusAudio');
             focusAudio.pause();
             focusAudio.currentTime = 0;
             focusAudio.loop = false;
+            pauseLofi();
+            lofiAudio.currentTime = 0;
 
-            // Clear timer
             if (countdownInterval) {
                 clearInterval(countdownInterval);
                 countdownInterval = null;
             }
 
-            // Reset variables
             videoIds = [];
             currentVideoIndex = 0;
             distractionCount = 0;
@@ -1152,7 +1203,6 @@
             timerMode = 'Focus Time';
             timerRemaining = focusDuration / 1000;
 
-            // Reset player
             if (player && typeof player.destroy === 'function') {
                 player.destroy();
                 player = null;
@@ -1160,7 +1210,6 @@
             document.getElementById('player').innerHTML = '';
             document.getElementById('player').style.display = 'none';
 
-            // Reset UI
             document.getElementById('inputForm').style.display = 'block';
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'none';
@@ -1172,12 +1221,11 @@
             document.getElementById('timerText').style.display = 'block';
             document.getElementById('videoSidebar').style.right = '-320px';
             document.getElementById('clockDisplay').style.display = 'block';
+            document.getElementById('lofiPlayer').style.display = 'block';
 
-            // Reset URL inputs
             const urlInputs = document.getElementById('urlInputs');
             urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
 
-            // Reset user data
             if (isSignedIn && currentUser) {
                 const users = JSON.parse(localStorage.getItem('users') || '{}');
                 points = users[currentUser].points || 0;
@@ -1193,19 +1241,16 @@
             }
             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
 
-            // Update UI elements
             updateAnalytics();
             populatePlaylistSelect();
             restoreTasks();
             document.getElementById('analytics').style.display = 'none';
             document.getElementById('todoList').style.display = 'none';
 
-            // Exit fullscreen
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(err => console.error('Fullscreen exit failed:', err));
             }
 
-            // Clear local storage state
             localStorage.removeItem('focusModeState');
         }
     </script>
