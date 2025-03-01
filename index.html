@@ -135,9 +135,28 @@
             left: 10px;
             color: white;
             font-size: 20px;
+            font-family: 'Poppins', sans-serif;
             z-index: 101;
             padding: 5px;
             background: rgba(0, 0, 0, 0.5);
+        }
+        #clockDisplay {
+            position: fixed;
+            top: 80px;
+            left: 10px;
+            font-size: 20px;
+            font-family: 'Arial Black', sans-serif;
+            font-weight: bold;
+            z-index: 101;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        #clockDisplay .time {
+            color: #87CEEB; /* Light blue */
+        }
+        #clockDisplay .period {
+            color: #8e2de2; /* Purple */
         }
         #progressBar {
             width: 200px;
@@ -254,12 +273,12 @@
         #todoList {
             top: 50px;
             width: 300px;
-            max-height: 400px; /* Fixed maximum height for scrolling */
+            max-height: 400px;
         }
         #tasks {
-            overflow-y: auto; /* Enable vertical scrolling for tasks */
-            max-height: 300px; /* Max height for the scrollable task area */
-            margin-bottom: 10px; /* Space between tasks and buttons */
+            overflow-y: auto;
+            max-height: 300px;
+            margin-bottom: 10px;
         }
         #analytics h3, #todoList h3 {
             font-size: 20px;
@@ -345,10 +364,10 @@
             #todoList {
                 top: 40px;
                 width: 250px;
-                max-height: 300px; /* Reduced max height for smaller screens */
+                max-height: 300px;
             }
             #tasks {
-                max-height: 200px; /* Reduced max height for tasks on smaller screens */
+                max-height: 200px;
             }
             #analytics h3, #todoList h3 {
                 font-size: 16px;
@@ -434,6 +453,7 @@
         <div id="progressBar"><div id="progressFill"></div></div>
     </div>
     <div id="pointsDisplay">Points: 0</div>
+    <div id="clockDisplay"></div>
     <button id="restartBtn" onclick="resetFocusMode()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     
@@ -466,6 +486,18 @@
 
         let isYouTubeAPILoaded = false;
 
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const period = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; // Convert to 12-hour format
+            hours = hours.toString().padStart(2, '0');
+            document.getElementById('clockDisplay').innerHTML = 
+                `<span class="time">${hours}:${minutes}:${seconds}</span> <span class="period">${period}</span>`;
+        }
+
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
             if (savedState) {
@@ -491,6 +523,7 @@
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                    document.getElementById('clockDisplay').style.display = 'block';
                     restoreUrlInputs();
                     populatePlaylistSelect();
                     restoreTasks();
@@ -499,6 +532,7 @@
                     document.getElementById('inputForm').style.display = 'none';
                     document.getElementById('player').style.display = 'block';
                     document.getElementById('restartBtn').style.display = 'block';
+                    document.getElementById('clockDisplay').style.display = 'none';
                     populateVideoSidebar();
                     loadYouTubeAPI();
                     if (isFocusModeActive) {
@@ -512,9 +546,13 @@
                 document.getElementById('landingPage').style.display = 'block';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'none';
+                document.getElementById('clockDisplay').style.display = 'none';
                 updateAnalytics();
                 restoreTasks();
             }
+            // Start clock updates
+            setInterval(updateClock, 1000);
+            updateClock();
         };
 
         function redirectToPYQs() {
@@ -525,6 +563,7 @@
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('clockDisplay').style.display = 'none';
         }
 
         function signIn() {
@@ -543,6 +582,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                document.getElementById('clockDisplay').style.display = 'block';
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -572,6 +612,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+                document.getElementById('clockDisplay').style.display = 'block';
                 updateAnalytics();
                 saveState();
                 populatePlaylistSelect();
@@ -751,6 +792,7 @@
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('player').style.display = 'block';
             document.getElementById('restartBtn').style.display = 'block';
+            document.getElementById('clockDisplay').style.display = 'none';
             populateVideoSidebar();
             loadYouTubeAPI();
             enterFullscreen();
@@ -1088,79 +1130,83 @@
         });
 
         function resetFocusMode() {
-            console.log('Reset button clicked');
-            try {
-                const focusAudio = document.getElementById('focusAudio');
-                focusAudio.pause();
-                focusAudio.currentTime = 0;
-                focusAudio.loop = false;
+            // Stop audio
+            const focusAudio = document.getElementById('focusAudio');
+            focusAudio.pause();
+            focusAudio.currentTime = 0;
+            focusAudio.loop = false;
 
-                localStorage.removeItem('focusModeState');
-                videoIds = [];
-                currentVideoIndex = 0;
-                distractionCount = 0;
-                completedVideos.clear();
-                allVideosCompleted = false;
-
-                if (isSignedIn) {
-                    const users = JSON.parse(localStorage.getItem('users') || '{}');
-                    points = users[currentUser].points || 0;
-                    totalFocusTime = users[currentUser].totalFocusTime || 0;
-                    totalDistractions = users[currentUser].totalDistractions || 0;
-                    totalVideosWatched = users[currentUser].totalVideosWatched || 0;
-                    tasks = users[currentUser].tasks || [];
-                } else {
-                    points = 0;
-                    totalFocusTime = 0;
-                    totalDistractions = 0;
-                    totalVideosWatched = 0;
-                    tasks = [];
-                }
-
-                isFocusModeActive = false;
-                timerMode = 'Focus Time';
-                timerRemaining = focusDuration / 1000;
-
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
-
-                document.getElementById('inputForm').style.display = 'block';
-                document.getElementById('landingPage').style.display = 'none';
-                document.getElementById('signinForm').style.display = 'none';
-                document.getElementById('restartBtn').style.display = 'none';
-                document.getElementById('timerText').textContent = '';
-                document.getElementById('progressFill').style.width = '0';
-                document.getElementById('progressBar').style.display = 'none';
-                document.getElementById('minimizeBtn').textContent = '-';
-                document.getElementById('timerText').style.display = 'block';
-                document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                document.getElementById('videoSidebar').style.right = '-320px';
-
-                if (player && typeof player.destroy === 'function') {
-                    player.destroy();
-                    player = null;
-                    document.getElementById('player').innerHTML = '';
-                }
-                document.getElementById('player').style.display = 'none';
-
-                const urlInputs = document.getElementById('urlInputs');
-                urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
-
-                updateAnalytics();
-                populatePlaylistSelect();
-                restoreTasks();
-                document.getElementById('analytics').style.display = 'none';
-                document.getElementById('todoList').style.display = 'none';
-
-                if (document.fullscreenElement) {
-                    document.exitFullscreen().catch(err => console.error('Fullscreen exit failed:', err));
-                }
-            } catch (error) {
-                console.error('Error in resetFocusMode:', error);
-                alert('An error occurred while resetting. Please refresh the page.');
+            // Clear timer
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
             }
+
+            // Reset variables
+            videoIds = [];
+            currentVideoIndex = 0;
+            distractionCount = 0;
+            completedVideos.clear();
+            allVideosCompleted = false;
+            isFocusModeActive = false;
+            timerMode = 'Focus Time';
+            timerRemaining = focusDuration / 1000;
+
+            // Reset player
+            if (player && typeof player.destroy === 'function') {
+                player.destroy();
+                player = null;
+            }
+            document.getElementById('player').innerHTML = '';
+            document.getElementById('player').style.display = 'none';
+
+            // Reset UI
+            document.getElementById('inputForm').style.display = 'block';
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('signinForm').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('timerText').textContent = '';
+            document.getElementById('progressFill').style.width = '0';
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('minimizeBtn').textContent = '-';
+            document.getElementById('timerText').style.display = 'block';
+            document.getElementById('videoSidebar').style.right = '-320px';
+            document.getElementById('clockDisplay').style.display = 'block';
+
+            // Reset URL inputs
+            const urlInputs = document.getElementById('urlInputs');
+            urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
+
+            // Reset user data
+            if (isSignedIn && currentUser) {
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                points = users[currentUser].points || 0;
+                totalFocusTime = users[currentUser].totalFocusTime || 0;
+                totalDistractions = users[currentUser].totalDistractions || 0;
+                totalVideosWatched = users[currentUser].totalVideosWatched || 0;
+                tasks = users[currentUser].tasks || [];
+            } else {
+                points = 0;
+                totalFocusTime = 0;
+                totalDistractions = 0;
+                totalVideosWatched = 0;
+            }
+            document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
+
+            // Update UI elements
+            updateAnalytics();
+            populatePlaylistSelect();
+            restoreTasks();
+            document.getElementById('analytics').style.display = 'none';
+            document.getElementById('todoList').style.display = 'none';
+
+            // Exit fullscreen
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.error('Fullscreen exit failed:', err));
+            }
+
+            // Clear local storage state
+            localStorage.removeItem('focusModeState');
         }
     </script>
 </body>
