@@ -158,6 +158,24 @@
         #clockDisplay .period {
             color: #8e2de2; /* Purple */
         }
+        #forestBox {
+            position: fixed;
+            top: 120px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            z-index: 101;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 8px;
+            display: none;
+        }
+        #forestBox img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
         #progressBar {
             width: 200px;
             height: 5px;
@@ -418,6 +436,11 @@
                 padding: 3px 8px;
                 font-size: 12px;
             }
+            #forestBox {
+                top: 110px;
+                width: 30px;
+                height: 30px;
+            }
         }
     </style>
 </head>
@@ -485,6 +508,9 @@
     </div>
     <div id="pointsDisplay">Points: 0</div>
     <div id="clockDisplay"></div>
+    <div id="forestBox" onclick="openForestQuest()">
+        <img src="https://as2.ftcdn.net/jpg/02/18/12/17/1000_F_218121759_I2m0ENL2H5ZMgxzdSKtQobZL5XMwEEaN.jpg" alt="Forest Quest">
+    </div>
     <button id="restartBtn" onclick="resetFocusMode()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     <div id="lofiPlayer">
@@ -544,6 +570,10 @@
             lofiAudio.pause();
         }
 
+        function openForestQuest() {
+            window.open('https://the-chosen-one-o5.github.io/ForestQuest/', '_blank');
+        }
+
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
             if (savedState) {
@@ -570,6 +600,7 @@
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                     document.getElementById('clockDisplay').style.display = 'block';
+                    document.getElementById('forestBox').style.display = 'block';
                     document.getElementById('lofiPlayer').style.display = 'block';
                     restoreUrlInputs();
                     populatePlaylistSelect();
@@ -580,6 +611,7 @@
                     document.getElementById('player').style.display = 'block';
                     document.getElementById('restartBtn').style.display = 'block';
                     document.getElementById('clockDisplay').style.display = 'none';
+                    document.getElementById('forestBox').style.display = 'none';
                     document.getElementById('lofiPlayer').style.display = 'none';
                     loadYouTubeAPI();
                     if (isFocusModeActive) {
@@ -594,6 +626,7 @@
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'none';
                 document.getElementById('clockDisplay').style.display = 'none';
+                document.getElementById('forestBox').style.display = 'none';
                 document.getElementById('lofiPlayer').style.display = 'none';
                 updateAnalytics();
                 restoreTasks();
@@ -611,6 +644,7 @@
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('clockDisplay').style.display = 'none';
+            document.getElementById('forestBox').style.display = 'none';
             document.getElementById('lofiPlayer').style.display = 'none';
         }
 
@@ -631,6 +665,7 @@
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                 document.getElementById('clockDisplay').style.display = 'block';
+                document.getElementById('forestBox').style.display = 'block';
                 document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
                 saveState();
@@ -662,6 +697,7 @@
                 document.getElementById('inputForm').style.display = 'block';
                 document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
                 document.getElementById('clockDisplay').style.display = 'block';
+                document.getElementById('forestBox').style.display = 'block';
                 document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
                 saveState();
@@ -843,6 +879,7 @@
             document.getElementById('player').style.display = 'block';
             document.getElementById('restartBtn').style.display = 'block';
             document.getElementById('clockDisplay').style.display = 'none';
+            document.getElementById('forestBox').style.display = 'none';
             document.getElementById('lofiPlayer').style.display = 'none';
             pauseLofi();
             populateVideoSidebar();
@@ -1221,6 +1258,7 @@
             document.getElementById('timerText').style.display = 'block';
             document.getElementById('videoSidebar').style.right = '-320px';
             document.getElementById('clockDisplay').style.display = 'block';
+            document.getElementById('forestBox').style.display = 'block';
             document.getElementById('lofiPlayer').style.display = 'block';
 
             const urlInputs = document.getElementById('urlInputs');
