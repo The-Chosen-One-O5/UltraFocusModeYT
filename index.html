@@ -516,7 +516,7 @@
             <p>Total Distractions: <span id="totalDistractions">0</span></p>
             <p>Videos Watched: <span id="totalVideosWatched">0</span></p>
         </div>
-        <div class="title">Enter YouTube URLs</div>
+        <div class="title">Enter YouTube URLs (Videos or Live Streams)</div>
         <div class="subtitle"></div>
         <select id="playlistSelect" onchange="loadPlaylist()">
             <option value="">Select a Playlist</option>
@@ -525,7 +525,7 @@
         <button onclick="savePlaylist()">Save Playlist</button>
         <div id="urlInputs">
             <div class="url-container">
-                <input type="text" class="youtube-url" placeholder="YouTube URL" required>
+                <input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required>
             </div>
         </div>
         <button onclick="addUrlInput()">Add Another URL</button>
@@ -755,7 +755,7 @@
             const newInput = document.createElement('input');
             newInput.type = 'text';
             newInput.className = 'youtube-url';
-            newInput.placeholder = 'YouTube URL';
+            newInput.placeholder = 'YouTube URL (Videos or Live Streams)';
             const removeBtn = document.createElement('button');
             removeBtn.textContent = 'X';
             removeBtn.onclick = () => {
@@ -775,7 +775,7 @@
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'youtube-url';
-                input.placeholder = 'YouTube URL';
+                input.placeholder = 'YouTube URL (Videos or Live Streams)';
                 input.value = `https://www.youtube.com/watch?v=${id}`;
                 container.appendChild(input);
                 if (index > 0) {
@@ -794,7 +794,7 @@
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'youtube-url';
-                input.placeholder = 'YouTube URL';
+                input.placeholder = 'YouTube URL (Videos or Live Streams)';
                 input.required = true;
                 container.appendChild(input);
                 urlInputs.appendChild(container);
@@ -892,13 +892,26 @@
             try {
                 let videoId = null;
                 const urlObj = new URL(url);
-                if (urlObj.hostname.includes("youtube.com")) {
-                    videoId = urlObj.searchParams.get("v");
-                } else if (urlObj.hostname.includes("youtu.be")) {
-                    videoId = urlObj.pathname.substring(1);
+                const hostname = urlObj.hostname.toLowerCase();
+                const pathname = urlObj.pathname;
+
+                if (hostname.includes("youtube.com")) {
+                    if (pathname.startsWith('/watch')) {
+                        videoId = urlObj.searchParams.get("v");
+                    } else if (pathname.startsWith('/live')) {
+                        videoId = pathname.split('/live/')[1]?.split('/')[0] || pathname.split('/live/')[1];
+                    }
+                } else if (hostname.includes("youtu.be")) {
+                    videoId = pathname.substring(1);
                 }
-                return videoId;
+
+                // Validate videoId (basic check for 11 characters, YouTube ID length)
+                if (videoId && videoId.length === 11) {
+                    return videoId;
+                }
+                return null;
             } catch (e) {
+                console.error('Invalid URL:', url, e);
                 return null;
             }
         }
@@ -911,7 +924,7 @@
             videoIds = urls.map(extractVideoId).filter(id => id !== null);
 
             if (videoIds.length === 0) {
-                alert('Please enter at least one valid YouTube URL');
+                alert('Please enter at least one valid YouTube URL (videos or live streams)');
                 return;
             }
 
@@ -938,6 +951,9 @@
                     }
                 }, 100);
             }
+
+            // Inform user about live stream behavior
+            alert('Note: YouTube live streams are supported! They won’t auto-advance since they don’t "end." Use the "T" key to switch videos manually.');
         }
 
         function loadYouTubeAPI() {
@@ -962,7 +978,13 @@
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
-                playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
+                playerVars: { 
+                    autoplay: 1, 
+                    controls: 1, 
+                    modestbranding: 1, 
+                    rel: 0,
+                    fs: 1 // Ensure fullscreen is available
+                },
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange,
@@ -1187,6 +1209,9 @@
                 saveState();
                 currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
                 player.loadVideoById(videoIds[currentVideoIndex]);
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                // Log whether a live stream or regular video is playing
+                player.getVideoData().isLive ? console.log('Playing a live stream') : console.log('Playing a regular video');
             }
         }
 
@@ -1302,7 +1327,7 @@
             document.getElementById('lofiPlayer').style.display = 'block';
 
             const urlInputs = document.getElementById('urlInputs');
-            urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL" required></div>';
+            urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required></div>';
 
             if (isSignedIn && currentUser) {
                 const users = JSON.parse(localStorage.getItem('users') || '{}');
