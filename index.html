@@ -111,26 +111,28 @@
             box-shadow: 0 0 5px rgba(142, 45, 226, 0.5);
         }
         #inputForm {
-            max-height: 80vh;
-            overflow-y: auto;
+            max-height: 80vh; /* Limit height to enable scrolling */
+            overflow-y: auto; /* Enable vertical scrolling */
         }
+        /* Scrollbar Styling for Webkit Browsers (Chrome, Safari, Edge) */
         #inputForm::-webkit-scrollbar {
-            width: 6px;
+            width: 6px; /* Very thin scrollbar */
         }
         #inputForm::-webkit-scrollbar-track {
-            background: #2a2a2a;
+            background: #2a2a2a; /* Match background color */
             border-radius: 3px;
         }
         #inputForm::-webkit-scrollbar-thumb {
-            background: #8e2de2;
+            background: #8e2de2; /* Purple color matching theme */
             border-radius: 3px;
         }
         #inputForm::-webkit-scrollbar-thumb:hover {
-            background: #7a25c9;
+            background: #7a25c9; /* Slightly darker purple on hover */
         }
+        /* Scrollbar Styling for Firefox */
         #inputForm {
-            scrollbar-width: thin;
-            scrollbar-color: #8e2de2 #2a2a2a;
+            scrollbar-width: thin; /* Thin scrollbar */
+            scrollbar-color: #8e2de2 #2a2a2a; /* Thumb color, Track color */
         }
         #player {
             width: 100%;
@@ -175,10 +177,10 @@
             display: none;
         }
         #clockDisplay .time {
-            color: #87CEEB;
+            color: #87CEEB; /* Light blue */
         }
         #clockDisplay .period {
-            color: #8e2de2;
+            color: #8e2de2; /* Purple */
         }
         #sitesBox {
             position: fixed;
@@ -410,45 +412,6 @@
         #lofiPlayer button:hover {
             background: #7a25c9;
         }
-        #restartConfirmation {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 104;
-            text-align: center;
-        }
-        #restartConfirmation p {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        #restartConfirmation input {
-            padding: 8px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 2px solid #444;
-            background: #2a2a2a;
-            color: #fff;
-            margin-bottom: 15px;
-            width: 100px;
-        }
-        #restartConfirmation button {
-            padding: 8px 20px;
-            font-size: 16px;
-            background: #8e2de2;
-            border: none;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 0 10px;
-        }
-        #restartConfirmation button:hover {
-            background: #7a25c9;
-        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -607,13 +570,7 @@
         <a href="https://fancy-pavlova-5affbc.netlify.app/" target="_blank">FOR BETTER POMODORO AND AESTHETICS</a>
         <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank">FOR Daily Schedule</a>
     </div>
-    <button id="restartBtn" onclick="showRestartConfirmation()" style="display: none;">Restart</button>
-    <div id="restartConfirmation" style="display: none;">
-        <p>Are you sure about it? (Type yes/no)</p>
-        <input type="text" id="restartInput" placeholder="yes/no">
-        <button onclick="confirmRestart()">Confirm</button>
-        <button onclick="cancelRestart()">Cancel</button>
-    </div>
+    <button id="restartBtn" onclick="resetFocusMode()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     <div id="lofiPlayer">
         <button id="lofiPlay" onclick="playLofi()">▶</button>
@@ -1341,40 +1298,11 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (isFocusModeActive && e.key !== 'T' && e.key !== 't') {
-                e.preventDefault(); // Block all keys except 'T' or 't' during focus time
-                console.log(`Blocked key: ${e.key}`);
-            } else if ((e.key === 'T' || e.key === 't') && document.getElementById('player').style.display === 'block') {
+            if (e.key === 'T' || e.key === 't') {
                 const videoSidebar = document.getElementById('videoSidebar');
                 videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
             }
         });
-
-        function showRestartConfirmation() {
-            if (isFocusModeActive) {
-                document.getElementById('restartConfirmation').style.display = 'block';
-                document.getElementById('restartInput').focus();
-            } else {
-                resetFocusMode(); // Allow restart without confirmation if not in focus mode
-            }
-        }
-
-        function confirmRestart() {
-            const input = document.getElementById('restartInput').value.trim().toLowerCase();
-            if (input === 'yes') {
-                document.getElementById('restartConfirmation').style.display = 'none';
-                resetFocusMode();
-            } else if (input === 'no') {
-                cancelRestart();
-            } else {
-                alert('Please type "yes" or "no"');
-            }
-        }
-
-        function cancelRestart() {
-            document.getElementById('restartConfirmation').style.display = 'none';
-            document.getElementById('restartInput').value = '';
-        }
 
         function resetFocusMode() {
             const focusAudio = document.getElementById('focusAudio');
