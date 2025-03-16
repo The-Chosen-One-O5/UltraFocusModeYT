@@ -110,6 +110,30 @@
             border-color: #8e2de2;
             box-shadow: 0 0 5px rgba(142, 45, 226, 0.5);
         }
+        #inputForm {
+            max-height: 80vh; /* Limit height to enable scrolling */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+        /* Scrollbar Styling for Webkit Browsers (Chrome, Safari, Edge) */
+        #inputForm::-webkit-scrollbar {
+            width: 6px; /* Very thin scrollbar */
+        }
+        #inputForm::-webkit-scrollbar-track {
+            background: #2a2a2a; /* Match background color */
+            border-radius: 3px;
+        }
+        #inputForm::-webkit-scrollbar-thumb {
+            background: #8e2de2; /* Purple color matching theme */
+            border-radius: 3px;
+        }
+        #inputForm::-webkit-scrollbar-thumb:hover {
+            background: #7a25c9; /* Slightly darker purple on hover */
+        }
+        /* Scrollbar Styling for Firefox */
+        #inputForm {
+            scrollbar-width: thin; /* Thin scrollbar */
+            scrollbar-color: #8e2de2 #2a2a2a; /* Thumb color, Track color */
+        }
         #player {
             width: 100%;
             max-width: 1200px;
@@ -905,7 +929,6 @@
                     videoId = pathname.substring(1);
                 }
 
-                // Validate videoId (basic check for 11 characters, YouTube ID length)
                 if (videoId && videoId.length === 11) {
                     return videoId;
                 }
@@ -952,7 +975,6 @@
                 }, 100);
             }
 
-            // Inform user about live stream behavior
             alert('Note: YouTube live streams are supported! They won’t auto-advance since they don’t "end." Use the "T" key to switch videos manually.');
         }
 
@@ -983,7 +1005,7 @@
                     controls: 1, 
                     modestbranding: 1, 
                     rel: 0,
-                    fs: 1 // Ensure fullscreen is available
+                    fs: 1
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -1210,7 +1232,6 @@
                 currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
                 player.loadVideoById(videoIds[currentVideoIndex]);
             } else if (event.data === YT.PlayerState.PLAYING) {
-                // Log whether a live stream or regular video is playing
                 player.getVideoData().isLive ? console.log('Playing a live stream') : console.log('Playing a regular video');
             }
         }
