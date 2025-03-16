@@ -177,10 +177,10 @@
             display: none;
         }
         #clockDisplay .time {
-            color: #87CEEB; /* Light blue */
+            color: #87CEEB;
         }
         #clockDisplay .period {
-            color: #8e2de2; /* Purple */
+            color: #8e2de2;
         }
         #sitesBox {
             position: fixed;
@@ -412,6 +412,84 @@
         #lofiPlayer button:hover {
             background: #7a25c9;
         }
+        #achievementOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: gold;
+            font-size: 48px;
+            font-weight: bold;
+            z-index: 104;
+            display: none;
+        }
+        #achievementLevel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 101;
+        }
+        .glow {
+            text-shadow: 0 0 10px #fff;
+        }
+        .box-glow {
+            border: 2px solid gold;
+            padding: 5px;
+            box-shadow: 0 0 10px gold;
+        }
+        .rainbow {
+            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s infinite;
+        }
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        #confirmationDialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 105;
+            display: none;
+            text-align: center;
+        }
+        #confirmationDialog p {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        #confirmationDialog button {
+            padding: 8px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #confirmBtn {
+            background: #8e2de2;
+        }
+        #confirmBtn:hover {
+            background: #7a25c9;
+        }
+        #cancelBtn {
+            background: #ff4444;
+        }
+        #cancelBtn:hover {
+            background: #cc3333;
+        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -496,6 +574,17 @@
                 width: 200px;
                 font-size: 12px;
             }
+            #confirmationDialog {
+                width: 90%;
+                padding: 15px;
+            }
+            #confirmationDialog p {
+                font-size: 16px;
+            }
+            #confirmationDialog button {
+                padding: 6px 15px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -519,6 +608,7 @@
         <p>New? <button onclick="createAccount()">Create Account</button></p>
     </div>
     <div id="inputForm" style="display: none;">
+        <div id="achievementLevel"></div>
         <button id="todoBtn" onclick="toggleTodo()">To Do List</button>
         <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
         <button id="pyqBtn" onclick="redirectToPYQs()">PYQs Practice</button>
@@ -570,11 +660,17 @@
         <a href="https://fancy-pavlova-5affbc.netlify.app/" target="_blank">FOR BETTER POMODORO AND AESTHETICS</a>
         <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank">FOR Daily Schedule</a>
     </div>
-    <button id="restartBtn" onclick="resetFocusMode()" style="display: none;">Restart</button>
+    <button id="restartBtn" onclick="showConfirmationDialog()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     <div id="lofiPlayer">
         <button id="lofiPlay" onclick="playLofi()">▶</button>
         <button id="lofiPause" onclick="pauseLofi()">❚❚</button>
+    </div>
+    <div id="achievementOverlay"></div>
+    <div id="confirmationDialog" style="display: none;">
+        <p>Are you sure you want to exit Focus Mode?</p>
+        <button id="confirmBtn" onclick="confirmReset()">Confirm</button>
+        <button id="cancelBtn" onclick="cancelReset()">Cancel</button>
     </div>
     
     <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
@@ -604,10 +700,62 @@
         let totalVideosWatched = 0;
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
         let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        let previousPoints = 0;
 
         let isYouTubeAPILoaded = false;
         const lofiAudio = document.getElementById('lofiAudio');
         lofiAudio.src = "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1";
+
+        const achievementLevels = [
+            { points: 0, level: "Mortal", color: "white" },
+            { points: 1000, level: "Soldier", color: "blue" },
+            { points: 2000, level: "Captain", color: "white", glow: true },
+            { points: 3000, level: "King", color: "orange", glow: true },
+            { points: 4000, level: "Master", color: "red", glow: true },
+            { points: 5000, level: "Gigachad", color: "gold", glow: true },
+            { points: 6000, level: "Demigod", color: "gold", glow: true, box: true },
+            { points: 7000, level: "Immortal", color: "gold", glow: true, box: true, boxGlow: true },
+            { points: 8000, level: "The Presence", color: "gold", glow: true, box: true, boxGlow: true },
+            { points: 9000, level: "The Chosen One", color: "rainbow" },
+            { points: 10000, level: "The One Above All", color: "rainbow", glow: true }
+        ];
+
+        function getAchievementLevel(points) {
+            let currentLevel = achievementLevels[0];
+            for (let level of achievementLevels) {
+                if (points >= level.points) {
+                    currentLevel = level;
+                } else {
+                    break;
+                }
+            }
+            return currentLevel;
+        }
+
+        function updateAchievementLevel() {
+            const achievementDiv = document.getElementById('achievementLevel');
+            const level = getAchievementLevel(points);
+            let style = `color: ${level.color}; font-weight: bold;`;
+            if (level.glow) style += ' text-shadow: 0 0 10px;';
+            if (level.box) style += ' border: 2px solid gold; padding: 5px;';
+            if (level.boxGlow) style += ' box-shadow: 0 0 10px gold;';
+            if (level.color === 'rainbow') {
+                achievementDiv.classList.add('rainbow');
+            } else {
+                achievementDiv.classList.remove('rainbow');
+            }
+            achievementDiv.innerHTML = level.level;
+            achievementDiv.style = style;
+        }
+
+        function showAchievementOverlay(level) {
+            const overlay = document.getElementById('achievementOverlay');
+            overlay.textContent = `YOU REACHED ${level.toUpperCase()} LEVEL`;
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 5000);
+        }
 
         function updateClock() {
             const now = new Date();
@@ -658,6 +806,7 @@
                 totalVideosWatched = state.totalVideosWatched || 0;
 
                 updateAnalytics();
+                updateAchievementLevel();
                 if (isSignedIn && currentUser) {
                     document.getElementById('landingPage').style.display = 'none';
                     document.getElementById('signinForm').style.display = 'none';
@@ -693,6 +842,7 @@
                 document.getElementById('sitesBox').style.display = 'none';
                 document.getElementById('lofiPlayer').style.display = 'none';
                 updateAnalytics();
+                updateAchievementLevel();
                 restoreTasks();
             }
             setInterval(updateClock, 1000);
@@ -732,6 +882,7 @@
                 document.getElementById('sitesBox').style.display = 'block';
                 document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
+                updateAchievementLevel();
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
@@ -764,6 +915,7 @@
                 document.getElementById('sitesBox').style.display = 'block';
                 document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
+                updateAchievementLevel();
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
@@ -1075,6 +1227,14 @@
             document.getElementById('totalFocusTime').textContent = totalFocusTime;
             document.getElementById('totalDistractions').textContent = totalDistractions;
             document.getElementById('totalVideosWatched').textContent = totalVideosWatched;
+            const currentLevel = Math.floor(points / 1000);
+            const previousLevel = Math.floor(previousPoints / 1000);
+            if (currentLevel > previousLevel) {
+                const level = getAchievementLevel(points).level;
+                showAchievementOverlay(level);
+            }
+            previousPoints = points;
+            updateAchievementLevel();
         }
 
         function toggleStats() {
@@ -1249,7 +1409,7 @@
                 if (isSignedIn) {
                     points -= 10;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                    alert(`Stay focused! -10 points. Distractions: ${distractionCount}`);
+                    alert(`Stay focused! -10 points for switching tabs. Distractions: ${distractionCount}`);
                 } else {
                     alert(`Stay focused! Distractions: ${distractionCount}`);
                 }
@@ -1259,6 +1419,14 @@
                 });
                 saveState();
             } else {
+                focusAudio.pause();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            const playerDiv = document.getElementById('player');
+            if (!document.fullscreenElement && isFocusModeActive && playerDiv.style.display === 'block') {
+                alert('Fullscreen exited. Stay focused!');
                 focusAudio.pause();
             }
         });
@@ -1303,6 +1471,23 @@
                 videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
             }
         });
+
+        function showConfirmationDialog() {
+            const dialog = document.getElementById('confirmationDialog');
+            dialog.style.display = 'block';
+        }
+
+        function confirmReset() {
+            const dialog = document.getElementById('confirmationDialog');
+            dialog.style.display = 'none';
+            resetFocusMode();
+        }
+
+        function cancelReset() {
+            const dialog = document.getElementById('confirmationDialog');
+            dialog.style.display = 'none';
+            alert('Focus Mode continues. Stay focused!');
+        }
 
         function resetFocusMode() {
             const focusAudio = document.getElementById('focusAudio');
@@ -1366,6 +1551,7 @@
             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
 
             updateAnalytics();
+            updateAchievementLevel();
             populatePlaylistSelect();
             restoreTasks();
             document.getElementById('analytics').style.display = 'none';
