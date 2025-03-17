@@ -441,6 +441,11 @@
             font-size: 16px;
             color: #fff;
             z-index: 101;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #8e2de2;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         .glow {
             text-shadow: 0 0 10px #fff;
@@ -816,7 +821,7 @@
             
             localStorage.setItem('lastFocusDate', today);
             document.getElementById('streakDisplay').innerHTML = 
-                `🔥 Focused for ${streakDays} day${streakDays === 1 ? '' : 's'}`;
+                `<span style="color: #8e2de2;">🔥</span> ${streakDays} day${streakDays === 1 ? '' : 's'} of focus`;
             
             if (isSignedIn && currentUser) {
                 const users = JSON.parse(localStorage.getItem('users') || '{}');
