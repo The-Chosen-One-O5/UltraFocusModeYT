@@ -1383,9 +1383,9 @@
                 isFocusModeActive = false;
                 totalFocusTime += 50;
                 if (isSignedIn && distractionCount === 0) {
-                    points += 100;
+                    points += 80;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                    alert('Great job! +100 points for a distraction-free session!');
+                    alert('Great job! +80 points for a distraction-free session!');
                 }
                 updateAnalytics();
                 updateStreak();
@@ -1406,9 +1406,9 @@
                         isFocusModeActive = false;
                         totalFocusTime += 50;
                         if (isSignedIn && distractionCount === 0) {
-                            points += 100;
+                            points += 80;
                             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                            alert('Great job! +100 points for a distraction-free session!');
+                            alert('Great job! +80 points for a distraction-free session!');
                         }
                         updateAnalytics();
                         saveState();
@@ -1452,9 +1452,9 @@
                 totalVideosWatched++;
                 
                 if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
-                    points += 80;
+                    points += 150;
                     document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
-                    alert('Awesome! +80 points for completing all videos!');
+                    alert('Incredible! +150 points for completing the entire playlist!');
                     allVideosCompleted = true;
                 }
 
