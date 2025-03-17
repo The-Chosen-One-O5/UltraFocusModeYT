@@ -313,7 +313,7 @@
             background: #cc3333;
         }
         #statsBtn, #todoBtn, #pyqBtn {
-            padding: 8px 16px;
+            padding: 8px;
             font-size: 14px;
             background: #8e2de2;
             border: none;
@@ -321,27 +321,52 @@
             border-radius: 8px;
             cursor: pointer;
             margin: 0 5px 10px;
+            width: 40px;
+            height: 40px;
         }
         #statsBtn:hover, #todoBtn:hover, #pyqBtn:hover {
             background: #7a25c9;
+        }
+        #todoBtn::before {
+            content: "📋";
+        }
+        #statsBtn::before {
+            content: "📊";
+        }
+        #pyqBtn::before {
+            content: "📝";
         }
         #analytics, #todoList {
             position: absolute;
             left: 10px;
             background: #1e1e1e;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             display: none;
             z-index: 100;
+            border: 1px solid #8e2de2;
         }
         #analytics {
             top: 90px;
         }
         #todoList {
             top: 50px;
-            width: 300px;
+            width: 250px;
             max-height: 400px;
+            background: #1e1e1e;
+            position: relative;
+        }
+        #todoList::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(142, 45, 226, 0.1), transparent);
+            z-index: -1;
+            pointer-events: none;
         }
         #tasks {
             overflow-y: auto;
@@ -349,9 +374,10 @@
             margin-bottom: 10px;
         }
         #analytics h3, #todoList h3 {
-            font-size: 20px;
+            font-size: 18px;
             margin-bottom: 10px;
             color: #8e2de2;
+            font-weight: 600;
         }
         #analytics p {
             font-size: 14px;
@@ -360,31 +386,94 @@
         .task-container {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            padding: 5px;
+            transition: opacity 0.5s, background 0.2s;
         }
-        .task-container input[type="checkbox"] {
+        .task-container.completed {
+            opacity: 0.5;
+        }
+        .task-container:hover {
+            background: rgba(142, 45, 226, 0.1);
+            box-shadow: 0 0 5px rgba(142, 45, 226, 0.3);
+        }
+        .task-check {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #8e2de2;
+            border-radius: 50%;
             margin-right: 10px;
-            width: 20px;
-            height: 20px;
+            cursor: pointer;
+            position: relative;
         }
-        .task-container input[type="text"] {
+        .task-check:checked::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 8px;
+            height: 8px;
+            background: #8e2de2;
+            border-radius: 50%;
+        }
+        .task-check:checked + .task-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .task-text {
             flex-grow: 1;
             margin: 0;
             max-width: none;
+            font-size: 14px;
+            font-weight: 400;
+            background: none;
+            border: none;
+            color: #fff;
+            padding: 0;
+            outline: none;
         }
         .task-container button {
             margin-left: 10px;
-            padding: 5px 10px;
+            padding: 2px 8px;
             background: #ff4444;
-            font-size: 14px;
+            font-size: 12px;
+            border-radius: 4px;
         }
         .task-container button:hover {
             background: #cc3333;
         }
-        #todoList button:not(.task-container button) {
-            margin-top: 10px;
-            padding: 8px 16px;
-            font-size: 14px;
+        #addTaskBtn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            font-size: 16px;
+            line-height: 24px;
+            text-align: center;
+        }
+        #showCompleted {
+            font-size: 12px;
+            color: #8e2de2;
+            cursor: pointer;
+            margin-top: 5px;
+            text-align: right;
+        }
+        #showCompleted:hover {
+            text-decoration: underline;
+        }
+        #todoMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: gold;
+            font-size: 20px;
+            font-weight: 600;
+            text-shadow: 0 0 10px #8e2de2;
+            display: none;
         }
         #lofiPlayer {
             position: fixed;
@@ -532,8 +621,9 @@
                 padding: 8px 16px;
             }
             #statsBtn, #todoBtn, #pyqBtn {
+                width: 36px;
+                height: 36px;
                 font-size: 12px;
-                padding: 6px 12px;
                 margin: 0 5px 5px;
             }
             #analytics, #todoList {
@@ -546,7 +636,7 @@
             }
             #todoList {
                 top: 40px;
-                width: 250px;
+                width: 200px;
                 max-height: 300px;
             }
             #tasks {
@@ -558,17 +648,28 @@
             #analytics p {
                 font-size: 12px;
             }
-            .task-container input[type="checkbox"] {
-                width: 16px;
-                height: 16px;
+            .task-check {
+                width: 14px;
+                height: 14px;
+            }
+            .task-check::after {
+                width: 6px;
+                height: 6px;
+                top: 2px;
+                left: 2px;
+            }
+            .task-text {
+                font-size: 12px;
             }
             .task-container button {
-                padding: 4px 8px;
-                font-size: 12px;
+                padding: 2px 6px;
+                font-size: 10px;
             }
-            #todoList button:not(.task-container button) {
-                padding: 6px 12px;
-                font-size: 12px;
+            #addTaskBtn {
+                width: 20px;
+                height: 20px;
+                font-size: 14px;
+                line-height: 20px;
             }
             #lofiPlayer {
                 padding: 5px;
@@ -621,20 +722,21 @@
     <div id="inputForm" style="display: none;">
         <div id="achievementLevel"></div>
         <div id="streakDisplay"></div>
-        <button id="todoBtn" onclick="toggleTodo()">To Do List</button>
-        <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
-        <button id="pyqBtn" onclick="redirectToPYQs()">PYQs Practice</button>
+        <button id="todoBtn" onclick="toggleTodo()" title="To Do List"></button>
+        <button id="statsBtn" onclick="toggleStats()" title="Your Focus Stats"></button>
+        <button id="pyqBtn" onclick="redirectToPYQs()" title="PYQs Practice"></button>
         <div id="todoList">
             <h3>To Do List</h3>
             <div id="tasks">
                 <div class="task-container">
                     <input type="checkbox" class="task-check">
-                    <input type="text" class="task-text" placeholder="Enter a task">
+                    <input type="text" class="task-text" placeholder="Enter a task (max 50 chars)" maxlength="50">
                     <button onclick="removeTask(this)">X</button>
                 </div>
             </div>
-            <button onclick="addTask()">Add Task</button>
-            <button onclick="saveTasks()">Save Notes</button>
+            <button id="addTaskBtn" onclick="addTask()">+</button>
+            <div id="showCompleted" onclick="toggleCompletedTasks()">Show Done</div>
+            <div id="todoMessage">Gigachad Mode On!</div>
         </div>
         <div id="analytics">
             <h3>Your Focus Stats</h3>
@@ -716,6 +818,7 @@
         let previousPoints = 0;
         let streakDays = 0;
         let lastFocusDate = null;
+        let showCompletedTasks = false;
 
         let isYouTubeAPILoaded = false;
         const lofiAudio = document.getElementById('lofiAudio');
@@ -1036,12 +1139,13 @@
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'task-check';
-            checkbox.onchange = () => saveTasks();
+            checkbox.onchange = () => { saveTasks(); checkAllTasksCompleted(); };
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'task-text';
-            input.placeholder = 'Enter a task';
-            input.onchange = () => saveTasks();
+            input.placeholder = 'Enter a task (max 50 chars)';
+            input.maxLength = 50;
+            input.oninput = () => saveTasks();
             const removeBtn = document.createElement('button');
             removeBtn.textContent = 'X';
             removeBtn.onclick = () => removeTask(removeBtn);
@@ -1049,6 +1153,8 @@
             container.appendChild(input);
             container.appendChild(removeBtn);
             tasksDiv.appendChild(container);
+            saveTasks();
+            updateTaskVisibility();
         }
 
         function removeTask(button) {
@@ -1056,6 +1162,7 @@
             if (tasksDiv.children.length > 1) {
                 tasksDiv.removeChild(button.parentElement);
                 saveTasks();
+                checkAllTasksCompleted();
             }
         }
 
@@ -1072,12 +1179,13 @@
                     checkbox.type = 'checkbox';
                     checkbox.className = 'task-check';
                     checkbox.checked = task.completed;
-                    checkbox.onchange = () => saveTasks();
+                    checkbox.onchange = () => { saveTasks(); checkAllTasksCompleted(); };
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.className = 'task-text';
                     input.value = task.text;
-                    input.onchange = () => saveTasks();
+                    input.maxLength = 50;
+                    input.oninput = () => saveTasks();
                     const removeBtn = document.createElement('button');
                     removeBtn.textContent = 'X';
                     removeBtn.onclick = () => removeTask(removeBtn);
@@ -1087,6 +1195,8 @@
                     tasksDiv.appendChild(container);
                 });
             }
+            updateTaskVisibility();
+            checkAllTasksCompleted();
         }
 
         function saveTasks() {
@@ -1105,6 +1215,7 @@
                 users[currentUser].tasks = tasks;
                 localStorage.setItem('users', JSON.stringify(users));
             }
+            updateTaskVisibility();
         }
 
         function toggleTodo() {
@@ -1113,6 +1224,40 @@
                 todoList.style.display = 'none';
             } else {
                 todoList.style.display = 'block';
+                updateTaskVisibility();
+            }
+        }
+
+        function toggleCompletedTasks() {
+            showCompletedTasks = !showCompletedTasks;
+            document.getElementById('showCompleted').textContent = showCompletedTasks ? 'Hide Done' : 'Show Done';
+            updateTaskVisibility();
+        }
+
+        function updateTaskVisibility() {
+            const taskContainers = document.querySelectorAll('.task-container');
+            taskContainers.forEach(container => {
+                const checkbox = container.querySelector('.task-check');
+                if (checkbox.checked && !showCompletedTasks) {
+                    container.style.display = 'none';
+                } else {
+                    container.style.display = 'flex';
+                }
+            });
+        }
+
+        function checkAllTasksCompleted() {
+            const taskContainers = document.querySelectorAll('.task-container');
+            const allCompleted = Array.from(taskContainers).every(container => 
+                container.querySelector('.task-check').checked || 
+                container.querySelector('.task-text').value.trim() === ''
+            );
+            const todoMessage = document.getElementById('todoMessage');
+            if (allCompleted && taskContainers.length > 0) {
+                todoMessage.style.display = 'block';
+                setTimeout(() => {
+                    todoMessage.style.display = 'none';
+                }, 2000);
             }
         }
 
