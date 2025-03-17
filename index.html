@@ -111,28 +111,26 @@
             box-shadow: 0 0 5px rgba(142, 45, 226, 0.5);
         }
         #inputForm {
-            max-height: 80vh; /* Limit height to enable scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: 80vh;
+            overflow-y: auto;
         }
-        /* Scrollbar Styling for Webkit Browsers (Chrome, Safari, Edge) */
         #inputForm::-webkit-scrollbar {
-            width: 6px; /* Very thin scrollbar */
+            width: 6px;
         }
         #inputForm::-webkit-scrollbar-track {
-            background: #2a2a2a; /* Match background color */
+            background: #2a2a2a;
             border-radius: 3px;
         }
         #inputForm::-webkit-scrollbar-thumb {
-            background: #8e2de2; /* Purple color matching theme */
+            background: #8e2de2;
             border-radius: 3px;
         }
         #inputForm::-webkit-scrollbar-thumb:hover {
-            background: #7a25c9; /* Slightly darker purple on hover */
+            background: #7a25c9;
         }
-        /* Scrollbar Styling for Firefox */
         #inputForm {
-            scrollbar-width: thin; /* Thin scrollbar */
-            scrollbar-color: #8e2de2 #2a2a2a; /* Thumb color, Track color */
+            scrollbar-width: thin;
+            scrollbar-color: #8e2de2 #2a2a2a;
         }
         #player {
             width: 100%;
@@ -436,6 +434,14 @@
             font-weight: bold;
             z-index: 101;
         }
+        #streakDisplay {
+            position: fixed;
+            top: 40px;
+            right: 10px;
+            font-size: 16px;
+            color: #fff;
+            z-index: 101;
+        }
         .glow {
             text-shadow: 0 0 10px #fff;
         }
@@ -609,6 +615,7 @@
     </div>
     <div id="inputForm" style="display: none;">
         <div id="achievementLevel"></div>
+        <div id="streakDisplay"></div>
         <button id="todoBtn" onclick="toggleTodo()">To Do List</button>
         <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
         <button id="pyqBtn" onclick="redirectToPYQs()">PYQs Practice</button>
@@ -637,6 +644,7 @@
         </select>
         <input type="text" id="playlistName" placeholder="Playlist Name (optional)">
         <button onclick="savePlaylist()">Save Playlist</button>
+        <button onclick="removePlaylist()">Remove Playlist</button>
         <div id="urlInputs">
             <div class="url-container">
                 <input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required>
@@ -701,6 +709,8 @@
         let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
         let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
         let previousPoints = 0;
+        let streakDays = 0;
+        let lastFocusDate = null;
 
         let isYouTubeAPILoaded = false;
         const lofiAudio = document.getElementById('lofiAudio');
@@ -786,6 +796,35 @@
             document.getElementById('sitesPopup').style.display = 'none';
         }
 
+        function updateStreak() {
+            const today = new Date().toDateString();
+            const lastDate = localStorage.getItem('lastFocusDate');
+            
+            if (lastDate) {
+                const last = new Date(lastDate);
+                const diffTime = new Date(today) - last;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 1) {
+                    streakDays++;
+                } else if (diffDays > 1) {
+                    streakDays = 1;
+                }
+            } else {
+                streakDays = 1;
+            }
+            
+            localStorage.setItem('lastFocusDate', today);
+            document.getElementById('streakDisplay').innerHTML = 
+                `🔥 Focused for ${streakDays} day${streakDays === 1 ? '' : 's'}`;
+            
+            if (isSignedIn && currentUser) {
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                users[currentUser].streakDays = streakDays;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
         window.onload = function() {
             const savedState = localStorage.getItem('focusModeState');
             if (savedState) {
@@ -804,9 +843,12 @@
                 totalFocusTime = state.totalFocusTime || 0;
                 totalDistractions = state.totalDistractions || 0;
                 totalVideosWatched = state.totalVideosWatched || 0;
+                streakDays = state.streakDays || 0;
+                lastFocusDate = state.lastFocusDate || null;
 
                 updateAnalytics();
                 updateAchievementLevel();
+                updateStreak();
                 if (isSignedIn && currentUser) {
                     document.getElementById('landingPage').style.display = 'none';
                     document.getElementById('signinForm').style.display = 'none';
@@ -843,6 +885,7 @@
                 document.getElementById('lofiPlayer').style.display = 'none';
                 updateAnalytics();
                 updateAchievementLevel();
+                updateStreak();
                 restoreTasks();
             }
             setInterval(updateClock, 1000);
@@ -874,6 +917,7 @@
                 totalDistractions = users[username].totalDistractions || 0;
                 totalVideosWatched = users[username].totalVideosWatched || 0;
                 tasks = users[username].tasks || [];
+                streakDays = users[username].streakDays || 0;
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
@@ -883,6 +927,7 @@
                 document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
                 updateAchievementLevel();
+                updateStreak();
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
@@ -898,7 +943,7 @@
             if (users[username]) {
                 alert('Username already exists');
             } else if (username && password) {
-                users[username] = { password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0, tasks: [] };
+                users[username] = { password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0, tasks: [], streakDays: 0 };
                 localStorage.setItem('users', JSON.stringify(users));
                 isSignedIn = true;
                 currentUser = username;
@@ -907,6 +952,7 @@
                 totalDistractions = 0;
                 totalVideosWatched = 0;
                 tasks = [];
+                streakDays = 0;
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('signinForm').style.display = 'none';
                 document.getElementById('inputForm').style.display = 'block';
@@ -916,6 +962,7 @@
                 document.getElementById('lofiPlayer').style.display = 'block';
                 updateAnalytics();
                 updateAchievementLevel();
+                updateStreak();
                 saveState();
                 populatePlaylistSelect();
                 restoreTasks();
@@ -1202,6 +1249,21 @@
             document.getElementById('playlistName').value = '';
         }
 
+        function removePlaylist() {
+            const playlistName = document.getElementById('playlistSelect').value;
+            if (!playlistName) {
+                alert('Please select a playlist to remove');
+                return;
+            }
+            if (confirm(`Are you sure you want to remove "${playlistName}" playlist?`)) {
+                playlists = playlists.filter(p => p.name !== playlistName);
+                localStorage.setItem('playlists', JSON.stringify(playlists));
+                populatePlaylistSelect();
+                document.getElementById('playlistSelect').value = '';
+                alert(`Playlist "${playlistName}" removed!`);
+            }
+        }
+
         function populatePlaylistSelect() {
             const select = document.getElementById('playlistSelect');
             select.innerHTML = '<option value="">Select a Playlist</option>';
@@ -1271,6 +1333,8 @@
                 totalFocusTime,
                 totalDistractions,
                 totalVideosWatched,
+                streakDays,
+                lastFocusDate: localStorage.getItem('lastFocusDate'),
                 isMinimized: document.getElementById('timerText').style.display === 'none'
             };
             localStorage.setItem('focusModeState', JSON.stringify(state));
@@ -1281,6 +1345,7 @@
                 users[currentUser].totalDistractions = totalDistractions;
                 users[currentUser].totalVideosWatched = totalVideosWatched;
                 users[currentUser].tasks = tasks;
+                users[currentUser].streakDays = streakDays;
                 localStorage.setItem('users', JSON.stringify(users));
             }
         }
@@ -1318,6 +1383,7 @@
                     alert('Great job! +100 points for a distraction-free session!');
                 }
                 updateAnalytics();
+                updateStreak();
                 saveState();
                 timerMode = 'Break Time';
                 timerRemaining = firstBreakDuration / 1000;
@@ -1466,7 +1532,8 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'T' || e.key === 't') {
+            const playerDiv = document.getElementById('player');
+            if ((e.key === 'T' || e.key === 't') && playerDiv.style.display === 'block') {
                 const videoSidebar = document.getElementById('videoSidebar');
                 videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
             }
@@ -1542,16 +1609,19 @@
                 totalDistractions = users[currentUser].totalDistractions || 0;
                 totalVideosWatched = users[currentUser].totalVideosWatched || 0;
                 tasks = users[currentUser].tasks || [];
+                streakDays = users[currentUser].streakDays || 0;
             } else {
                 points = 0;
                 totalFocusTime = 0;
                 totalDistractions = 0;
                 totalVideosWatched = 0;
+                streakDays = 0;
             }
             document.getElementById('pointsDisplay').textContent = `Points: ${points}`;
 
             updateAnalytics();
             updateAchievementLevel();
+            updateStreak();
             populatePlaylistSelect();
             restoreTasks();
             document.getElementById('analytics').style.display = 'none';
