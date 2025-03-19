@@ -370,24 +370,24 @@
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            color: #fff;
         }
         .task-line input[type="checkbox"] {
             margin-right: 10px;
             width: 16px;
             height: 16px;
         }
-        .task-line span {
+        .task-line input[type="text"] {
             flex-grow: 1;
             font-size: 14px;
             font-family: 'Poppins', sans-serif;
             color: #fff;
-            background: none;
+            background: #1e1e1e;
             border: none;
+            border-bottom: 1px solid #fff;
+            padding: 2px 0;
             outline: none;
-            padding: 0;
         }
-        .task-line span:focus {
+        .task-line input[type="text"]:focus {
             border-bottom: 1px solid #8e2de2;
         }
         .task-line .remove-task {
@@ -592,7 +592,7 @@
                 width: 14px;
                 height: 14px;
             }
-            .task-line span {
+            .task-line input[type="text"] {
                 font-size: 12px;
             }
             .task-line .remove-task {
@@ -661,7 +661,7 @@
             <div id="tasks">
                 <div class="task-line">
                     <input type="checkbox" class="task-check">
-                    <span class="task-text" contenteditable="true" data-placeholder="Write a task..."></span>
+                    <input type="text" class="task-text" placeholder="Write a task...">
                     <span class="remove-task" onclick="removeTask(this)">x</span>
                 </div>
             </div>
@@ -1068,27 +1068,27 @@
             checkbox.type = 'checkbox';
             checkbox.className = 'task-check';
             checkbox.onchange = () => saveTasks();
-            const text = document.createElement('span');
-            text.className = 'task-text';
-            text.contentEditable = true;
-            text.dataset.placeholder = 'Write a task...';
-            text.onkeydown = (e) => {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'task-text';
+            input.placeholder = 'Write a task...';
+            input.onkeydown = (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const newText = addTaskLine();
-                    newText.focus();
+                    const newInput = addTaskLine();
+                    newInput.focus();
                 }
             };
-            text.onblur = () => saveTasks();
+            input.onchange = () => saveTasks();
             const removeBtn = document.createElement('span');
             removeBtn.className = 'remove-task';
             removeBtn.textContent = 'x';
             removeBtn.onclick = () => removeTask(removeBtn);
             container.appendChild(checkbox);
-            container.appendChild(text);
+            container.appendChild(input);
             container.appendChild(removeBtn);
             tasksDiv.appendChild(container);
-            return text;
+            return input;
         }
 
         function removeTask(element) {
@@ -1106,9 +1106,9 @@
                 addTaskLine();
             } else {
                 tasks.forEach(task => {
-                    const text = addTaskLine();
-                    text.textContent = task.text;
-                    text.previousElementSibling.checked = task.completed;
+                    const input = addTaskLine();
+                    input.value = task.text;
+                    input.previousElementSibling.checked = task.completed;
                 });
             }
         }
@@ -1117,9 +1117,9 @@
             const taskLines = document.querySelectorAll('.task-line');
             tasks = Array.from(taskLines).map(line => {
                 const checkbox = line.querySelector('.task-check');
-                const text = line.querySelector('.task-text');
+                const input = line.querySelector('.task-text');
                 return {
-                    text: text.textContent.trim(),
+                    text: input.value.trim(),
                     completed: checkbox.checked
                 };
             }).filter(task => task.text !== '');
