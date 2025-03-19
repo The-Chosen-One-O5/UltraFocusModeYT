@@ -1,4 +1,4 @@
-# UltraFocusModeYT
+## UltraFocusModeYT
 # UltraFocusModeYT - Study Like a GIGACHAD! 🗿
 Hey there, fellow knowledge seeker! Welcome to UltraFocusModeYT, the ultimate tool to help you crush your study sessions without getting distracted by cat videos or that one TikTok rabbit hole. Built for students who want to level up their focus game, this web app turns YouTube into a distraction-free study buddy. Let’s break down why this is your new go-to!
 
@@ -23,7 +23,7 @@ Sign In: Create an account to track your points across sessions. Flex those numb
 # 4. Levels - Climb the Ranks Like a Legend 🌟
 Grind points to ascend through these dope levels—each one’s a milestone of your focus supremacy. Here’s the breakdown:
 
-Mortal 👶 (0 Points): You’re just starting, fam. no frills—time to step up!
+> Mortal 👶 (0 Points): You’re just starting, fam. no frills—time to step up!
 Soldier ⚔️ (1000 Points): Welcome to the battlefield! Blue text shows you’re tougher than the average newbie.
 Captain 🚢 (2000 Points): White text with a glow—command respect as you steer your focus ship!
 King 👑 (3000 Points): Orange text, glowing bright—you’re royalty now, ruling your study domain.
