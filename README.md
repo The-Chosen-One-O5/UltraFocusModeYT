@@ -23,17 +23,17 @@ Sign In: Create an account to track your points across sessions. Flex those numb
 # 4. Levels - Climb the Ranks Like a Legend 🌟
 Grind points to ascend through these dope levels—each one’s a milestone of your focus supremacy. Here’s the breakdown:
 
-Mortal 👶 (0 Points): You’re just starting, fam. no frills—time to step up!
-Soldier ⚔️ (1000 Points): Welcome to the battlefield! Blue text shows you’re tougher than the average newbie.
-Captain 🚢 (2000 Points): White text with a glow—command respect as you steer your focus ship!
-King 👑 (3000 Points): Orange text, glowing bright—you’re royalty now, ruling your study domain.
-Master 🧠 (4000 Points): Red-hot glowing text—you’ve mastered the art of focus, fam!
-Gigachad 🗿 (5000 Points): Gold text with a godly glow—the ultimate student warrior. You’re a legend!
-Demigod ⚡ (6000 Points): Gold text, glowing, with a golden box—half human, half focus deity.
-Immortal 🌌 (7000 Points): Gold text, glowing, boxed, with a golden shadow—you’re untouchable!
-The Presence 👁️‍🗨️ (8000 Points): Gold text, glowing, boxed, and shadowed—your focus is a force of nature.
-The Chosen One 🔥 (9000 Points): Rainbow text that shifts colors—you’re destined for greatness!
-The One Above All ☀️ (10000 Points): Rainbow text with a glow—the ultimate pinnacle. You’re beyond mortal limits!
+* Mortal 👶 (0 Points): You’re just starting, fam. no frills—time to step up!
+* Soldier ⚔️ (1000 Points): Welcome to the battlefield! Blue text shows you’re tougher than the average newbie.
+* Captain 🚢 (2000 Points): White text with a glow—command respect as you steer your focus ship!
+* King 👑 (3000 Points): Orange text, glowing bright—you’re royalty now, ruling your study domain.
+* Master 🧠 (4000 Points): Red-hot glowing text—you’ve mastered the art of focus, fam!
+* Gigachad 🗿 (5000 Points): Gold text with a godly glow—the ultimate student warrior. You’re a legend!
+* Demigod ⚡ (6000 Points): Gold text, glowing, with a golden box—half human, half focus deity.
+* Immortal 🌌 (7000 Points): Gold text, glowing, boxed, with a golden shadow—you’re untouchable!
+* The Presence 👁️‍🗨️ (8000 Points): Gold text, glowing, boxed, and shadowed—your focus is a force of nature.
+* The Chosen One 🔥 (9000 Points): Rainbow text that shifts colors—you’re destined for greatness!
+* The One Above All ☀️ (10000 Points): Rainbow text with a glow—the ultimate pinnacle. You’re beyond mortal limits!
 Achievement Hype: Hit a new level, and a golden overlay screams your rank for 5 seconds—pure glory!
 # 5. Streaks to Keep the Fire Burning 🔥
 Daily Streak: Focus every day, and your streak climbs. Miss a day? Back to 1. Watch that fire icon (🔥) grow with your discipline!
