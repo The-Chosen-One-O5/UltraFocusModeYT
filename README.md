@@ -68,14 +68,14 @@ Graceful Exit: Hit “Restart” to end Focus Mode, but a confirmation dialog ma
 # 16. PYQs Practice Button 📝
 Quick Access: A “PYQs Practice” button links to an external site (room.examgoal.com) for past-year questions—study smarter, not harder.
 # How to Use It 🛠️
-Hit "Get Started": Sign in or create an account to track points, streaks, levels, and stats (optional but dope).
-Drop Your URLs: Paste YouTube video or live stream links—add as many as you want!
-Save a Playlist: Name it, save it, load it later—your study vibes, preserved.
-Start Focus Mode: Click the button, go fullscreen, and let the 50-minute timer roll.
-Stay on Task: Tab away? focus.mp3 calls you out, and you lose points. Stay strong!
-Enjoy Breaks: After 50 minutes, chill for 15, then 10 after the next round. Repeat ‘til you’re a genius.
-Switch Videos: Press T to pick a new video from your sidebar on the fly.
-Track Everything: Check stats, manage tasks, climb levels, and watch your streak grow—all in one place.
+* Hit "Get Started": Sign in or create an account to track points, streaks, levels, and stats (optional but dope)
+- Drop Your URLs: Paste YouTube video or live stream links—add as many as you want!
+- Save a Playlist: Name it, save it, load it later—your study vibes, preserved.
+- Start Focus Mode: Click the button, go fullscreen, and let the 50-minute timer roll.
+- Stay on Task: Tab away? focus.mp3 calls you out, and you lose points. Stay strong!
+- Enjoy Breaks: After 50 minutes, chill for 15, then 10 after the next round. Repeat ‘til you’re a genius.
+- Switch Videos: Press T to pick a new video from your sidebar on the fly.
+- Track Everything: Check stats, manage tasks, climb levels, and watch your streak grow—all in one place.
 # Why Students Love It ❤️
 Distraction Slayer: That audio keeps you from wandering off to Reddit.
 Pomodoro Power: 50 minutes on, breaks off = max productivity without burnout.
