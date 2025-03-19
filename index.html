@@ -347,13 +347,13 @@
             width: 300px;
             max-height: 400px;
             background: #1e1e1e;
-            padding: 20px;
+            padding: 15px;
             border-radius: 5px;
             box-shadow: none;
         }
         #tasks {
             overflow-y: auto;
-            max-height: 300px;
+            max-height: 320px;
             margin-bottom: 10px;
             background: none;
         }
@@ -370,27 +370,38 @@
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            background: none;
-            border: none;
+            color: #fff;
         }
         .task-line input[type="checkbox"] {
             margin-right: 10px;
             width: 16px;
             height: 16px;
         }
-        .task-line input[type="text"] {
+        .task-line span {
             flex-grow: 1;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
             background: none;
             border: none;
-            color: #fff;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-            padding: 0;
-            margin: 0;
             outline: none;
+            padding: 0;
         }
-        .task-line input[type="text"]:focus {
+        .task-line span:focus {
             border-bottom: 1px solid #8e2de2;
+        }
+        .task-line .remove-task {
+            margin-left: 10px;
+            color: #ff4444;
+            font-size: 14px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+        }
+        .task-line .remove-task:hover {
+            color: #cc3333;
         }
         #todoList button {
             margin-top: 10px;
@@ -569,7 +580,7 @@
                 max-height: 300px;
             }
             #tasks {
-                max-height: 200px;
+                max-height: 220px;
             }
             #analytics h3, #todoList h3 {
                 font-size: 16px;
@@ -581,7 +592,10 @@
                 width: 14px;
                 height: 14px;
             }
-            .task-line input[type="text"] {
+            .task-line span {
+                font-size: 12px;
+            }
+            .task-line .remove-task {
                 font-size: 12px;
             }
             #todoList button {
@@ -647,7 +661,8 @@
             <div id="tasks">
                 <div class="task-line">
                     <input type="checkbox" class="task-check">
-                    <input type="text" class="task-text" placeholder="Write a task...">
+                    <span class="task-text" contenteditable="true" data-placeholder="Write a task..."></span>
+                    <span class="remove-task" onclick="removeTask(this)">x</span>
                 </div>
             </div>
             <button onclick="saveTasks()">Save Notes</button>
@@ -1053,22 +1068,35 @@
             checkbox.type = 'checkbox';
             checkbox.className = 'task-check';
             checkbox.onchange = () => saveTasks();
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'task-text';
-            input.placeholder = 'Write a task...';
-            input.onkeydown = (e) => {
+            const text = document.createElement('span');
+            text.className = 'task-text';
+            text.contentEditable = true;
+            text.dataset.placeholder = 'Write a task...';
+            text.onkeydown = (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    addTaskLine();
-                    tasksDiv.lastElementChild.querySelector('.task-text').focus();
+                    const newText = addTaskLine();
+                    newText.focus();
                 }
             };
-            input.onchange = () => saveTasks();
+            text.onblur = () => saveTasks();
+            const removeBtn = document.createElement('span');
+            removeBtn.className = 'remove-task';
+            removeBtn.textContent = 'x';
+            removeBtn.onclick = () => removeTask(removeBtn);
             container.appendChild(checkbox);
-            container.appendChild(input);
+            container.appendChild(text);
+            container.appendChild(removeBtn);
             tasksDiv.appendChild(container);
-            return input;
+            return text;
+        }
+
+        function removeTask(element) {
+            const tasksDiv = document.getElementById('tasks');
+            if (tasksDiv.children.length > 1) {
+                tasksDiv.removeChild(element.parentElement);
+                saveTasks();
+            }
         }
 
         function restoreTasks() {
@@ -1078,9 +1106,9 @@
                 addTaskLine();
             } else {
                 tasks.forEach(task => {
-                    const input = addTaskLine();
-                    input.value = task.text;
-                    input.previousElementSibling.checked = task.completed;
+                    const text = addTaskLine();
+                    text.textContent = task.text;
+                    text.previousElementSibling.checked = task.completed;
                 });
             }
         }
@@ -1089,9 +1117,9 @@
             const taskLines = document.querySelectorAll('.task-line');
             tasks = Array.from(taskLines).map(line => {
                 const checkbox = line.querySelector('.task-check');
-                const input = line.querySelector('.task-text');
+                const text = line.querySelector('.task-text');
                 return {
-                    text: input.value.trim(),
+                    text: text.textContent.trim(),
                     completed: checkbox.checked
                 };
             }).filter(task => task.text !== '');
