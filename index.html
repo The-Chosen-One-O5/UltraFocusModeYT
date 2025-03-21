@@ -139,6 +139,7 @@
             border-radius: 10px;
             overflow: hidden;
             display: none;
+            background: #000;
         }
         #timerDisplay {
             position: fixed;
@@ -277,6 +278,7 @@
             cursor: pointer;
             border: 2px solid transparent;
             border-radius: 8px;
+            loading: lazy; /* Lazy loading for thumbnails */
         }
         .thumbnail:hover {
             border-color: #8e2de2;
@@ -531,12 +533,12 @@
         #cancelBtn:hover {
             background: #cc3333;
         }
-        /* New Styles for Chapters/Transcript and PDF Viewer */
+        /* Updated Button Positions */
         #chaptersBtn {
             display: none;
             position: fixed;
-            top: 10px;
-            right: 60px;
+            bottom: 10px;
+            left: 10px;
             background: #8e2de2;
             padding: 10px 20px;
             border: none;
@@ -601,10 +603,10 @@
         #pdfToggle {
             display: none;
             position: fixed;
-            top: 130px;
-            left: 220px;
+            bottom: 10px;
+            right: 10px;
             background: #8e2de2;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: none;
             color: #fff;
             border-radius: 8px;
@@ -618,8 +620,9 @@
         #pdfViewer {
             display: none;
             position: fixed;
-            top: 170px;
-            left: 220px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 400px;
             height: 500px;
             background: #1e1e1e;
@@ -737,22 +740,20 @@
                 font-size: 14px;
             }
             #chaptersBtn {
-                top: 50px;
-                right: 10px;
+                bottom: 5px;
+                left: 5px;
+                padding: 8px 16px;
+            }
+            #pdfToggle {
+                bottom: 5px;
+                right: 5px;
                 padding: 8px 16px;
             }
             #transcriptModal {
                 width: 90%;
                 padding: 15px;
             }
-            #pdfToggle {
-                top: 90px;
-                left: 5px;
-                padding: 6px 12px;
-            }
             #pdfViewer {
-                top: 130px;
-                left: 5px;
                 width: 90%;
                 height: 300px;
             }
@@ -844,7 +845,6 @@
         <button id="confirmBtn" onclick="confirmReset()">Confirm</button>
         <button id="cancelBtn" onclick="cancelReset()">Cancel</button>
     </div>
-    <!-- New Elements for Chapters/Transcript and PDF Viewer -->
     <button id="chaptersBtn" onclick="showTranscriptModal()">Chapters/Transcript</button>
     <div id="transcriptModal">
         <h3>Chapters or Transcript</h3>
@@ -865,11 +865,10 @@
         <button onclick="togglePDFViewer()" style="background: #ff4444; margin-top: 10px;">Close</button>
     </div>
     
-    <audio id="focusAudio" preload="auto" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
-    <audio id="lofiAudio" preload="none" loop></audio>
+    <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loading="lazy"></audio>
+    <audio id="lofiAudio" preload="none" loop loading="lazy"></audio>
 
-    <script src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous" defer></script>
 
     <script>
         let currentVideoIndex = 0;
@@ -965,7 +964,7 @@
         }
 
         function playLofi() {
-            lofiAudio.play();
+            lofiAudio.play().catch(err => console.error('Lofi play error:', err));
         }
 
         function pauseLofi() {
@@ -1011,72 +1010,84 @@
         }
 
         window.onload = function() {
-            const savedState = localStorage.getItem('focusModeState');
-            if (savedState) {
-                const state = JSON.parse(savedState);
-                videoIds = state.videoIds || [];
-                currentVideoIndex = state.currentVideoIndex || 0;
-                distractionCount = state.distractionCount || 0;
-                points = state.points || 0;
-                timerMode = state.timerMode || 'Focus Time';
-                timerRemaining = state.timerRemaining || (focusDuration / 1000);
-                isFocusModeActive = state.isFocusModeActive || false;
-                isSignedIn = state.isSignedIn || false;
-                currentUser = state.currentUser || null;
-                completedVideos = new Set(state.completedVideos || []);
-                allVideosCompleted = state.allVideosCompleted || false;
-                totalFocusTime = state.totalFocusTime || 0;
-                totalDistractions = state.totalDistractions || 0;
-                totalVideosWatched = state.totalVideosWatched || 0;
-                streakDays = state.streakDays || 0;
-                lastFocusDate = state.lastFocusDate || null;
+            try {
+                const savedState = localStorage.getItem('focusModeState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    videoIds = state.videoIds || [];
+                    currentVideoIndex = state.currentVideoIndex || 0;
+                    distractionCount = state.distractionCount || 0;
+                    points = state.points || 0;
+                    timerMode = state.timerMode || 'Focus Time';
+                    timerRemaining = state.timerRemaining || (focusDuration / 1000);
+                    isFocusModeActive = state.isFocusModeActive || false;
+                    isSignedIn = state.isSignedIn || false;
+                    currentUser = state.currentUser || null;
+                    completedVideos = new Set(state.completedVideos || []);
+                    allVideosCompleted = state.allVideosCompleted || false;
+                    totalFocusTime = state.totalFocusTime || 0;
+                    totalDistractions = state.totalDistractions || 0;
+                    totalVideosWatched = state.totalVideosWatched || 0;
+                    streakDays = state.streakDays || 0;
+                    lastFocusDate = state.lastFocusDate || null;
 
-                updateAnalytics();
-                updateAchievementLevel();
-                updateStreak();
-                if (isSignedIn && currentUser) {
-                    document.getElementById('landingPage').style.display = 'none';
+                    updateAnalytics();
+                    updateAchievementLevel();
+                    updateStreak();
+                    if (isSignedIn && currentUser) {
+                        document.getElementById('landingPage').style.display = 'none';
+                        document.getElementById('signinForm').style.display = 'none';
+                        document.getElementById('inputForm').style.display = 'block';
+                        document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                        document.getElementById('clockDisplay').style.display = 'block';
+                        document.getElementById('sitesBox').style.display = 'block';
+                        document.getElementById('lofiPlayer').style.display = 'block';
+                        restoreUrlInputs();
+                        populatePlaylistSelect();
+                        restoreTasks();
+                    }
+                    if (videoIds.length > 0) {
+                        document.getElementById('inputForm').style.display = 'none';
+                        document.getElementById('player').style.display = 'block';
+                        document.getElementById('restartBtn').style.display = 'block';
+                        document.getElementById('chaptersBtn').style.display = 'block';
+                        document.getElementById('pdfToggle').style.display = 'block';
+                        document.getElementById('clockDisplay').style.display = 'none';
+                        document.getElementById('sitesBox').style.display = 'none';
+                        document.getElementById('lofiPlayer').style.display = 'none';
+                        loadYouTubeAPI()
+                            .then(() => {
+                                setupYouTubePlayer();
+                                if (isFocusModeActive) {
+                                    startTimer(timerRemaining * 1000, timerMode);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('YouTube API load failed:', err);
+                                alert('Failed to load video player. Please check your connection.');
+                            });
+                        if (state.isMinimized) {
+                            toggleMinimize();
+                        }
+                    }
+                } else {
+                    document.getElementById('landingPage').style.display = 'block';
                     document.getElementById('signinForm').style.display = 'none';
-                    document.getElementById('inputForm').style.display = 'block';
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-                    document.getElementById('clockDisplay').style.display = 'block';
-                    document.getElementById('sitesBox').style.display = 'block';
-                    document.getElementById('lofiPlayer').style.display = 'block';
-                    restoreUrlInputs();
-                    populatePlaylistSelect();
-                    restoreTasks();
-                }
-                if (videoIds.length > 0) {
                     document.getElementById('inputForm').style.display = 'none';
-                    document.getElementById('player').style.display = 'block';
-                    document.getElementById('restartBtn').style.display = 'block';
-                    document.getElementById('chaptersBtn').style.display = 'block';
-                    document.getElementById('pdfToggle').style.display = 'block';
                     document.getElementById('clockDisplay').style.display = 'none';
                     document.getElementById('sitesBox').style.display = 'none';
                     document.getElementById('lofiPlayer').style.display = 'none';
-                    loadYouTubeAPI();
-                    if (isFocusModeActive) {
-                        startTimer(timerRemaining * 1000, timerMode);
-                    }
-                    if (state.isMinimized) {
-                        toggleMinimize();
-                    }
+                    updateAnalytics();
+                    updateAchievementLevel();
+                    updateStreak();
+                    restoreTasks();
                 }
-            } else {
-                document.getElementById('landingPage').style.display = 'block';
-                document.getElementById('signinForm').style.display = 'none';
-                document.getElementById('inputForm').style.display = 'none';
-                document.getElementById('clockDisplay').style.display = 'none';
-                document.getElementById('sitesBox').style.display = 'none';
-                document.getElementById('lofiPlayer').style.display = 'none';
-                updateAnalytics();
-                updateAchievementLevel();
-                updateStreak();
-                restoreTasks();
+                setInterval(updateClock, 1000);
+                updateClock();
+            } catch (err) {
+                console.error('Page load error:', err);
+                alert('An error occurred while loading the page. Please refresh.');
             }
-            setInterval(updateClock, 1000);
-            updateClock();
         };
 
         function redirectToPYQs() {
@@ -1093,68 +1104,78 @@
         }
 
         function signIn() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            if (users[username] && users[username].password === password) {
-                isSignedIn = true;
-                currentUser = username;
-                points = users[username].points || 0;
-                totalFocusTime = users[username].totalFocusTime || 0;
-                totalDistractions = users[username].totalDistractions || 0;
-                totalVideosWatched = users[username].totalVideosWatched || 0;
-                tasks = users[username].tasks || [];
-                streakDays = users[username].streakDays || 0;
-                document.getElementById('landingPage').style.display = 'none';
-                document.getElementById('signinForm').style.display = 'none';
-                document.getElementById('inputForm').style.display = 'block';
-                document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-                document.getElementById('clockDisplay').style.display = 'block';
-                document.getElementById('sitesBox').style.display = 'block';
-                document.getElementById('lofiPlayer').style.display = 'block';
-                updateAnalytics();
-                updateAchievementLevel();
-                updateStreak();
-                saveState();
-                populatePlaylistSelect();
-                restoreTasks();
-            } else {
-                alert('Invalid username or password');
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                if (users[username] && users[username].password === password) {
+                    isSignedIn = true;
+                    currentUser = username;
+                    points = users[username].points || 0;
+                    totalFocusTime = users[username].totalFocusTime || 0;
+                    totalDistractions = users[username].totalDistractions || 0;
+                    totalVideosWatched = users[username].totalVideosWatched || 0;
+                    tasks = users[username].tasks || [];
+                    streakDays = users[username].streakDays || 0;
+                    document.getElementById('landingPage').style.display = 'none';
+                    document.getElementById('signinForm').style.display = 'none';
+                    document.getElementById('inputForm').style.display = 'block';
+                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                    document.getElementById('clockDisplay').style.display = 'block';
+                    document.getElementById('sitesBox').style.display = 'block';
+                    document.getElementById('lofiPlayer').style.display = 'block';
+                    updateAnalytics();
+                    updateAchievementLevel();
+                    updateStreak();
+                    saveState();
+                    populatePlaylistSelect();
+                    restoreTasks();
+                } else {
+                    alert('Invalid username or password');
+                }
+            } catch (err) {
+                console.error('Sign-in error:', err);
+                alert('Error during sign-in. Please try again.');
             }
         }
 
         function createAccount() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            if (users[username]) {
-                alert('Username already exists');
-            } else if (username && password) {
-                users[username] = { password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0, tasks: [], streakDays: 0 };
-                localStorage.setItem('users', JSON.stringify(users));
-                isSignedIn = true;
-                currentUser = username;
-                points = 0;
-                totalFocusTime = 0;
-                totalDistractions = 0;
-                totalVideosWatched = 0;
-                tasks = [];
-                streakDays = 0;
-                document.getElementById('landingPage').style.display = 'none';
-                document.getElementById('signinForm').style.display = 'none';
-                document.getElementById('inputForm').style.display = 'block';
-                document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-                document.getElementById('clockDisplay').style.display = 'block';
-                document.getElementById('sitesBox').style.display = 'block';
-                document.getElementById('lofiPlayer').style.display = 'block';
-                updateAnalytics();
-                updateAchievementLevel();
-                updateStreak();
-                saveState();
-                populatePlaylistSelect();
-                restoreTasks();
-            } else {
-                alert('Please enter a username and password');
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                if (users[username]) {
+                    alert('Username already exists');
+                } else if (username && password) {
+                    users[username] = { password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0, tasks: [], streakDays: 0 };
+                    localStorage.setItem('users', JSON.stringify(users));
+                    isSignedIn = true;
+                    currentUser = username;
+                    points = 0;
+                    totalFocusTime = 0;
+                    totalDistractions = 0;
+                    totalVideosWatched = 0;
+                    tasks = [];
+                    streakDays = 0;
+                    document.getElementById('landingPage').style.display = 'none';
+                    document.getElementById('signinForm').style.display = 'none';
+                    document.getElementById('inputForm').style.display = 'block';
+                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                    document.getElementById('clockDisplay').style.display = 'block';
+                    document.getElementById('sitesBox').style.display = 'block';
+                    document.getElementById('lofiPlayer').style.display = 'block';
+                    updateAnalytics();
+                    updateAchievementLevel();
+                    updateStreak();
+                    saveState();
+                    populatePlaylistSelect();
+                    restoreTasks();
+                } else {
+                    alert('Please enter a username and password');
+                }
+            } catch (err) {
+                console.error('Account creation error:', err);
+                alert('Error creating account. Please try again.');
             }
         }
 
@@ -1311,7 +1332,7 @@
                 if (videoId && videoId.length === 11) {
                     return videoId;
                 }
-                return null;
+                throw new Error('Invalid YouTube URL');
             } catch (e) {
                 console.error('Invalid URL:', url, e);
                 return null;
@@ -1319,130 +1340,147 @@
         }
 
         function startPlayback() {
-            const urlInputs = document.querySelectorAll('.youtube-url');
-            const urls = Array.from(urlInputs)
-                .map(input => input.value.trim())
-                .filter(url => url !== '');
-            videoIds = urls.map(extractVideoId).filter(id => id !== null);
+            try {
+                const urlInputs = document.querySelectorAll('.youtube-url');
+                const urls = Array.from(urlInputs)
+                    .map(input => input.value.trim())
+                    .filter(url => url !== '');
+                videoIds = urls.map(extractVideoId).filter(id => id !== null);
 
-            if (videoIds.length === 0) {
-                alert('Please enter at least one valid YouTube URL (videos or live streams)');
-                return;
-            }
+                if (videoIds.length === 0) {
+                    alert('Please enter at least one valid YouTube URL (videos or live streams)');
+                    return;
+                }
 
-            document.getElementById('inputForm').style.display = 'none';
-            document.getElementById('player').style.display = 'block';
-            document.getElementById('restartBtn').style.display = 'block';
-            document.getElementById('chaptersBtn').style.display = 'block';
-            document.getElementById('pdfToggle').style.display = 'block';
-            document.getElementById('clockDisplay').style.display = 'none';
-            document.getElementById('sitesBox').style.display = 'none';
-            document.getElementById('lofiPlayer').style.display = 'none';
-            pauseLofi();
-            populateVideoSidebar();
-            loadYouTubeAPI();
-            enterFullscreen();
-            startFocusBreakLoop();
-            saveState();
-            
-            if (isYouTubeAPILoaded) {
-                setupYouTubePlayer();
-            } else {
-                const checkAPI = setInterval(() => {
-                    if (isYouTubeAPILoaded) {
-                        clearInterval(checkAPI);
+                document.getElementById('inputForm').style.display = 'none';
+                document.getElementById('player').style.display = 'block';
+                document.getElementById('restartBtn').style.display = 'block';
+                document.getElementById('chaptersBtn').style.display = 'block';
+                document.getElementById('pdfToggle').style.display = 'block';
+                document.getElementById('clockDisplay').style.display = 'none';
+                document.getElementById('sitesBox').style.display = 'none';
+                document.getElementById('lofiPlayer').style.display = 'none';
+                pauseLofi();
+                populateVideoSidebar();
+                loadYouTubeAPI()
+                    .then(() => {
                         setupYouTubePlayer();
-                    }
-                }, 100);
-            }
+                        enterFullscreen();
+                        startFocusBreakLoop();
+                        saveState();
+                    })
+                    .catch(err => {
+                        console.error('Playback start error:', err);
+                        alert('Failed to start video playback. Please check your connection and try again.');
+                        resetFocusMode();
+                    });
 
-            alert('Note: YouTube live streams are supported! They won’t auto-advance since they don’t "end." Use the "T" key to switch videos manually.');
+                alert('Note: Use "T" to toggle video sidebar. Live streams won’t auto-advance.');
+            } catch (err) {
+                console.error('Start playback error:', err);
+                alert('An error occurred starting Focus Mode. Please try again.');
+            }
         }
 
         function loadYouTubeAPI() {
-            if (!window.YT) {
+            return new Promise((resolve, reject) => {
+                if (window.YT && window.YT.Player) {
+                    isYouTubeAPILoaded = true;
+                    resolve();
+                    return;
+                }
                 const tag = document.createElement('script');
                 tag.src = "https://www.youtube.com/iframe_api";
+                tag.async = true;
                 tag.onload = () => {
                     isYouTubeAPILoaded = true;
+                    window.onYouTubeIframeAPIReady = () => resolve();
                 };
                 tag.onerror = () => {
-                    console.error('Failed to load YouTube Iframe API');
-                    alert('Failed to load YouTube API. Please check your internet connection and try again.');
+                    reject(new Error('Failed to load YouTube API'));
                 };
                 document.body.appendChild(tag);
-            }
-        }
-
-        function setupYouTubePlayer() {
-            if (player) {
-                player.destroy();
-            }
-            player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                playerVars: { 
-                    autoplay: 1, 
-                    controls: 1, 
-                    modestbranding: 1, 
-                    rel: 0,
-                    fs: 1
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange,
-                    'onError': (event) => {
-                        console.error('YouTube Player Error:', event.data);
-                        setTimeout(() => {
-                            if (player && videoIds[currentVideoIndex]) {
-                                player.loadVideoById(videoIds[currentVideoIndex]);
-                            }
-                        }, 1000);
-                    }
-                }
             });
         }
 
-        function onYouTubeIframeAPIReady() {
-            isYouTubeAPILoaded = true;
-            setupYouTubePlayer();
+        function setupYouTubePlayer() {
+            try {
+                if (player) {
+                    player.destroy();
+                }
+                player = new YT.Player('player', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: videoIds[currentVideoIndex],
+                    playerVars: { 
+                        autoplay: 1, 
+                        controls: 1, 
+                        modestbranding: 1, 
+                        rel: 0,
+                        fs: 1
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange,
+                        'onError': (event) => {
+                            console.error('YouTube Player Error:', event.data);
+                            alert('Error loading video. Trying next video...');
+                            currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
+                            player.loadVideoById(videoIds[currentVideoIndex]);
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error('Player setup error:', err);
+                alert('Failed to set up video player. Please try again.');
+            }
         }
 
         function savePlaylist() {
-            const playlistName = document.getElementById('playlistName').value.trim();
-            if (!playlistName) {
-                alert('Please enter a playlist name');
-                return;
+            try {
+                const playlistName = document.getElementById('playlistName').value.trim();
+                if (!playlistName) {
+                    alert('Please enter a playlist name');
+                    return;
+                }
+                const urlInputs = document.querySelectorAll('.youtube-url');
+                const urls = Array.from(urlInputs)
+                    .map(input => input.value.trim())
+                    .filter(url => url !== '');
+                const videoIdsForPlaylist = urls.map(extractVideoId).filter(id => id !== null);
+                if (videoIdsForPlaylist.length === 0) {
+                    alert('Please enter at least one valid YouTube URL to save a playlist');
+                    return;
+                }
+                playlists = playlists.filter(p => p.name !== playlistName);
+                playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist });
+                localStorage.setItem('playlists', JSON.stringify(playlists));
+                populatePlaylistSelect();
+                alert(`Playlist "${playlistName}" saved!`);
+                document.getElementById('playlistName').value = '';
+            } catch (err) {
+                console.error('Save playlist error:', err);
+                alert('Error saving playlist. Please try again.');
             }
-            const urlInputs = document.querySelectorAll('.youtube-url');
-            const urls = Array.from(urlInputs)
-                .map(input => input.value.trim())
-                .filter(url => url !== '');
-            const videoIdsForPlaylist = urls.map(extractVideoId).filter(id => id !== null);
-            if (videoIdsForPlaylist.length === 0) {
-                alert('Please enter at least one valid YouTube URL to save a playlist');
-                return;
-            }
-            playlists = playlists.filter(p => p.name !== playlistName);
-            playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist });
-            localStorage.setItem('playlists', JSON.stringify(playlists));
-            populatePlaylistSelect();
-            alert(`Playlist "${playlistName}" saved!`);
-            document.getElementById('playlistName').value = '';
         }
 
         function removePlaylist() {
-            const playlistName = document.getElementById('playlistSelect').value;
-            if (!playlistName) {
-                alert('Please select a playlist to remove');
-                return;
-            }
-            if (confirm(`Are you sure you want to remove "${playlistName}" playlist?`)) {
-                playlists = playlists.filter(p => p.name !== playlistName);
-                localStorage.setItem('playlists', JSON.stringify(playlists));
-                populatePlaylistSelect();
-                document.getElementById('playlistSelect').value = '';
-                alert(`Playlist "${playlistName}" removed!`);
+            try {
+                const playlistName = document.getElementById('playlistSelect').value;
+                if (!playlistName) {
+                    alert('Please select a playlist to remove');
+                    return;
+                }
+                if (confirm(`Are you sure you want to remove "${playlistName}" playlist?`)) {
+                    playlists = playlists.filter(p => p.name !== playlistName);
+                    localStorage.setItem('playlists', JSON.stringify(playlists));
+                    populatePlaylistSelect();
+                    document.getElementById('playlistSelect').value = '';
+                    alert(`Playlist "${playlistName}" removed!`);
+                }
+            } catch (err) {
+                console.error('Remove playlist error:', err);
+                alert('Error removing playlist. Please try again.');
             }
         }
 
@@ -1458,12 +1496,17 @@
         }
 
         function loadPlaylist() {
-            const playlistName = document.getElementById('playlistSelect').value;
-            if (!playlistName) return;
-            const playlist = playlists.find(p => p.name === playlistName);
-            if (playlist) {
-                videoIds = playlist.videoIds;
-                restoreUrlInputs();
+            try {
+                const playlistName = document.getElementById('playlistSelect').value;
+                if (!playlistName) return;
+                const playlist = playlists.find(p => p.name === playlistName);
+                if (playlist) {
+                    videoIds = playlist.videoIds;
+                    restoreUrlInputs();
+                }
+            } catch (err) {
+                console.error('Load playlist error:', err);
+                alert('Error loading playlist. Please try again.');
             }
         }
 
@@ -1492,43 +1535,47 @@
         }
 
         function saveState() {
-            const timerText = document.getElementById('timerText').textContent;
-            const timerMatch = timerText.match(/^(.*?): (\d+) min (\d+) sec$/);
-            let remaining = timerRemaining;
-            let mode = timerMode;
-            if (timerMatch) {
-                mode = timerMatch[1];
-                remaining = (parseInt(timerMatch[2]) * 60) + parseInt(timerMatch[3]);
-            }
-            const state = {
-                videoIds,
-                currentVideoIndex,
-                distractionCount,
-                points,
-                timerMode: mode,
-                timerRemaining: remaining,
-                isFocusModeActive,
-                isSignedIn,
-                currentUser,
-                completedVideos: Array.from(completedVideos),
-                allVideosCompleted,
-                totalFocusTime,
-                totalDistractions,
-                totalVideosWatched,
-                streakDays,
-                lastFocusDate: localStorage.getItem('lastFocusDate'),
-                isMinimized: document.getElementById('timerText').style.display === 'none'
-            };
-            localStorage.setItem('focusModeState', JSON.stringify(state));
-            if (isSignedIn && currentUser) {
-                const users = JSON.parse(localStorage.getItem('users') || '{}');
-                users[currentUser].points = points;
-                users[currentUser].totalFocusTime = totalFocusTime;
-                users[currentUser].totalDistractions = totalDistractions;
-                users[currentUser].totalVideosWatched = totalVideosWatched;
-                users[currentUser].tasks = tasks;
-                users[currentUser].streakDays = streakDays;
-                localStorage.setItem('users', JSON.stringify(users));
+            try {
+                const timerText = document.getElementById('timerText').textContent;
+                const timerMatch = timerText.match(/^(.*?): (\d+) min (\d+) sec$/);
+                let remaining = timerRemaining;
+                let mode = timerMode;
+                if (timerMatch) {
+                    mode = timerMatch[1];
+                    remaining = (parseInt(timerMatch[2]) * 60) + parseInt(timerMatch[3]);
+                }
+                const state = {
+                    videoIds,
+                    currentVideoIndex,
+                    distractionCount,
+                    points,
+                    timerMode: mode,
+                    timerRemaining: remaining,
+                    isFocusModeActive,
+                    isSignedIn,
+                    currentUser,
+                    completedVideos: Array.from(completedVideos),
+                    allVideosCompleted,
+                    totalFocusTime,
+                    totalDistractions,
+                    totalVideosWatched,
+                    streakDays,
+                    lastFocusDate: localStorage.getItem('lastFocusDate'),
+                    isMinimized: document.getElementById('timerText').style.display === 'none'
+                };
+                localStorage.setItem('focusModeState', JSON.stringify(state));
+                if (isSignedIn && currentUser) {
+                    const users = JSON.parse(localStorage.getItem('users') || '{}');
+                    users[currentUser].points = points;
+                    users[currentUser].totalFocusTime = totalFocusTime;
+                    users[currentUser].totalDistractions = totalDistractions;
+                    users[currentUser].totalVideosWatched = totalVideosWatched;
+                    users[currentUser].tasks = tasks;
+                    users[currentUser].streakDays = streakDays;
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+            } catch (err) {
+                console.error('Save state error:', err);
             }
         }
 
@@ -1536,7 +1583,7 @@
             const videoSidebar = document.getElementById('videoSidebar');
             videoSidebar.innerHTML = videoIds.map((id, index) => 
                 `<img class="thumbnail" src="https://img.youtube.com/vi/${id}/0.jpg" 
-                      onclick="changeVideo('${id}', ${index})" alt="Video ${index + 1}">`
+                      onclick="changeVideo('${id}', ${index})" alt="Video ${index + 1}" loading="lazy">`
             ).join('');
         }
 
@@ -1620,27 +1667,36 @@
         }
 
         function onPlayerReady(event) {
-            event.target.loadVideoById(videoIds[currentVideoIndex]);
+            try {
+                event.target.playVideo();
+            } catch (err) {
+                console.error('Player ready error:', err);
+                alert('Error starting video. Please try again.');
+            }
         }
 
         function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                completedVideos.add(videoIds[currentVideoIndex]);
-                totalVideosWatched++;
-                
-                if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
-                    points += 150;
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-                    alert('Incredible! +150 points for completing the entire playlist!');
-                    allVideosCompleted = true;
-                }
+            try {
+                if (event.data === YT.PlayerState.ENDED) {
+                    completedVideos.add(videoIds[currentVideoIndex]);
+                    totalVideosWatched++;
+                    
+                    if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
+                        points += 150;
+                        document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                        alert('Incredible! +150 points for completing the entire playlist!');
+                        allVideosCompleted = true;
+                    }
 
-                updateAnalytics();
-                saveState();
-                currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
-                player.loadVideoById(videoIds[currentVideoIndex]);
-            } else if (event.data === YT.PlayerState.PLAYING) {
-                player.getVideoData().isLive ? console.log('Playing a live stream') : console.log('Playing a regular video');
+                    updateAnalytics();
+                    saveState();
+                    currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
+                    player.loadVideoById(videoIds[currentVideoIndex]);
+                } else if (event.data === YT.PlayerState.PLAYING) {
+                    console.log(player.getVideoData().isLive ? 'Playing a live stream' : 'Playing a regular video');
+                }
+            } catch (err) {
+                console.error('Player state change error:', err);
             }
         }
 
@@ -1675,7 +1731,7 @@
             const playerDiv = document.getElementById('player');
             if (!document.fullscreenElement && isFocusModeActive && playerDiv.style.display === 'block') {
                 alert('Fullscreen exited. Stay focused!');
-                focusAudio.pause();
+                document.getElementById('focusAudio').pause();
             }
         });
 
@@ -1739,88 +1795,93 @@
         }
 
         function resetFocusMode() {
-            const focusAudio = document.getElementById('focusAudio');
-            focusAudio.pause();
-            focusAudio.currentTime = 0;
-            focusAudio.loop = false;
-            pauseLofi();
-            lofiAudio.currentTime = 0;
+            try {
+                const focusAudio = document.getElementById('focusAudio');
+                focusAudio.pause();
+                focusAudio.currentTime = 0;
+                focusAudio.loop = false;
+                pauseLofi();
+                lofiAudio.currentTime = 0;
 
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+
+                videoIds = [];
+                currentVideoIndex = 0;
+                distractionCount = 0;
+                completedVideos.clear();
+                allVideosCompleted = false;
+                isFocusModeActive = false;
+                timerMode = 'Focus Time';
+                timerRemaining = focusDuration / 1000;
+
+                if (player && typeof player.destroy === 'function') {
+                    player.destroy();
+                    player = null;
+                }
+                document.getElementById('player').innerHTML = '';
+                document.getElementById('player').style.display = 'none';
+
+                document.getElementById('inputForm').style.display = 'block';
+                document.getElementById('landingPage').style.display = 'none';
+                document.getElementById('signinForm').style.display = 'none';
+                document.getElementById('restartBtn').style.display = 'none';
+                document.getElementById('chaptersBtn').style.display = 'none';
+                document.getElementById('pdfToggle').style.display = 'none';
+                document.getElementById('transcriptModal').style.display = 'none';
+                document.getElementById('pdfViewer').style.display = 'none';
+                document.getElementById('timerText').textContent = '';
+                document.getElementById('progressFill').style.width = '0';
+                document.getElementById('progressBar').style.display = 'none';
+                document.getElementById('minimizeBtn').textContent = '-';
+                document.getElementById('timerText').style.display = 'block';
+                document.getElementById('videoSidebar').style.right = '-320px';
+                document.getElementById('clockDisplay').style.display = 'block';
+                document.getElementById('sitesBox').style.display = 'block';
+                document.getElementById('lofiPlayer').style.display = 'block';
+
+                const urlInputs = document.getElementById('urlInputs');
+                urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required></div>';
+
+                if (isSignedIn && currentUser) {
+                    const users = JSON.parse(localStorage.getItem('users') || '{}');
+                    points = users[currentUser].points || 0;
+                    totalFocusTime = users[currentUser].totalFocusTime || 0;
+                    totalDistractions = users[currentUser].totalDistractions || 0;
+                    totalVideosWatched = users[currentUser].totalVideosWatched || 0;
+                    tasks = users[currentUser].tasks || [];
+                    streakDays = users[currentUser].streakDays || 0;
+                } else {
+                    points = 0;
+                    totalFocusTime = 0;
+                    totalDistractions = 0;
+                    totalVideosWatched = 0;
+                    streakDays = 0;
+                }
+                document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+
+                updateAnalytics();
+                updateAchievementLevel();
+                updateStreak();
+                populatePlaylistSelect();
+                restoreTasks();
+                document.getElementById('analytics').style.display = 'none';
+                document.getElementById('todoList').style.display = 'none';
+
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(err => console.error('Fullscreen exit failed:', err));
+                }
+
+                localStorage.removeItem('focusModeState');
+            } catch (err) {
+                console.error('Reset error:', err);
+                alert('Error resetting Focus Mode. Please refresh the page.');
             }
-
-            videoIds = [];
-            currentVideoIndex = 0;
-            distractionCount = 0;
-            completedVideos.clear();
-            allVideosCompleted = false;
-            isFocusModeActive = false;
-            timerMode = 'Focus Time';
-            timerRemaining = focusDuration / 1000;
-
-            if (player && typeof player.destroy === 'function') {
-                player.destroy();
-                player = null;
-            }
-            document.getElementById('player').innerHTML = '';
-            document.getElementById('player').style.display = 'none';
-
-            document.getElementById('inputForm').style.display = 'block';
-            document.getElementById('landingPage').style.display = 'none';
-            document.getElementById('signinForm').style.display = 'none';
-            document.getElementById('restartBtn').style.display = 'none';
-            document.getElementById('chaptersBtn').style.display = 'none';
-            document.getElementById('pdfToggle').style.display = 'none';
-            document.getElementById('transcriptModal').style.display = 'none';
-            document.getElementById('pdfViewer').style.display = 'none';
-            document.getElementById('timerText').textContent = '';
-            document.getElementById('progressFill').style.width = '0';
-            document.getElementById('progressBar').style.display = 'none';
-            document.getElementById('minimizeBtn').textContent = '-';
-            document.getElementById('timerText').style.display = 'block';
-            document.getElementById('videoSidebar').style.right = '-320px';
-            document.getElementById('clockDisplay').style.display = 'block';
-            document.getElementById('sitesBox').style.display = 'block';
-            document.getElementById('lofiPlayer').style.display = 'block';
-
-            const urlInputs = document.getElementById('urlInputs');
-            urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required></div>';
-
-            if (isSignedIn && currentUser) {
-                const users = JSON.parse(localStorage.getItem('users') || '{}');
-                points = users[currentUser].points || 0;
-                totalFocusTime = users[currentUser].totalFocusTime || 0;
-                totalDistractions = users[currentUser].totalDistractions || 0;
-                totalVideosWatched = users[currentUser].totalVideosWatched || 0;
-                tasks = users[currentUser].tasks || [];
-                streakDays = users[currentUser].streakDays || 0;
-            } else {
-                points = 0;
-                totalFocusTime = 0;
-                totalDistractions = 0;
-                totalVideosWatched = 0;
-                streakDays = 0;
-            }
-            document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-
-            updateAnalytics();
-            updateAchievementLevel();
-            updateStreak();
-            populatePlaylistSelect();
-            restoreTasks();
-            document.getElementById('analytics').style.display = 'none';
-            document.getElementById('todoList').style.display = 'none';
-
-            if (document.fullscreenElement) {
-                document.exitFullscreen().catch(err => console.error('Fullscreen exit failed:', err));
-            }
-
-            localStorage.removeItem('focusModeState');
         }
 
-        // New Functions for Chapters/Transcript
+        // Chapters/Transcript Functions
         function showTranscriptModal() {
             if (videoIds.length === 0 || !player) {
                 alert('Start Focus Mode with a video first!');
@@ -1836,28 +1897,28 @@
         }
 
         async function processTranscript() {
-            const transcript = document.getElementById('transcriptInput').value.trim();
-            const outputType = document.getElementById('outputType').value;
-            const outputArea = document.getElementById('outputArea');
+            try {
+                const transcript = document.getElementById('transcriptInput').value.trim();
+                const outputType = document.getElementById('outputType').value;
+                const outputArea = document.getElementById('outputArea');
 
-            if (!transcript) {
-                outputArea.textContent = 'Please paste a transcript.';
-                return;
-            }
+                if (!transcript) {
+                    outputArea.textContent = 'Please paste a transcript.';
+                    return;
+                }
 
-            if (outputType === 'transcript') {
-                outputArea.textContent = transcript;
-            } else {
-                outputArea.textContent = 'Generating chapters... This may take a moment.';
-                try {
+                if (outputType === 'transcript') {
+                    outputArea.textContent = transcript;
+                } else {
+                    outputArea.textContent = 'Generating chapters... This may take a moment.';
                     const chapters = await generateChapters(transcript);
                     outputArea.innerHTML = chapters.length > 0
                         ? chapters.map(c => `<p><strong>${c.timestamp}</strong> - ${c.title}</p>`).join('')
                         : 'Unable to generate chapters from the transcript.';
-                } catch (error) {
-                    outputArea.textContent = 'Error generating chapters. Please try again.';
-                    console.error(error);
                 }
+            } catch (err) {
+                console.error('Process transcript error:', err);
+                document.getElementById('outputArea').textContent = 'Error generating output. Please try again.';
             }
         }
 
@@ -1871,70 +1932,92 @@
             for (const line of lines) {
                 if (line.trim() === '') continue;
                 if (/^\d{2}:\d{2}(:\d{2})?$/.test(line)) {
-                    const timeStr = line;
-                    currentTime = convertToSeconds(timeStr);
-                    if (currentTime >= currentChapter.startTime + chapterDuration) {
-                        if (currentChapter.text.trim()) {
+                    const timeStr =
+                    const timeStr = line.trim();
+                    const timeInSeconds = convertToSeconds(timeStr);
+                    if (timeInSeconds >= currentChapter.startTime + chapterDuration) {
+                        if (currentChapter.text) {
                             const summary = await summarize(currentChapter.text);
-                            chapters.push({ timestamp: formatTime(currentChapter.startTime), title: summary });
+                            chapters.push({
+                                timestamp: formatTime(currentChapter.startTime),
+                                title: summary || 'Untitled Chapter'
+                            });
                         }
-                        currentChapter = { startTime: currentTime, text: '' };
+                        currentChapter = { startTime: timeInSeconds, text: '' };
                     }
-                } else {
-                    currentChapter.text += ' ' + line;
+                    currentTime = timeInSeconds;
+                } else if (currentTime >= currentChapter.startTime) {
+                    currentChapter.text += line + ' ';
                 }
             }
-            // Add the last chapter
-            if (currentChapter.text.trim()) {
+
+            if (currentChapter.text) {
                 const summary = await summarize(currentChapter.text);
-                chapters.push({ timestamp: formatTime(currentChapter.startTime), title: summary });
+                chapters.push({
+                    timestamp: formatTime(currentChapter.startTime),
+                    title: summary || 'Untitled Chapter'
+                });
             }
+
             return chapters;
         }
 
         function convertToSeconds(timeStr) {
-            const parts = timeStr.split(':').map(Number);
+            const parts = timeStr.split(':');
             if (parts.length === 2) {
-                return parts[0] * 60 + parts[1];
+                return parseInt(parts[0]) * 60 + parseInt(parts[1]);
             } else if (parts.length === 3) {
-                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+                return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
             }
             return 0;
         }
 
         function formatTime(seconds) {
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
             const secs = seconds % 60;
-            return [hrs > 0 ? hrs : null, mins, secs]
-                .filter(v => v !== null)
-                .map(v => v.toString().padStart(2, '0'))
-                .join(':');
+            if (hours > 0) {
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
         async function summarize(text) {
-            const response = await fetch('https://api-inference.huggingface.co/models/facebook/bart-large-cnn', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer YOUR_HF_API_TOKEN', // Replace with your Hugging Face API token
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    inputs: text,
-                    parameters: { max_length: 50, min_length: 10 }
-                })
-            });
-            const data = await response.json();
-            if (!data[0]?.summary_text) throw new Error('Summarization failed');
-            return data[0].summary_text;
+            try {
+                const response = await fetch('https://api-inference.huggingface.co/models/facebook/bart-large-cnn', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer YOUR_HF_API_TOKEN', // Replace with your Hugging Face API token
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inputs: text,
+                        parameters: { max_length: 30, min_length: 10 }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data[0]?.summary_text || 'Summary unavailable';
+            } catch (err) {
+                console.error('Summarization error:', err);
+                return null;
+            }
         }
 
-        // New Functions for PDF Viewer
+        // PDF Viewer Functions
         function togglePDFViewer() {
             const viewer = document.getElementById('pdfViewer');
-                       if (viewer.style.display === 'block') {
+            if (viewer.style.display === 'block') {
                 viewer.style.display = 'none';
             } else {
+                if (videoIds.length === 0 || !player) {
+                    alert('Start Focus Mode with a video first!');
+                    return;
+                }
                 viewer.style.display = 'block';
                 const pdfInput = document.getElementById('pdfInput');
                 pdfInput.value = ''; // Reset file input
@@ -1943,14 +2026,19 @@
                 pdfInput.onchange = () => {
                     const file = pdfInput.files[0];
                     if (file && file.type === 'application/pdf') {
-                        const fileURL = URL.createObjectURL(file);
-                        pdfFrame.src = fileURL;
-                        if (isSignedIn) {
-                            points += 10; // Award points for uploading a PDF
-                            document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-                            alert('Nice! +10 points for uploading a study PDF.');
-                            updateAnalytics();
-                            saveState();
+                        try {
+                            const fileURL = URL.createObjectURL(file);
+                            pdfFrame.src = fileURL;
+                            if (isSignedIn) {
+                                points += 10;
+                                document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                                alert('Nice! +10 points for uploading a study PDF.');
+                                updateAnalytics();
+                                saveState();
+                            }
+                        } catch (err) {
+                            console.error('PDF load error:', err);
+                            alert('Error loading PDF. Please try again.');
                         }
                     } else {
                         alert('Please upload a valid PDF file.');
@@ -1959,9 +2047,13 @@
             }
         }
 
-        // Prevent distraction penalty when interacting with PDF viewer
+        // Prevent distraction penalty when interacting with PDF viewer or transcript modal
         document.getElementById('pdfViewer').addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent triggering visibilitychange penalty
+            e.stopPropagation();
+        });
+
+        document.getElementById('transcriptModal').addEventListener('click', (e) => {
+            e.stopPropagation();
         });
 
     </script>
