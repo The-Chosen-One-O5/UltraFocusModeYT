@@ -661,6 +661,25 @@
             background: #fff;
             border-radius: 8px;
         }
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 300px;
+            height: 400px;
+            background: #8e2de2;
+            border-radius: 10px;
+            padding: 5px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        .chatbot-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 5px;
+        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -776,6 +795,10 @@
                 width: 90%;
                 height: 300px;
             }
+            .chatbot-container {
+                width: 250px;
+                height: 300px;
+            }
         }
     </style>
 </head>
@@ -789,6 +812,13 @@
             <div class="feature"><i class="fas fa-ad"></i><p>Ad Free<br>We don’t give a F**k about money, just study, ffs.</p></div>
             <div class="feature"><i class="fas fa-moon"></i><p>Dark Mode<br>Save your eyes for the D-day.</p></div>
         </div>
+        <!-- Chatbot Embed for Landing Page -->
+        <div class="chatbot-container">
+            <iframe
+                src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK"
+                frameborder="0"
+            ></iframe>
+        </div>
     </div>
     <div id="signinForm" style="display: none;">
         <div class="title">Sign In to Track Your Points</div>
@@ -797,6 +827,13 @@
         <input type="password" id="password" placeholder="Password" required>
         <button onclick="signIn()">Sign In</button>
         <p>New? <button onclick="createAccount()">Create Account</button></p>
+        <!-- Chatbot Embed for Sign In Page -->
+        <div class="chatbot-container">
+            <iframe
+                src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK"
+                frameborder="0"
+            ></iframe>
+        </div>
     </div>
     <div id="inputForm" style="display: none;">
         <div id="achievementLevel"></div>
@@ -836,6 +873,13 @@
         </div>
         <button onclick="addUrlInput()">Add Another URL</button>
         <button onclick="startPlayback()">Start Focus Mode</button>
+        <!-- Chatbot Embed for Input Form -->
+        <div class="chatbot-container">
+            <iframe
+                src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK"
+                frameborder="0"
+            ></iframe>
+        </div>
     </div>
     <div id="player" style="display: none;"></div>
     <div id="timerDisplay">
@@ -1905,104 +1949,52 @@
                 alert('Start Focus Mode with a video first!');
                 return;
             }
-            document.getElementById('transcriptModal').style.display = 'block';
+            const modal = document.getElementById('transcriptModal');
+            modal.style.display = 'block';
+            document.getElementById('transcriptInput').value = '';
+            document.getElementById('outputArea').innerHTML = '';
+        }
+
+        function processTranscript() {
+            try {
+                const transcriptText = document.getElementById('transcriptInput').value.trim();
+                const outputType = document.getElementById('outputType').value;
+                const outputArea = document.getElementById('outputArea');
+
+                if (!transcriptText) {
+                    outputArea.innerHTML = 'Please paste a transcript first.';
+                    return;
+                }
+
+                const lines = transcriptText.split('\n').map(line => line.trim()).filter(line => line);
+                if (outputType === 'transcript') {
+                    outputArea.innerHTML = lines.map(line => `<p>${line}</p>`).join('');
+                } else if (outputType === 'chapters') {
+                    const chapters = [];
+                    lines.forEach(line => {
+                        const timeMatch = line.match(/^(\d{1,2}:\d{2}(?::\d{2})?)/);
+                        if (timeMatch) {
+                            const time = timeMatch[0];
+                            const title = line.replace(time, '').trim();
+                            if (title) {
+                                chapters.push(`${time} - ${title}`);
+                            }
+                        }
+                    });
+                    if (chapters.length > 0) {
+                        outputArea.innerHTML = chapters.map(chapter => `<p>${chapter}</p>`).join('');
+                    } else {
+                        outputArea.innerHTML = 'No valid chapters found in the transcript.';
+                    }
+                }
+            } catch (err) {
+                console.error('Process transcript error:', err);
+                document.getElementById('outputArea').innerHTML = 'Error processing transcript.';
+            }
         }
 
         function closeTranscriptModal() {
             document.getElementById('transcriptModal').style.display = 'none';
-            document.getElementById('outputArea').innerHTML = '';
-            document.getElementById('transcriptInput').value = '';
-        }
-
-        async function processTranscript() {
-            try {
-                const transcript = document.getElementById('transcriptInput').value.trim();
-                const outputType = document.getElementById('outputType').value;
-                const outputArea = document.getElementById('outputArea');
-
-                if (!transcript) {
-                    outputArea.textContent = 'Please paste a transcript.';
-                    return;
-                }
-
-                if (outputType === 'transcript') {
-                    outputArea.textContent = transcript;
-                } else {
-                    outputArea.textContent = 'Generating chapters... This may take a moment.';
-                    const chapters = await generateChapters(transcript);
-                    outputArea.innerHTML = chapters.length > 0
-                        ? chapters.map(c => `<p><strong>${c.timestamp}</strong> - ${c.title}</p>`).join('')
-                        : 'Unable to generate chapters from the transcript.';
-                }
-            } catch (err) {
-                console.error('Process transcript error:', err);
-                document.getElementById('outputArea').textContent = 'Error generating output. Please try again.';
-            }
-        }
-
-        async function generateChapters(transcript) {
-            const lines = transcript.split('\n');
-            const chapterDuration = 300; // 5 minutes in seconds
-            let chapters = [];
-            let currentChapter = { startTime: 0, text: '' };
-            let currentTime = 0;
-
-            for (const line of lines) {
-                if (line.trim() === '') continue;
-                                if (/^\d{2}:\d{2}(:\d{2})?$/.test(line)) {
-                    const timeStr = line.trim();
-                    const timeInSeconds = convertToSeconds(timeStr);
-                    if (timeInSeconds >= currentChapter.startTime + chapterDuration) {
-                        if (currentChapter.text) {
-                            const summary = await summarize(currentChapter.text);
-                            chapters.push({
-                                timestamp: formatTime(currentChapter.startTime),
-                                title: summary || 'Untitled Chapter'
-                            });
-                        }
-                        currentChapter = { startTime: timeInSeconds, text: '' };
-                    }
-                    currentTime = timeInSeconds;
-                } else if (currentTime >= currentChapter.startTime) {
-                    currentChapter.text += line + ' ';
-                }
-            }
-
-            if (currentChapter.text) {
-                const summary = await summarize(currentChapter.text);
-                chapters.push({
-                    timestamp: formatTime(currentChapter.startTime),
-                    title: summary || 'Untitled Chapter'
-                });
-            }
-
-            return chapters;
-        }
-
-        function convertToSeconds(timeStr) {
-            const parts = timeStr.split(':').map(Number);
-            if (parts.length === 3) {
-                return parts[0] * 3600 + parts[1] * 60 + parts[2];
-            } else if (parts.length === 2) {
-                return parts[0] * 60 + parts[1];
-            }
-            return 0;
-        }
-
-        function formatTime(seconds) {
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            return `${hrs > 0 ? hrs + ':' : ''}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        async function summarize(text) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const sentences = text.split('. ').slice(0, 1).join('. ');
-                    resolve(sentences || 'Summary unavailable');
-                }, 500);
-            });
         }
 
         function togglePDFViewer() {
@@ -2026,6 +2018,13 @@
             }
         }
 
+        // Ensure state is saved periodically
+        setInterval(saveState, 30000); // Save every 30 seconds
+
+        // Cleanup on unload to ensure state persists
+        window.onbeforeunload = () => {
+            saveState();
+        };
     </script>
 </body>
 </html>
