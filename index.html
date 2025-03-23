@@ -661,11 +661,11 @@
             background: #fff;
             border-radius: 8px;
         }
-        /* Fire Emoji Box and Popup Styles */
-        #fireBox {
+        /* Fire Emoji Box and Popup Styles - Moved to Bottom-Left */
+                #fireBox {
             position: fixed;
             bottom: 10px;
-            right: 10px;
+            left: 10px;
             width: 40px;
             height: 40px;
             background: #8e2de2;
@@ -684,7 +684,7 @@
         #aiPopup {
             position: fixed;
             bottom: 60px;
-            right: 10px;
+            left: 10px;
             width: 300px;
             height: 400px;
             background: #8e2de2;
@@ -931,7 +931,7 @@
         <iframe id="pdfFrame"></iframe>
         <button onclick="togglePDFViewer()" style="background: #ff4444; margin-top: 10px;">Close</button>
     </div>
-    <!-- Fire Emoji Box and AI Popup -->
+    <!-- Fire Emoji Box and AI Popup - Positioned in Bottom-Left -->
     <div id="fireBox" onclick="toggleAIPopup()">🔥</div>
     <div id="aiPopup">
         <iframe
@@ -1956,7 +1956,7 @@
             }
         }
 
-                function showTranscriptModal() {
+        function showTranscriptModal() {
             if (videoIds.length === 0 || !player) {
                 alert('Start Focus Mode with a video first!');
                 return;
