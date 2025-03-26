@@ -1860,28 +1860,28 @@
                 const urlInputs = document.getElementById('urlInputs');
                 urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required></div>';
 
-                if (isSignedIn && currentUser) {
+                                if (isSignedIn && currentUser) {
                     const users = JSON.parse(localStorage.getItem('users') || '{}');
                     points = users[currentUser].points || 0;
                     totalFocusTime = users[currentUser].totalFocusTime || 0;
                     totalDistractions = users[currentUser].totalDistractions || 0;
-                    totalVideos Watched = users[currentUser].totalVideosWatched || 0;
+                    totalVideosWatched = users[currentUser].totalVideosWatched || 0;
                     tasks = users[currentUser].tasks || [];
                     streakDays = users[currentUser].streakDays || 0;
                     document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
                     updateAnalytics();
                     updateAchievementLevel();
                     updateStreak();
+                    restoreTasks();
                 }
 
-                localStorage.removeItem('focusModeState');
+                saveState();
                 if (document.fullscreenElement) {
-                    document.exitFullscreen().catch(err => console.error('Exit fullscreen error:', err));
+                    document.exitFullscreen().catch(err => console.log('Exit fullscreen failed:', err));
                 }
-                alert('Focus Mode has been reset.');
             } catch (err) {
                 console.error('Reset focus mode error:', err);
-                alert('Error resetting Focus Mode. Please refresh the page.');
+                alert('Error resetting Focus Mode. Some data may not have been cleared properly.');
             }
         }
 
@@ -1892,11 +1892,13 @@
             } else {
                 pdfViewer.style.display = 'block';
                 const pdfInput = document.getElementById('pdfInput');
-                pdfInput.onchange = () => {
-                    const file = pdfInput.files[0];
-                    if (file) {
-                        const fileURL = URL.createObjectURL(file);
-                        document.getElementById('pdfFrame').src = fileURL;
+                pdfInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type === 'application/pdf') {
+                        const url = URL.createObjectURL(file);
+                        document.getElementById('pdfFrame').src = url;
+                    } else {
+                        alert('Please select a valid PDF file.');
                     }
                 };
             }
@@ -1906,20 +1908,6 @@
             const aiPopup = document.getElementById('aiPopup');
             aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
         }
-
-        window.addEventListener('beforeunload', (e) => {
-            if (isFocusModeActive) {
-                e.preventDefault();
-                e.returnValue = 'Are you sure you want to leave? Your Focus Mode progress will be saved.';
-                saveState();
-            }
-        });
-
-        window.addEventListener('unload', () => {
-            if (isFocusModeActive) {
-                saveState();
-            }
-        });
     </script>
 </body>
 </html>
