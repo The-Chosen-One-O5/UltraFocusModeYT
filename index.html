@@ -831,8 +831,11 @@
     <button id="restartBtn" onclick="showConfirmationDialog()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     <div id="lofiPlayer">
+        <div style="text-align: center; margin-bottom: 5px;">Chill Music ♬</div>
+        <button id="lofiPrev" onclick="prevLofi()">◄</button>
         <button id="lofiPlay" onclick="playLofi()">▶</button>
         <button id="lofiPause" onclick="pauseLofi()">❚❚</button>
+        <button id="lofiNext" onclick="nextLofi()">►</button>
     </div>
     <div id="achievementOverlay"></div>
     <div id="confirmationDialog" style="display: none;">
@@ -888,7 +891,21 @@
 
         let isYouTubeAPILoaded = false;
         const lofiAudio = document.getElementById('lofiAudio');
-        lofiAudio.src = "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1";
+        const lofiSongs = [
+            "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1",
+            "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1",
+            "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1",
+            "https://www.dropbox.com/scl/fi/lb5f47widcz8mwhg79jiz/Kate-Grove-SKYRIM-THEME-skyrim-elderscrolls-ocarina.mp3?rlkey=f8kpm1ipyowc1wv998myu06us&st=bm9qmodf&dl=1",
+            "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1",
+            "https://www.dropbox.com/scl/fi/7xoemzmrgq0wzbxc9i9tp/Jumping-_brick-Sidewalks-and-skeletons-goth-slowed-reverb-best-part-loop.mp3?rlkey=d4dt6rv6sdzteextqek29geug&st=4umnyp0c&dl=1",
+            "https://www.dropbox.com/scl/fi/macw47c2kvur0yfi4r9up/St3phen-If-Youre-A-Gamer-This-Song-FOUND-You.mp3?rlkey=qudky54311tppavhvnpra89ff&st=7dgshk5k&dl=1",
+            "https://www.dropbox.com/scl/fi/c1iy5yjmf3d57jrb1aokc/KestrelTapes-what-nostalgia-sounds-like...mp3?rlkey=qcdj1vpdnzwdb03fxp0vk0661&st=fyqrl6ge&dl=1",
+            "https://www.dropbox.com/scl/fi/p303xk68pvu8sfrmtwzj2/rhawn-there-is-hopecore.mp3?rlkey=m6tva7g4dsva39ii1l0e8tnu0&st=6z218pii&dl=1",
+            "https://www.dropbox.com/scl/fi/bw4n0ne8nli4dkp7p26po/Jaob-not-just-another-hopecore-playlist.mp3?rlkey=jy0umwkadkxj9cju1yf2wz7hw&st=yjxhzw0s&dl=1",
+            "https://www.dropbox.com/scl/fi/evhrjdri6a9n9bk05qhcu/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=lauo50rz3indg5n3to5gfks1y&st=gcqmonsf&dl=1"
+        ];
+        let currentLofiIndex = 0;
+        lofiAudio.src = lofiSongs[currentLofiIndex];
 
         const achievementLevels = [
             { points: 0, level: "Mortal", color: "white" },
@@ -959,6 +976,18 @@
 
         function pauseLofi() {
             lofiAudio.pause();
+        }
+
+        function prevLofi() {
+            currentLofiIndex = (currentLofiIndex - 1 + lofiSongs.length) % lofiSongs.length;
+            lofiAudio.src = lofiSongs[currentLofiIndex];
+            playLofi();
+        }
+
+        function nextLofi() {
+            currentLofiIndex = (currentLofiIndex + 1) % lofiSongs.length;
+            lofiAudio.src = lofiSongs[currentLofiIndex];
+            playLofi();
         }
 
         function toggleSitesPopup() {
@@ -1836,33 +1865,22 @@
                     points = users[currentUser].points || 0;
                     totalFocusTime = users[currentUser].totalFocusTime || 0;
                     totalDistractions = users[currentUser].totalDistractions || 0;
-                    totalVideosWatched = users[currentUser].totalVideosWatched || 0;
+                    totalVideos Watched = users[currentUser].totalVideosWatched || 0;
                     tasks = users[currentUser].tasks || [];
                     streakDays = users[currentUser].streakDays || 0;
-                } else {
-                    points = 0;
-                    totalFocusTime = 0;
-                    totalDistractions = 0;
-                    totalVideosWatched = 0;
-                    streakDays = 0;
-                }
-                document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-
-                updateAnalytics();
-                updateAchievementLevel();
-                updateStreak();
-                populatePlaylistSelect();
-                restoreTasks();
-                document.getElementById('analytics').style.display = 'none';
-                document.getElementById('todoList').style.display = 'none';
-
-                if (document.fullscreenElement) {
-                    document.exitFullscreen().catch(err => console.error('Fullscreen exit failed:', err));
+                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                    updateAnalytics();
+                    updateAchievementLevel();
+                    updateStreak();
                 }
 
                 localStorage.removeItem('focusModeState');
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(err => console.error('Exit fullscreen error:', err));
+                }
+                alert('Focus Mode has been reset.');
             } catch (err) {
-                console.error('Reset error:', err);
+                console.error('Reset focus mode error:', err);
                 alert('Error resetting Focus Mode. Please refresh the page.');
             }
         }
@@ -1871,40 +1889,37 @@
             const pdfViewer = document.getElementById('pdfViewer');
             if (pdfViewer.style.display === 'block') {
                 pdfViewer.style.display = 'none';
-                document.getElementById('pdfFrame').src = '';
             } else {
                 pdfViewer.style.display = 'block';
                 const pdfInput = document.getElementById('pdfInput');
-                pdfInput.value = '';
                 pdfInput.onchange = () => {
                     const file = pdfInput.files[0];
-                    if (file && file.type === 'application/pdf') {
+                    if (file) {
                         const fileURL = URL.createObjectURL(file);
                         document.getElementById('pdfFrame').src = fileURL;
-                    } else {
-                        alert('Please select a valid PDF file.');
                     }
                 };
             }
         }
 
-        // Toggle AI Popup for the fire emoji box
         function toggleAIPopup() {
             const aiPopup = document.getElementById('aiPopup');
-            if (aiPopup.style.display === 'block') {
-                aiPopup.style.display = 'none';
-            } else {
-                aiPopup.style.display = 'block';
-            }
+            aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Ensure state is saved periodically
-        setInterval(saveState, 30000); // Save every 30 seconds
+        window.addEventListener('beforeunload', (e) => {
+            if (isFocusModeActive) {
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to leave? Your Focus Mode progress will be saved.';
+                saveState();
+            }
+        });
 
-        // Cleanup on unload to ensure state persists
-        window.onbeforeunload = () => {
-            saveState();
-        };
+        window.addEventListener('unload', () => {
+            if (isFocusModeActive) {
+                saveState();
+            }
+        });
     </script>
 </body>
 </html>
