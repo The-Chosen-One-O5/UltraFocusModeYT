@@ -29,7 +29,7 @@
             padding: 40px 20px;
             display: block;
             position: relative;
-            z-index: 10; /* Ensure above background */
+            z-index: 10;
         }
         #landingPage .title, #signinForm .title, #inputForm .title {
             font-size: 48px;
@@ -57,7 +57,7 @@
             cursor: pointer;
             margin: 0 10px;
             transition: background 0.3s, transform 0.2s;
-            pointer-events: auto; /* Ensure clickable */
+            pointer-events: auto;
         }
         #landingPage button:hover, #signinForm button:hover, #inputForm button:hover {
             background: #7a25c9;
@@ -153,10 +153,10 @@
             cursor: move;
             padding: 5px;
             background: rgba(0, 0, 0, 0.5);
-            pointer-events: none; /* Prevent blocking */
+            pointer-events: none;
         }
         #timerDisplay button {
-            pointer-events: auto; /* Ensure clickable */
+            pointer-events: auto;
         }
         #pointsDisplay {
             position: fixed;
@@ -192,52 +192,6 @@
         }
         #clockDisplay .period {
             color: #8e2de2;
-        }
-        #sitesBox {
-            position: fixed;
-            top: 130px;
-            left: 10px;
-            width: 200px;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 101;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-            text-align: center;
-            font-size: 14px;
-        }
-        #sitesPopup {
-            position: fixed;
-            top: 170px;
-            left: 10px;
-            width: 250px;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-            z-index: 102;
-        }
-        #sitesPopup a {
-            display: block;
-            color: #8e2de2;
-            text-decoration: none;
-            margin: 10px 0;
-            font-size: 14px;
-        }
-        #sitesPopup a:hover {
-            color: #7a25c9;
-            text-decoration: underline;
-        }
-        #closeSitesPopup {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 18px;
-            cursor: pointer;
         }
         #progressBar {
             width: 200px;
@@ -312,7 +266,7 @@
             background: linear-gradient(to bottom, rgba(142, 45, 226, 0.2), transparent);
             z-index: -1;
             border-radius: 15px;
-            pointer-events: none; /* Prevent blocking clicks */
+            pointer-events: none;
         }
         .url-container {
             display: flex;
@@ -340,93 +294,6 @@
             pointer-events: auto;
         }
         #statsBtn:hover, #todoBtn:hover, #pyqBtn:hover {
-            background: #7a25c9;
-        }
-        #analytics, #todoList {
-            position: absolute;
-            left: 10px;
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            display: none;
-            z-index: 100;
-        }
-        #analytics {
-            top: 90px;
-        }
-        #todoList {
-            top: 50px;
-            width: 300px;
-            max-height: 400px;
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: none;
-        }
-        #tasks {
-            overflow-y: auto;
-            max-height: 320px;
-            margin-bottom: 10px;
-            background: none;
-        }
-        #analytics h3, #todoList h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: #8e2de2;
-        }
-        #analytics p {
-            font-size: 14px;
-            margin: 5px 0;
-        }
-        .task-line {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .task-line input[type="checkbox"] {
-            margin-right: 10px;
-            width: 16px;
-            height: 16px;
-        }
-        .task-line input[type="text"] {
-            flex-grow: 1;
-            font-size: 14px;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            background: #1e1e1e;
-            border: none;
-            border-bottom: 1px solid #fff;
-            padding: 2px 0;
-            outline: none;
-        }
-        .task-line input[type="text"]:focus {
-            border-bottom: 1px solid #8e2de2;
-        }
-        .task-line .remove-task {
-            margin-left: 10px;
-            color: #ff4444;
-            font-size: 14px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            line-height: 1;
-        }
-        .task-line .remove-task:hover {
-            color: #cc3333;
-        }
-        #todoList button {
-            margin-top: 10px;
-            padding: 8px 16px;
-            font-size: 14px;
-            background: #8e2de2;
-            border: none;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #todoList button:hover {
             background: #7a25c9;
         }
         #lofiPlayer {
@@ -592,8 +459,7 @@
             background: #fff;
             border-radius: 8px;
         }
-        /* Fire Emoji Box and Popup Styles - Moved to Bottom-Left */
-                #fireBox {
+        #fireBox {
             position: fixed;
             bottom: 10px;
             left: 10px;
@@ -631,6 +497,167 @@
             border: none;
             border-radius: 5px;
         }
+        /* Sidebar Styles */
+        #sidebar {
+            position: fixed;
+            left: -250px;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            transition: left 0.3s ease;
+            padding: 20px;
+            z-index: 102;
+            overflow-y: auto;
+        }
+        #sidebar:hover, #sidebar.active {
+            left: 0;
+        }
+        #sidebar button, #sidebar .sidebar-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #8e2de2;
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.3s;
+        }
+        #sidebar button:hover, #sidebar .sidebar-btn:hover {
+            background: #7a25c9;
+        }
+        #todoList {
+            display: none;
+            margin-top: 10px;
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #todoList h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #8e2de2;
+        }
+        #tasks {
+            overflow-y: auto;
+            max-height: 200px;
+            margin-bottom: 10px;
+            background: none;
+        }
+        .task-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .task-line input[type="checkbox"] {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+        }
+        .task-line input[type="text"] {
+            flex-grow: 1;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            background: #1e1e1e;
+            border: none;
+            border-bottom: 1px solid #fff;
+            padding: 2px 0;
+            outline: none;
+        }
+        .task-line input[type="text"]:focus {
+            border-bottom: 1px solid #8e2de2;
+        }
+        .task-line .remove-task {
+            margin-left: 10px;
+            color: #ff4444;
+            font-size: 14px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+        }
+        .task-line .remove-task:hover {
+            color: #cc3333;
+        }
+        #addTaskBtn {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 16px;
+            background: #8e2de2;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #addTaskBtn:hover {
+            background: #7a25c9;
+        }
+        #sitesPopup {
+            display: none;
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        #sitesPopup a {
+            display: block;
+            color: #8e2de2;
+            text-decoration: none;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        #sitesPopup a:hover {
+            color: #7a25c9;
+            text-decoration: underline;
+        }
+        /* Dashboard Styles */
+        #dashboard {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 103;
+            text-align: center;
+            padding: 40px;
+        }
+        #dashboard h1 {
+            font-size: 36px;
+            color: #8e2de2;
+            margin-bottom: 20px;
+        }
+        #dashboard p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        #dashboard span {
+            color: #8e2de2;
+        }
+        #closeDashboard {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            padding: 10px 15px;
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        #closeDashboard:hover {
+            background: #cc3333;
+        }
         @media (max-width: 800px) {
             #landingPage, #signinForm, #inputForm {
                 max-width: 400px;
@@ -661,32 +688,22 @@
                 font-size: 14px;
                 padding: 8px 16px;
             }
-            #statsBtn, #todoBtn, #pyqBtn {
-                font-size: 12px;
-                padding: 6px 12px;
-                margin: 0 5px 5px;
+            #sidebar {
+                width: 200px;
+                left: -200px;
             }
-            #analytics, #todoList {
-                top: 40px;
-                left: 5px;
-                padding: 10px;
-            }
-            #analytics {
-                top: 80px;
+            #sidebar button, #sidebar .sidebar-btn {
+                font-size: 14px;
+                padding: 8px;
             }
             #todoList {
-                top: 40px;
-                width: 250px;
-                max-height: 300px;
+                padding: 8px;
             }
             #tasks {
-                max-height: 220px;
+                max-height: 150px;
             }
-            #analytics h3, #todoList h3 {
+            #todoList h3 {
                 font-size: 16px;
-            }
-            #analytics p {
-                font-size: 12px;
             }
             .task-line input[type="checkbox"] {
                 width: 14px;
@@ -698,62 +715,30 @@
             .task-line .remove-task {
                 font-size: 12px;
             }
-            #todoList button {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-            #lofiPlayer {
-                padding: 5px;
-            }
-            #lofiPlayer button {
-                padding: 3px 8px;
-                font-size: 12px;
-            }
-            #sitesBox {
-                width: 150px;
-                font-size: 12px;
-            }
             #sitesPopup {
-                width: 200px;
                 font-size: 12px;
             }
-            #confirmationDialog {
-                width: 90%;
-                padding: 15px;
+            #dashboard {
+                padding: 20px;
             }
-            #confirmationDialog p {
+            #dashboard h1 {
+                font-size: 28px;
+            }
+            #dashboard p {
                 font-size: 16px;
             }
-            #confirmationDialog button {
-                padding: 6px 15px;
+            #closeDashboard {
+                padding: 8px 12px;
                 font-size: 14px;
-            }
-            #pdfToggle {
-                bottom: 5px;
-                right: 5px;
-                padding: 8px 16px;
-            }
-            #pdfViewer {
-                width: 90%;
-                height: 300px;
-            }
-            #fireBox {
-                width: 30px;
-                height: 30px;
-                font-size: 18px;
-            }
-            #aiPopup {
-                width: 250px;
-                height: 300px;
             }
         }
     </style>
-<script type="text/javascript" src="https://unpkg.com/@play-ai/agent-web-sdk@ht"></script>
-<script type="text/javascript">
-  addEventListener("load", () => {
-    PlayAI.open('6I0zXxNBV4jxdE9qvhc9s');
-  });
-</script>
+    <script type="text/javascript" src="https://unpkg.com/@play-ai/agent-web-sdk@ht"></script>
+    <script type="text/javascript">
+        addEventListener("load", () => {
+            PlayAI.open('6I0zXxNBV4jxdE9qvhc9s');
+        });
+    </script>
 </head>
 <body>
     <div id="landingPage">
@@ -777,26 +762,8 @@
     <div id="inputForm" style="display: none;">
         <div id="achievementLevel"></div>
         <div id="streakDisplay"></div>
-        <button id="todoBtn" onclick="toggleTodo()">To Do List</button>
-        <button id="statsBtn" onclick="toggleStats()">Your Focus Stats</button>
         <button id="pyqBtn" onclick="redirectToPYQs()">PYQs Practice</button>
-        <div id="todoList">
-            <h3>To Do List</h3>
-            <div id="tasks">
-                <div class="task-line">
-                    <input type="checkbox" class="task-check">
-                    <input type="text" class="task-text" placeholder="Write a task...">
-                    <span class="remove-task" onclick="removeTask(this)">x</span>
-                </div>
-            </div>
-            <button onclick="saveTasks()">Save Notes</button>
-        </div>
-        <div id="analytics">
-            <h3>Your Focus Stats</h3>
-            <p>Total Focus Time: <span id="totalFocusTime">0</span> min</p>
-            <p>Total Distractions: <span id="totalDistractions">0</span></p>
-            <p>Videos Watched: <span id="totalVideosWatched">0</span></p>
-        </div>
+        <button id="statsBtn" onclick="showStats()">Focus Stats</button>
         <div class="title">Enter YouTube URLs</div>
         <div class="subtitle"></div>
         <select id="playlistSelect" onchange="loadPlaylist()">
@@ -821,13 +788,6 @@
     </div>
     <div id="pointsDisplay"><span style="color: #8e2de2;">⭐</span> Points: 0</div>
     <div id="clockDisplay"></div>
-    <div id="sitesBox" onclick="toggleSitesPopup()">CHECKOUT MY OTHER SITES 👇</div>
-    <div id="sitesPopup">
-        <button id="closeSitesPopup" onclick="closeSitesPopup()">X</button>
-        <a href="https://forestquest.vercel.app/" target="_blank">FOR TASK MANAGEMENT AND CHECKLIST</a>
-        <a href="https://focuswithpomodoro.netlify.app/" target="_blank">FOR BETTER POMODORO AND AESTHETICS</a>
-        <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank">FOR Daily Schedule</a>
-    </div>
     <button id="restartBtn" onclick="showConfirmationDialog()" style="display: none;">Restart</button>
     <div id="videoSidebar"></div>
     <div id="lofiPlayer">
@@ -849,13 +809,42 @@
         <iframe id="pdfFrame"></iframe>
         <button onclick="togglePDFViewer()" style="background: #ff4444; margin-top: 10px;">Close</button>
     </div>
-    <!-- Fire Emoji Box and AI Popup - Positioned in Bottom-Left -->
     <div id="fireBox" onclick="toggleAIPopup()">🔥</div>
     <div id="aiPopup">
-        <iframe
-            src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK"
-            frameborder="0"
-        ></iframe>
+        <iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameborder="0"></iframe>
+    </div>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <button onclick="toggleTodo()">To Do List</button>
+        <div id="todoList">
+            <h3>To Do List</h3>
+            <div id="tasks">
+                <div class="task-line">
+                    <input type="checkbox" class="task-check">
+                    <input type="text" class="task-text" placeholder="Write a task...">
+                    <span class="remove-task" onclick="removeTask(this)">x</span>
+                </div>
+            </div>
+            <button id="addTaskBtn" onclick="addTaskLine()">+</button>
+            <button onclick="saveTasks()">Save Notes</button>
+        </div>
+        <button onclick="toggleSitesPopup()">Check out my other sites</button>
+        <div id="sitesPopup">
+            <a href="https://forestquest.vercel.app/" target="_blank">FOR TASK MANAGEMENT AND CHECKLIST</a>
+            <a href="https://focuswithpomodoro.netlify.app/" target="_blank">FOR BETTER POMODORO AND AESTHETICS</a>
+            <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank">FOR Daily Schedule</a>
+        </div>
+        <button onclick="logOut()">Log Out</button>
+        <button onclick="toggleDashboard()">Dashboard</button>
+    </div>
+    <!-- Dashboard -->
+    <div id="dashboard">
+        <button id="closeDashboard" onclick="toggleDashboard()">X</button>
+        <h1>Dashboard</h1>
+        <p>Name: <span id="dashName"></span></p>
+        <p>Level: <span id="dashLevel"></span></p>
+        <p>Points: <span id="dashPoints"></span></p>
+        <p>Streak: <span id="dashStreak"></span></p>
     </div>
     
     <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loading="lazy"></audio>
@@ -995,10 +984,6 @@
             popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
         }
 
-        function closeSitesPopup() {
-            document.getElementById('sitesPopup').style.display = 'none';
-        }
-
         function updateStreak() {
             const today = new Date().toDateString();
             const lastDate = localStorage.getItem('lastFocusDate');
@@ -1050,7 +1035,6 @@
                     streakDays = state.streakDays || 0;
                     lastFocusDate = state.lastFocusDate || null;
 
-                    updateAnalytics();
                     updateAchievementLevel();
                     updateStreak();
                     if (isSignedIn && currentUser) {
@@ -1059,7 +1043,6 @@
                         document.getElementById('inputForm').style.display = 'block';
                         document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
                         document.getElementById('clockDisplay').style.display = 'block';
-                        document.getElementById('sitesBox').style.display = 'block';
                         document.getElementById('lofiPlayer').style.display = 'block';
                         restoreUrlInputs();
                         populatePlaylistSelect();
@@ -1071,7 +1054,6 @@
                         document.getElementById('restartBtn').style.display = 'block';
                         document.getElementById('pdfToggle').style.display = 'block';
                         document.getElementById('clockDisplay').style.display = 'none';
-                        document.getElementById('sitesBox').style.display = 'none';
                         document.getElementById('lofiPlayer').style.display = 'none';
                         loadYouTubeAPI()
                             .then(() => {
@@ -1087,9 +1069,7 @@
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'none';
                     document.getElementById('clockDisplay').style.display = 'none';
-                    document.getElementById('sitesBox').style.display = 'none';
                     document.getElementById('lofiPlayer').style.display = 'none';
-                    updateAnalytics();
                     updateAchievementLevel();
                     updateStreak();
                     restoreTasks();
@@ -1106,17 +1086,14 @@
         }
 
         function showSignIn() {
-            console.log('showSignIn clicked');
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('signinForm').style.display = 'block';
             document.getElementById('inputForm').style.display = 'none';
             document.getElementById('clockDisplay').style.display = 'none';
-            document.getElementById('sitesBox').style.display = 'none';
             document.getElementById('lofiPlayer').style.display = 'none';
         }
 
         function signIn() {
-            console.log('signIn clicked');
             try {
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
@@ -1135,9 +1112,7 @@
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
                     document.getElementById('clockDisplay').style.display = 'block';
-                    document.getElementById('sitesBox').style.display = 'block';
                     document.getElementById('lofiPlayer').style.display = 'block';
-                    updateAnalytics();
                     updateAchievementLevel();
                     updateStreak();
                     saveState();
@@ -1153,7 +1128,6 @@
         }
 
         function createAccount() {
-            console.log('createAccount clicked');
             try {
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
@@ -1176,9 +1150,7 @@
                     document.getElementById('inputForm').style.display = 'block';
                     document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
                     document.getElementById('clockDisplay').style.display = 'block';
-                    document.getElementById('sitesBox').style.display = 'block';
                     document.getElementById('lofiPlayer').style.display = 'block';
-                    updateAnalytics();
                     updateAchievementLevel();
                     updateStreak();
                     saveState();
@@ -1191,6 +1163,46 @@
                 console.error('Account creation error:', err);
                 alert('Error creating account. Please try again.');
             }
+        }
+
+        function logOut() {
+            if (confirm('Are you sure you want to log out?')) {
+                isSignedIn = false;
+                currentUser = null;
+                points = 0;
+                totalFocusTime = 0;
+                totalDistractions = 0;
+                totalVideosWatched = 0;
+                tasks = [];
+                streakDays = 0;
+                document.getElementById('landingPage').style.display = 'block';
+                document.getElementById('signinForm').style.display = 'none';
+                document.getElementById('inputForm').style.display = 'none';
+                document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: 0`;
+                document.getElementById('clockDisplay').style.display = 'none';
+                document.getElementById('lofiPlayer').style.display = 'none';
+                document.getElementById('sidebar').classList.remove('active');
+                localStorage.removeItem('focusModeState');
+                updateAchievementLevel();
+                updateStreak();
+            }
+        }
+
+        function toggleDashboard() {
+            const dashboard = document.getElementById('dashboard');
+            if (dashboard.style.display === 'block') {
+                dashboard.style.display = 'none';
+            } else {
+                dashboard.style.display = 'block';
+                document.getElementById('dashName').textContent = currentUser || 'Guest';
+                document.getElementById('dashLevel').textContent = getAchievementLevel(points).level;
+                document.getElementById('dashPoints').textContent = points;
+                document.getElementById('dashStreak').textContent = `${streakDays} day${streakDays === 1 ? '' : 's'}`;
+            }
+        }
+
+        function showStats() {
+            alert(`Focus Stats:\nTotal Focus Time: ${totalFocusTime} minutes\nTotal Distractions: ${totalDistractions}\nTotal Videos Watched: ${totalVideosWatched}`);
         }
 
         function addUrlInput() {
@@ -1319,11 +1331,7 @@
 
         function toggleTodo() {
             const todoList = document.getElementById('todoList');
-            if (todoList.style.display === 'block') {
-                todoList.style.display = 'none';
-            } else {
-                todoList.style.display = 'block';
-            }
+            todoList.style.display = todoList.style.display === 'block' ? 'none' : 'block';
         }
 
         function extractVideoId(url) {
@@ -1354,7 +1362,6 @@
         }
 
         function startPlayback() {
-            console.log('startPlayback clicked');
             try {
                 const urlInputs = document.querySelectorAll('.youtube-url');
                 const urls = Array.from(urlInputs)
@@ -1372,7 +1379,6 @@
                 document.getElementById('restartBtn').style.display = 'block';
                 document.getElementById('pdfToggle').style.display = 'block';
                 document.getElementById('clockDisplay').style.display = 'none';
-                document.getElementById('sitesBox').style.display = 'none';
                 document.getElementById('lofiPlayer').style.display = 'none';
                 pauseLofi();
                 populateVideoSidebar();
@@ -1389,7 +1395,7 @@
                         resetFocusMode();
                     });
 
-                alert('Note: Use "T" to toggle video sidebar. Live streams won’t auto-advance.');
+                alert('Note: Use "T" to toggle video sidebar and "Z" to toggle the sidebar. Live streams won’t auto-advance.');
             } catch (err) {
                 console.error('Start playback error:', err);
                 alert('An error occurred starting Focus Mode. Please try again.');
@@ -1524,75 +1530,6 @@
             }
         }
 
-        function updateAnalytics() {
-            document.getElementById('totalFocusTime').textContent = totalFocusTime;
-            document.getElementById('totalDistractions').textContent = totalDistractions;
-            document.getElementById('totalVideosWatched').textContent = totalVideosWatched;
-            const currentLevel = Math.floor(points / 1000);
-            const previousLevel = Math.floor(previousPoints / 1000);
-            if (currentLevel > previousLevel) {
-                const level = getAchievementLevel(points).level;
-                showAchievementOverlay(level);
-            }
-            previousPoints = points;
-            updateAchievementLevel();
-        }
-
-        function toggleStats() {
-            const analytics = document.getElementById('analytics');
-            if (analytics.style.display === 'block') {
-                analytics.style.display = 'none';
-            } else {
-                updateAnalytics();
-                analytics.style.display = 'block';
-            }
-        }
-
-        function saveState() {
-            try {
-                const timerText = document.getElementById('timerText').textContent;
-                const timerMatch = timerText.match(/^(.*?): (\d+) min (\d+) sec$/);
-                let remaining = timerRemaining;
-                let mode = timerMode;
-                if (timerMatch) {
-                    mode = timerMatch[1];
-                    remaining = (parseInt(timerMatch[2]) * 60) + parseInt(timerMatch[3]);
-                }
-                const state = {
-                    videoIds,
-                    currentVideoIndex,
-                    distractionCount,
-                    points,
-                    timerMode: mode,
-                    timerRemaining: remaining,
-                    isFocusModeActive,
-                    isSignedIn,
-                    currentUser,
-                    completedVideos: Array.from(completedVideos),
-                    allVideosCompleted,
-                    totalFocusTime,
-                    totalDistractions,
-                    totalVideosWatched,
-                    streakDays,
-                    lastFocusDate: localStorage.getItem('lastFocusDate'),
-                    isMinimized: document.getElementById('timerText').style.display === 'none'
-                };
-                localStorage.setItem('focusModeState', JSON.stringify(state));
-                if (isSignedIn && currentUser) {
-                    const users = JSON.parse(localStorage.getItem('users') || '{}');
-                    users[currentUser].points = points;
-                    users[currentUser].totalFocusTime = totalFocusTime;
-                    users[currentUser].totalDistractions = totalDistractions;
-                    users[currentUser].totalVideosWatched = totalVideosWatched;
-                    users[currentUser].tasks = tasks;
-                    users[currentUser].streakDays = streakDays;
-                    localStorage.setItem('users', JSON.stringify(users));
-                }
-            } catch (err) {
-                console.error('Save state error:', err);
-            }
-        }
-
         function populateVideoSidebar() {
             const videoSidebar = document.getElementById('videoSidebar');
             videoSidebar.innerHTML = videoIds.map((id, index) => 
@@ -1625,7 +1562,7 @@
                     document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
                     alert('Great job! +80 points for a distraction-free session!');
                 }
-                updateAnalytics();
+                updateAchievementLevel();
                 updateStreak();
                 saveState();
                 timerMode = 'Break Time';
@@ -1648,7 +1585,7 @@
                             document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
                             alert('Great job! +80 points for a distraction-free session!');
                         }
-                        updateAnalytics();
+                        updateAchievementLevel();
                         saveState();
                         timerMode = 'Break Time';
                         timerRemaining = secondBreakDuration / 1000;
@@ -1676,7 +1613,6 @@
                 document.getElementById('timerText').textContent = `${mode}: ${Math.floor(timerRemaining / 60)} min ${timerRemaining % 60} sec`;
                 document.getElementById('progressFill').style.width = ((duration / 1000 - timerRemaining) / (duration / 1000)) * 100 + '%';
                 saveState();
-                updateAnalytics();
             }, 1000);
         }
 
@@ -1702,7 +1638,7 @@
                         allVideosCompleted = true;
                     }
 
-                    updateAnalytics();
+                    updateAchievementLevel();
                     saveState();
                     currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
                     player.loadVideoById(videoIds[currentVideoIndex]);
@@ -1786,8 +1722,19 @@
             saveState();
         }
 
+        document.addEventListener('mousemove', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            if (e.clientX < 20 && !sidebar.classList.contains('active')) {
+                sidebar.classList.add('active');
+            }
+        });
+
         document.addEventListener('keydown', (e) => {
+            const sidebar = document.getElementById('sidebar');
             const playerDiv = document.getElementById('player');
+            if (e.key === 'Z' || e.key === 'z') {
+                sidebar.classList.toggle('active');
+            }
             if ((e.key === 'T' || e.key === 't') && playerDiv.style.display === 'block') {
                 const videoSidebar = document.getElementById('videoSidebar');
                 videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
@@ -1854,13 +1801,13 @@
                 document.getElementById('timerText').style.display = 'block';
                 document.getElementById('videoSidebar').style.right = '-320px';
                 document.getElementById('clockDisplay').style.display = 'block';
-                document.getElementById('sitesBox').style.display = 'block';
                 document.getElementById('lofiPlayer').style.display = 'block';
+                document.getElementById('sidebar').classList.remove('active');
 
                 const urlInputs = document.getElementById('urlInputs');
                 urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required></div>';
 
-                                if (isSignedIn && currentUser) {
+                if (isSignedIn && currentUser) {
                     const users = JSON.parse(localStorage.getItem('users') || '{}');
                     points = users[currentUser].points || 0;
                     totalFocusTime = users[currentUser].totalFocusTime || 0;
@@ -1869,7 +1816,6 @@
                     tasks = users[currentUser].tasks || [];
                     streakDays = users[currentUser].streakDays || 0;
                     document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-                    updateAnalytics();
                     updateAchievementLevel();
                     updateStreak();
                     restoreTasks();
@@ -1899,8 +1845,7 @@
                         document.getElementById('pdfFrame').src = url;
                     } else {
                         alert('Please select a valid PDF file.');
-                    }
-                };
+                                    };
             }
         }
 
@@ -1908,6 +1853,56 @@
             const aiPopup = document.getElementById('aiPopup');
             aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
         }
+
+        function saveState() {
+            try {
+                const state = {
+                    videoIds,
+                    currentVideoIndex,
+                    distractionCount,
+                    points,
+                    timerMode,
+                    timerRemaining,
+                    isFocusModeActive,
+                    isSignedIn,
+                    currentUser,
+                    completedVideos: Array.from(completedVideos),
+                    allVideosCompleted,
+                    totalFocusTime,
+                    totalDistractions,
+                    totalVideosWatched,
+                    streakDays,
+                    lastFocusDate: localStorage.getItem('lastFocusDate')
+                };
+                localStorage.setItem('focusModeState', JSON.stringify(state));
+                if (isSignedIn && currentUser) {
+                    const users = JSON.parse(localStorage.getItem('users') || '{}');
+                    users[currentUser].points = points;
+                    users[currentUser].totalFocusTime = totalFocusTime;
+                    users[currentUser].totalDistractions = totalDistractions;
+                    users[currentUser].totalVideosWatched = totalVideosWatched;
+                    users[currentUser].tasks = tasks;
+                    users[currentUser].streakDays = streakDays;
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+            } catch (err) {
+                console.error('Save state error:', err);
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (isFocusModeActive) {
+                saveState();
+            }
+        });
+
+        const previousLevel = getAchievementLevel(previousPoints);
+        const currentLevel = getAchievementLevel(points);
+        if (previousLevel.level !== currentLevel.level) {
+            showAchievementOverlay(currentLevel.level);
+            previousPoints = points;
+        }
+
     </script>
 </body>
 </html>
