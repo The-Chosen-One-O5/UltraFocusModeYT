@@ -732,6 +732,7 @@
                 font-size: 14px;
             }
         }
+        #audioVisualizer{position:fixed;bottom:60px;right:10px;width:200px;height:50px;z-index:101;display:none;}
     </style>
     <script type="text/javascript" src="https://unpkg.com/@play-ai/agent-web-sdk@ht"></script>
     <script type="text/javascript">
@@ -846,12 +847,10 @@
         <p>Points: <span id="dashPoints"></span></p>
         <p>Streak: <span id="dashStreak"></span></p>
     </div>
-    
+    <canvas id="audioVisualizer"></canvas>
     <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loading="lazy"></audio>
     <audio id="lofiAudio" preload="none" loop loading="lazy"></audio>
-
     <script src="https://kit.fontawesome.com/2be1b697ca.js" crossorigin="anonymous" defer></script>
-
     <script>
         let currentVideoIndex = 0;
         let player;
@@ -1821,90 +1820,93 @@
                     restoreTasks();
                 }
 
-                saveState();
+                                saveState();
                 if (document.fullscreenElement) {
-                    document.exitFullscreen().catch(err => console.log('Exit fullscreen failed:', err));
+                    document.exitFullscreen().catch(err => console.error('Exit fullscreen error:', err));
                 }
             } catch (err) {
                 console.error('Reset focus mode error:', err);
-                alert('Error resetting Focus Mode. Some data may not have been cleared properly.');
+                alert('Error resetting Focus Mode. Please refresh the page.');
             }
         }
 
         function togglePDFViewer() {
-    const pdfViewer = document.getElementById('pdfViewer');
-    if (pdfViewer.style.display === 'block') {
-        pdfViewer.style.display = 'none';
-    } else {
-        pdfViewer.style.display = 'block';
-        const pdfInput = document.getElementById('pdfInput');
-        pdfInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                const url = URL.createObjectURL(file);
-                document.getElementById('pdfFrame').src = url;
+            const pdfViewer = document.getElementById('pdfViewer');
+            if (pdfViewer.style.display === 'block') {
+                pdfViewer.style.display = 'none';
             } else {
-                alert('Please select a valid PDF file.');
+                pdfViewer.style.display = 'block';
+                const pdfInput = document.getElementById('pdfInput');
+                pdfInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type === 'application/pdf') {
+                        const url = URL.createObjectURL(file);
+                        document.getElementById('pdfFrame').src = url;
+                    } else {
+                        alert('Please select a valid PDF file.');
+                    }
+                };
             }
-        };
-    }
-}
-
-function toggleAIPopup() {
-    const aiPopup = document.getElementById('aiPopup');
-    aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
-}
-
-function saveState() {
-    try {
-        const state = {
-            videoIds,
-            currentVideoIndex,
-            distractionCount,
-            points,
-            timerMode,
-            timerRemaining,
-            isFocusModeActive,
-            isSignedIn,
-            currentUser,
-            completedVideos: Array.from(completedVideos),
-            allVideosCompleted,
-            totalFocusTime,
-            totalDistractions,
-            totalVideosWatched,
-            streakDays,
-            lastFocusDate: localStorage.getItem('lastFocusDate')
-        };
-        localStorage.setItem('focusModeState', JSON.stringify(state));
-        if (isSignedIn && currentUser) {
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            users[currentUser].points = points;
-            users[currentUser].totalFocusTime = totalFocusTime;
-            users[currentUser].totalDistractions = totalDistractions;
-            users[currentUser].totalVideosWatched = totalVideosWatched;
-            users[currentUser].tasks = tasks;
-            users[currentUser].streakDays = streakDays;
-            localStorage.setItem('users', JSON.stringify(users));
         }
-    } catch (err) {
-        console.error('Save state error:', err);
-    }
-}
 
-function checkAchievementProgress() {
-    const currentLevel = getAchievementLevel(points);
-    const previousLevel = getAchievementLevel(previousPoints);
-    if (currentLevel.level !== previousLevel.level) {
-        showAchievementOverlay(currentLevel.level);
-    }
-    previousPoints = points;
-}
+        function toggleAIPopup() {
+            const aiPopup = document.getElementById('aiPopup');
+            aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
+        }
 
-setInterval(() => {
-    if (points !== previousPoints) {
-        checkAchievementProgress();
-    }
-}, 1000);
+        function saveState() {
+            try {
+                const state = {
+                    videoIds,
+                    currentVideoIndex,
+                    distractionCount,
+                    points,
+                    timerMode,
+                    timerRemaining,
+                    isFocusModeActive,
+                    isSignedIn,
+                    currentUser,
+                    completedVideos: Array.from(completedVideos),
+                    allVideosCompleted,
+                    totalFocusTime,
+                    totalDistractions,
+                    totalVideosWatched,
+                    streakDays,
+                    lastFocusDate: localStorage.getItem('lastFocusDate')
+                };
+                localStorage.setItem('focusModeState', JSON.stringify(state));
+                if (isSignedIn && currentUser) {
+                    const users = JSON.parse(localStorage.getItem('users') || '{}');
+                    users[currentUser].points = points;
+                    users[currentUser].totalFocusTime = totalFocusTime;
+                    users[currentUser].totalDistractions = totalDistractions;
+                    users[currentUser].totalVideosWatched = totalVideosWatched;
+                    users[currentUser].tasks = tasks;
+                    users[currentUser].streakDays = streakDays;
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+            } catch (err) {
+                console.error('Save state error:', err);
+            }
+        }
+
+        function checkAchievementProgress() {
+            const currentLevel = getAchievementLevel(points);
+            const previousLevel = getAchievementLevel(previousPoints);
+            if (currentLevel.level !== previousLevel.level) {
+                showAchievementOverlay(currentLevel.level);
+            }
+            previousPoints = points;
+        }
+
+        setInterval(() => {
+            if (points !== previousPoints) {
+                checkAchievementProgress();
+            }
+        }, 1000);
+
+        // Audio Visualizer Setup
+        const audioCtx=new (window.AudioContext||window.webkitAudioContext)();const analyser=audioCtx.createAnalyser();analyser.fftSize=256;const lofiAudio=document.getElementById('lofiAudio');const source=audioCtx.createMediaElementSource(lofiAudio);source.connect(analyser);analyser.connect(audioCtx.destination);const canvas=document.getElementById('audioVisualizer');const ctx=canvas.getContext('2d');canvas.width=200;canvas.height=50;const bufferLength=analyser.frequencyBinCount;const dataArray=new Uint8Array(bufferLength);function drawVisualizer(){analyser.getByteFrequencyData(dataArray);ctx.clearRect(0,0,canvas.width,canvas.height);const barWidth=canvas.width/bufferLength*2.5;let x=0;for(let i=0;i<bufferLength;i++){const barHeight=dataArray[i]/2;ctx.fillStyle=`hsl(${i*2},70%,50%)`;ctx.fillRect(x,canvas.height-barHeight,barWidth,barHeight);x+=barWidth+1;}requestAnimationFrame(drawVisualizer);}lofiAudio.onplay=()=>{audioCtx.resume().then(()=>{document.getElementById('audioVisualizer').style.display='block';drawVisualizer();});};lofiAudio.onpause=()=>{document.getElementById('audioVisualizer').style.display='none';};
 
     </script>
 </body>
