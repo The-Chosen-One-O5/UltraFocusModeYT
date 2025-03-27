@@ -1832,76 +1832,79 @@
         }
 
         function togglePDFViewer() {
-            const pdfViewer = document.getElementById('pdfViewer');
-            if (pdfViewer.style.display === 'block') {
-                pdfViewer.style.display = 'none';
+    const pdfViewer = document.getElementById('pdfViewer');
+    if (pdfViewer.style.display === 'block') {
+        pdfViewer.style.display = 'none';
+    } else {
+        pdfViewer.style.display = 'block';
+        const pdfInput = document.getElementById('pdfInput');
+        pdfInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                const url = URL.createObjectURL(file);
+                document.getElementById('pdfFrame').src = url;
             } else {
-                pdfViewer.style.display = 'block';
-                const pdfInput = document.getElementById('pdfInput');
-                pdfInput.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file && file.type === 'application/pdf') {
-                        const url = URL.createObjectURL(file);
-                        document.getElementById('pdfFrame').src = url;
-                    } else {
-                        alert('Please select a valid PDF file.');
-                                    };
+                alert('Please select a valid PDF file.');
             }
-        }
+        };
+    }
+}
 
-        function toggleAIPopup() {
-            const aiPopup = document.getElementById('aiPopup');
-            aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
-        }
+function toggleAIPopup() {
+    const aiPopup = document.getElementById('aiPopup');
+    aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
+}
 
-        function saveState() {
-            try {
-                const state = {
-                    videoIds,
-                    currentVideoIndex,
-                    distractionCount,
-                    points,
-                    timerMode,
-                    timerRemaining,
-                    isFocusModeActive,
-                    isSignedIn,
-                    currentUser,
-                    completedVideos: Array.from(completedVideos),
-                    allVideosCompleted,
-                    totalFocusTime,
-                    totalDistractions,
-                    totalVideosWatched,
-                    streakDays,
-                    lastFocusDate: localStorage.getItem('lastFocusDate')
-                };
-                localStorage.setItem('focusModeState', JSON.stringify(state));
-                if (isSignedIn && currentUser) {
-                    const users = JSON.parse(localStorage.getItem('users') || '{}');
-                    users[currentUser].points = points;
-                    users[currentUser].totalFocusTime = totalFocusTime;
-                    users[currentUser].totalDistractions = totalDistractions;
-                    users[currentUser].totalVideosWatched = totalVideosWatched;
-                    users[currentUser].tasks = tasks;
-                    users[currentUser].streakDays = streakDays;
-                    localStorage.setItem('users', JSON.stringify(users));
-                }
-            } catch (err) {
-                console.error('Save state error:', err);
-            }
+function saveState() {
+    try {
+        const state = {
+            videoIds,
+            currentVideoIndex,
+            distractionCount,
+            points,
+            timerMode,
+            timerRemaining,
+            isFocusModeActive,
+            isSignedIn,
+            currentUser,
+            completedVideos: Array.from(completedVideos),
+            allVideosCompleted,
+            totalFocusTime,
+            totalDistractions,
+            totalVideosWatched,
+            streakDays,
+            lastFocusDate: localStorage.getItem('lastFocusDate')
+        };
+        localStorage.setItem('focusModeState', JSON.stringify(state));
+        if (isSignedIn && currentUser) {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[currentUser].points = points;
+            users[currentUser].totalFocusTime = totalFocusTime;
+            users[currentUser].totalDistractions = totalDistractions;
+            users[currentUser].totalVideosWatched = totalVideosWatched;
+            users[currentUser].tasks = tasks;
+            users[currentUser].streakDays = streakDays;
+            localStorage.setItem('users', JSON.stringify(users));
         }
+    } catch (err) {
+        console.error('Save state error:', err);
+    }
+}
 
-        window.addEventListener('beforeunload', () => {
-            if (isFocusModeActive) {
-                saveState();
-            }
-        });
+function checkAchievementProgress() {
+    const currentLevel = getAchievementLevel(points);
+    const previousLevel = getAchievementLevel(previousPoints);
+    if (currentLevel.level !== previousLevel.level) {
+        showAchievementOverlay(currentLevel.level);
+    }
+    previousPoints = points;
+}
 
-        const previousLevel = getAchievementLevel(previousPoints);
-        const currentLevel = getAchievementLevel(points);
-        if (previousLevel.level !== currentLevel.level) {
-            showAchievementOverlay(currentLevel.level);
-            previousPoints = points;
-        }
+setInterval(() => {
+    if (points !== previousPoints) {
+        checkAchievementProgress();
+    }
+}, 1000);
 
     </script>
 </body>
