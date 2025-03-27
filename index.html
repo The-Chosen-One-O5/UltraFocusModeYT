@@ -12,7 +12,7 @@
             box-sizing: border-box;
         }
         body {
-            background-color: #2a2a2a;
+            background-color: #232B36; /* Updated to Bunker */
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -38,7 +38,7 @@
             margin-bottom: 10px;
         }
         #landingPage .title span, #signinForm .title span, #inputForm .title span {
-            color: #8e2de2;
+            color: #7856A8; /* Updated to Studio */
         }
         #landingPage .subtitle, #signinForm .subtitle, #inputForm .subtitle {
             font-size: 18px;
@@ -50,7 +50,7 @@
             padding: 12px 30px;
             font-size: 18px;
             font-weight: 600;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             border: none;
             color: #fff;
             border-radius: 8px;
@@ -60,15 +60,15 @@
             pointer-events: auto; /* Ensure clickable */
         }
         #landingPage button:hover, #signinForm button:hover, #inputForm button:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
             transform: scale(1.05);
         }
         #landingPage .github-btn, #signinForm .github-btn {
-            background: #333;
+            background: #3A4452; /* Updated to a lighter shade of Bunker */
             padding: 12px 30px;
         }
         #landingPage .github-btn:hover, #signinForm .github-btn:hover {
-            background: #444;
+            background: #4A5462; /* Slightly lighter for hover */
         }
         #features {
             display: flex;
@@ -78,7 +78,7 @@
             flex-wrap: wrap;
         }
         .feature {
-            background: #1e1e1e;
+            background: #3D2B6C; /* Updated to Minsk */
             padding: 15px 20px;
             border-radius: 10px;
             width: 200px;
@@ -86,7 +86,7 @@
         }
         .feature i {
             font-size: 24px;
-            color: #8e2de2;
+            color: #7856A8; /* Updated to Studio */
             margin-bottom: 10px;
         }
         .feature p {
@@ -102,15 +102,15 @@
             border-radius: 8px;
             font-size: 16px;
             font-family: 'Poppins', sans-serif;
-            background: #2a2a2a;
-            border: 2px solid #444;
+            background: #232B36; /* Updated to Bunker */
+            border: 2px solid #3A4452; /* Updated to a lighter shade of Bunker */
             color: #fff;
             outline: none;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
         #signinForm input:focus, #inputForm input:focus, #inputForm select:focus {
-            border-color: #8e2de2;
-            box-shadow: 0 0 5px rgba(142, 45, 226, 0.5);
+            border-color: #7856A8; /* Updated to Studio */
+            box-shadow: 0 0 5px rgba(120, 86, 168, 0.5); /* Updated to Studio with opacity */
         }
         #inputForm {
             max-height: 80vh;
@@ -120,19 +120,19 @@
             width: 6px;
         }
         #inputForm::-webkit-scrollbar-track {
-            background: #2a2a2a;
+            background: #232B36; /* Updated to Bunker */
             border-radius: 3px;
         }
         #inputForm::-webkit-scrollbar-thumb {
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             border-radius: 3px;
         }
         #inputForm::-webkit-scrollbar-thumb:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #inputForm {
             scrollbar-width: thin;
-            scrollbar-color: #8e2de2 #2a2a2a;
+            scrollbar-color: #7856A8 #232B36; /* Updated to Studio and Bunker */
         }
         #player {
             width: 100%;
@@ -167,10 +167,10 @@
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
             z-index: 101;
-            background: rgba(30, 30, 30, 0.9);
+            background: rgba(61, 43, 108, 0.9); /* Updated to Minsk with opacity */
             padding: 8px 12px;
             border-radius: 8px;
-            border: 1px solid #8e2de2;
+            border: 1px solid #7856A8; /* Updated to Studio */
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             pointer-events: none;
         }
@@ -188,17 +188,17 @@
             pointer-events: none;
         }
         #clockDisplay .time {
-            color: #87CEEB;
+            color: #C4DEF8; /* Updated to Patterns Blue */
         }
         #clockDisplay .period {
-            color: #8e2de2;
+            color: #7856A8; /* Updated to Studio */
         }
         #sitesBox {
             position: fixed;
             top: 130px;
             left: 10px;
             width: 200px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(61, 43, 108, 0.7); /* Updated to Minsk with opacity */
             z-index: 101;
             cursor: pointer;
             padding: 10px;
@@ -212,7 +212,7 @@
             top: 170px;
             left: 10px;
             width: 250px;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(61, 43, 108, 0.9); /* Updated to Minsk with opacity */
             padding: 15px;
             border-radius: 8px;
             display: none;
@@ -220,13 +220,13 @@
         }
         #sitesPopup a {
             display: block;
-            color: #8e2de2;
+            color: #7856A8; /* Updated to Studio */
             text-decoration: none;
             margin: 10px 0;
             font-size: 14px;
         }
         #sitesPopup a:hover {
-            color: #7a25c9;
+            color: #664896; /* Darkened Studio for hover */
             text-decoration: underline;
         }
         #closeSitesPopup {
@@ -242,21 +242,21 @@
         #progressBar {
             width: 200px;
             height: 5px;
-            background: #444;
+            background: #3A4452; /* Updated to a lighter shade of Bunker */
             display: none;
             margin-top: 5px;
         }
         #progressFill {
             height: 100%;
             width: 0;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
         }
         #restartBtn {
             display: none;
             position: fixed;
             top: 10px;
             right: 10px;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             padding: 10px 20px;
             border: none;
             color: #fff;
@@ -267,7 +267,7 @@
             pointer-events: auto;
         }
         #restartBtn:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #videoSidebar {
             position: fixed;
@@ -290,7 +290,7 @@
             loading: lazy;
         }
         .thumbnail:hover {
-            border-color: #8e2de2;
+            border-color: #7856A8; /* Updated to Studio */
         }
         #minimizeBtn {
             position: absolute;
@@ -309,7 +309,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(142, 45, 226, 0.2), transparent);
+            background: linear-gradient(to bottom, rgba(120, 86, 168, 0.2), transparent); /* Updated to Studio with opacity */
             z-index: -1;
             border-radius: 15px;
             pointer-events: none; /* Prevent blocking clicks */
@@ -331,7 +331,7 @@
         #statsBtn, #todoBtn, #pyqBtn {
             padding: 8px 16px;
             font-size: 14px;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             border: none;
             color: #fff;
             border-radius: 8px;
@@ -340,12 +340,12 @@
             pointer-events: auto;
         }
         #statsBtn:hover, #todoBtn:hover, #pyqBtn:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #analytics, #todoList {
             position: absolute;
             left: 10px;
-            background: #1e1e1e;
+            background: #3D2B6C; /* Updated to Minsk */
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -359,7 +359,7 @@
             top: 50px;
             width: 300px;
             max-height: 400px;
-            background: #1e1e1e;
+            background: #3D2B6C; /* Updated to Minsk */
             padding: 15px;
             border-radius: 5px;
             box-shadow: none;
@@ -373,7 +373,7 @@
         #analytics h3, #todoList h3 {
             font-size: 20px;
             margin-bottom: 10px;
-            color: #8e2de2;
+            color: #7856A8; /* Updated to Studio */
         }
         #analytics p {
             font-size: 14px;
@@ -394,14 +394,14 @@
             font-size: 14px;
             font-family: 'Poppins', sans-serif;
             color: #fff;
-            background: #1e1e1e;
+            background: #3D2B6C; /* Updated to Minsk */
             border: none;
             border-bottom: 1px solid #fff;
             padding: 2px 0;
             outline: none;
         }
         .task-line input[type="text"]:focus {
-            border-bottom: 1px solid #8e2de2;
+            border-bottom: 1px solid #7856A8; /* Updated to Studio */
         }
         .task-line .remove-task {
             margin-left: 10px;
@@ -420,14 +420,14 @@
             margin-top: 10px;
             padding: 8px 16px;
             font-size: 14px;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             border: none;
             color: #fff;
             border-radius: 5px;
             cursor: pointer;
         }
         #todoList button:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #lofiPlayer {
             position: fixed;
@@ -435,12 +435,12 @@
             right: 10px;
             z-index: 101;
             display: none;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(61, 43, 108, 0.7); /* Updated to Minsk with opacity */
             padding: 10px;
             border-radius: 8px;
         }
         #lofiPlayer button {
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             border: none;
             color: #fff;
             padding: 5px 10px;
@@ -452,7 +452,7 @@
             pointer-events: auto;
         }
         #lofiPlayer button:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #achievementOverlay {
             position: fixed;
@@ -485,10 +485,10 @@
             font-size: 16px;
             color: #fff;
             z-index: 101;
-            background: rgba(30, 30, 30, 0.9);
+            background: rgba(61, 43, 108, 0.9); /* Updated to Minsk with opacity */
             padding: 8px 12px;
             border-radius: 8px;
-            border: 1px solid #8e2de2;
+            border: 1px solid #7856A8; /* Updated to Studio */
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             pointer-events: none;
         }
@@ -515,7 +515,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #1e1e1e;
+            background: #3D2B6C; /* Updated to Minsk */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
@@ -537,10 +537,10 @@
             pointer-events: auto;
         }
         #confirmBtn {
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
         }
         #confirmBtn:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #cancelBtn {
             background: #ff4444;
@@ -553,7 +553,7 @@
             position: fixed;
             bottom: 10px;
             right: 10px;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             padding: 10px 20px;
             border: none;
             color: #fff;
@@ -564,7 +564,7 @@
             pointer-events: auto;
         }
         #pdfToggle:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #pdfViewer {
             display: none;
@@ -574,7 +574,7 @@
             transform: translate(-50%, -50%);
             width: 400px;
             height: 500px;
-            background: #1e1e1e;
+            background: #3D2B6C; /* Updated to Minsk */
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -593,13 +593,13 @@
             border-radius: 8px;
         }
         /* Fire Emoji Box and Popup Styles - Moved to Bottom-Left */
-                #fireBox {
+        #fireBox {
             position: fixed;
             bottom: 10px;
             left: 10px;
             width: 40px;
             height: 40px;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             border-radius: 8px;
             display: flex;
             justify-content: center;
@@ -610,7 +610,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         #fireBox:hover {
-            background: #7a25c9;
+            background: #664896; /* Darkened Studio for hover */
         }
         #aiPopup {
             position: fixed;
@@ -618,7 +618,7 @@
             left: 10px;
             width: 300px;
             height: 400px;
-            background: #8e2de2;
+            background: #7856A8; /* Updated to Studio */
             border-radius: 10px;
             padding: 5px;
             display: none;
@@ -819,7 +819,7 @@
         <span id="timerText"></span>
         <div id="progressBar"><div id="progressFill"></div></div>
     </div>
-    <div id="pointsDisplay"><span style="color: #8e2de2;">⭐</span> Points: 0</div>
+    <div id="pointsDisplay"><span style="color: #7856A8;">⭐</span> Points: 0</div>
     <div id="clockDisplay"></div>
     <div id="sitesBox" onclick="toggleSitesPopup()">CHECKOUT MY OTHER SITES 👇</div>
     <div id="sitesPopup">
@@ -1019,7 +1019,7 @@
             
             localStorage.setItem('lastFocusDate', today);
             document.getElementById('streakDisplay').innerHTML = 
-                `<span style="color: #8e2de2;">🔥</span> ${streakDays} day${streakDays === 1 ? '' : 's'} of focus`;
+                `<span style="color: #7856A8;">🔥</span> ${streakDays} day${streakDays === 1 ? '' : 's'} of focus`;
             
             if (isSignedIn && currentUser) {
                 const users = JSON.parse(localStorage.getItem('users') || '{}');
@@ -1057,7 +1057,7 @@
                         document.getElementById('landingPage').style.display = 'none';
                         document.getElementById('signinForm').style.display = 'none';
                         document.getElementById('inputForm').style.display = 'block';
-                        document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                        document.getElementById('pointsDisplay').innerHTML = `<span style="color: #7856A8;">⭐</span> Points: ${points}`;
                         document.getElementById('clockDisplay').style.display = 'block';
                         document.getElementById('sitesBox').style.display = 'block';
                         document.getElementById('lofiPlayer').style.display = 'block';
@@ -1133,7 +1133,7 @@
                     document.getElementById('landingPage').style.display = 'none';
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #7856A8;">⭐</span> Points: ${points}`;
                     document.getElementById('clockDisplay').style.display = 'block';
                     document.getElementById('sitesBox').style.display = 'block';
                     document.getElementById('lofiPlayer').style.display = 'block';
@@ -1174,7 +1174,7 @@
                     document.getElementById('landingPage').style.display = 'none';
                     document.getElementById('signinForm').style.display = 'none';
                     document.getElementById('inputForm').style.display = 'block';
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #7856A8;">⭐</span> Points: ${points}`;
                     document.getElementById('clockDisplay').style.display = 'block';
                     document.getElementById('sitesBox').style.display = 'block';
                     document.getElementById('lofiPlayer').style.display = 'block';
@@ -1622,7 +1622,7 @@
                 totalFocusTime += 50;
                 if (isSignedIn && distractionCount === 0) {
                     points += 80;
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #7856A8;">⭐</span> Points: ${points}`;
                     alert('Great job! +80 points for a distraction-free session!');
                 }
                 updateAnalytics();
@@ -1645,7 +1645,7 @@
                         totalFocusTime += 50;
                         if (isSignedIn && distractionCount === 0) {
                             points += 80;
-                            document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                            document.getElementById('pointsDisplay').innerHTML = `<span style="color: #7856A8;">⭐</span> Points: ${points}`;
                             alert('Great job! +80 points for a distraction-free session!');
                         }
                         updateAnalytics();
@@ -1697,7 +1697,7 @@
                     
                     if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
                         points += 150;
-                        document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                        document.getElementById('pointsDisplay').innerHTML = `<span style="color: #7856A8;">⭐</span> Points: ${points}`;
                         alert('Incredible! +150 points for completing the entire playlist!');
                         allVideosCompleted = true;
                     }
@@ -1726,7 +1726,7 @@
                 totalDistractions++;
                 if (isSignedIn) {
                     points -= 10;
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
+                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #7856A8;">⭐</span> Points: ${points}`;
                     alert(`Stay focused! -10 points for switching tabs. Distractions: ${distractionCount}`);
                 } else {
                     alert(`Stay focused! Distractions: ${distractionCount}`);
@@ -1787,127 +1787,103 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            const playerDiv = document.getElementById('player');
-            if ((e.key === 'T' || e.key === 't') && playerDiv.style.display === 'block') {
-                const videoSidebar = document.getElementById('videoSidebar');
-                videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
+    const playerDiv = document.getElementById('player');
+    if ((e.key === 'T' || e.key === 't') && playerDiv.style.display === 'block') {
+        const videoSidebar = document.getElementById('videoSidebar');
+        videoSidebar.style.right = videoSidebar.style.right === '0px' ? '-320px' : '0px';
+    }
+});
+
+function showConfirmationDialog() {
+    document.getElementById('confirmationDialog').style.display = 'block';
+}
+
+function confirmReset() {
+    resetFocusMode();
+    document.getElementById('confirmationDialog').style.display = 'none';
+}
+
+function cancelReset() {
+    document.getElementById('confirmationDialog').style.display = 'none';
+}
+
+function resetFocusMode() {
+    try {
+        if (player) {
+            player.destroy();
+            player = null;
+        }
+        document.getElementById('player').style.display = 'none';
+        document.getElementById('inputForm').style.display = 'block';
+        document.getElementById('restartBtn').style.display = 'none';
+        document.getElementById('pdfToggle').style.display = 'none';
+        document.getElementById('clockDisplay').style.display = 'block';
+        document.getElementById('sitesBox').style.display = 'block';
+        document.getElementById('lofiPlayer').style.display = 'block';
+        document.getElementById('timerText').textContent = '';
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('timerText').style.display = 'block';
+        document.getElementById('minimizeBtn').textContent = '-';
+        document.getElementById('progressBar').style.display = 'none';
+        document.getElementById('videoSidebar').style.right = '-320px';
+        document.getElementById('analytics').style.display = 'none';
+        document.getElementById('todoList').style.display = 'none';
+        clearInterval(countdownInterval);
+        isFocusModeActive = false;
+        currentVideoIndex = 0;
+        completedVideos.clear();
+        allVideosCompleted = false;
+        videoIds = [];
+        distractionCount = 0;
+        timerMode = 'Focus Time';
+        timerRemaining = focusDuration / 1000;
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(err => console.log('Exit fullscreen failed:', err));
+        }
+        saveState();
+        restoreUrlInputs();
+    } catch (err) {
+        console.error('Reset focus mode error:', err);
+        alert('Error resetting Focus Mode. Please try again.');
+    }
+}
+
+function togglePDFViewer() {
+    const pdfViewer = document.getElementById('pdfViewer');
+    if (pdfViewer.style.display === 'block') {
+        pdfViewer.style.display = 'none';
+        document.getElementById('pdfFrame').src = '';
+    } else {
+        pdfViewer.style.display = 'block';
+        const pdfInput = document.getElementById('pdfInput');
+        pdfInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                document.getElementById('pdfFrame').src = fileURL;
+            } else {
+                alert('Please select a valid PDF file.');
             }
         });
+    }
+}
 
-        function showConfirmationDialog() {
-            const dialog = document.getElementById('confirmationDialog');
-            dialog.style.display = 'block';
-        }
+// Toggle AI Popup (Fire Emoji Box)
+function toggleAIPopup() {
+    const aiPopup = document.getElementById('aiPopup');
+    aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
+}
 
-        function confirmReset() {
-            const dialog = document.getElementById('confirmationDialog');
-            dialog.style.display = 'none';
-            resetFocusMode();
-        }
+window.addEventListener('beforeunload', (e) => {
+    if (isFocusModeActive) {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Your focus session is active.';
+    }
+});
 
-        function cancelReset() {
-            const dialog = document.getElementById('confirmationDialog');
-            dialog.style.display = 'none';
-            alert('Focus Mode continues. Stay focused!');
-        }
-
-        function resetFocusMode() {
-            try {
-                const focusAudio = document.getElementById('focusAudio');
-                focusAudio.pause();
-                focusAudio.currentTime = 0;
-                focusAudio.loop = false;
-                pauseLofi();
-                lofiAudio.currentTime = 0;
-
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
-
-                videoIds = [];
-                currentVideoIndex = 0;
-                distractionCount = 0;
-                completedVideos.clear();
-                allVideosCompleted = false;
-                isFocusModeActive = false;
-                timerMode = 'Focus Time';
-                timerRemaining = focusDuration / 1000;
-
-                if (player && typeof player.destroy === 'function') {
-                    player.destroy();
-                    player = null;
-                }
-                document.getElementById('player').innerHTML = '';
-                document.getElementById('player').style.display = 'none';
-
-                document.getElementById('inputForm').style.display = 'block';
-                document.getElementById('landingPage').style.display = 'none';
-                document.getElementById('signinForm').style.display = 'none';
-                document.getElementById('restartBtn').style.display = 'none';
-                document.getElementById('pdfToggle').style.display = 'none';
-                document.getElementById('pdfViewer').style.display = 'none';
-                document.getElementById('timerText').textContent = '';
-                document.getElementById('progressFill').style.width = '0';
-                document.getElementById('progressBar').style.display = 'none';
-                document.getElementById('minimizeBtn').textContent = '-';
-                document.getElementById('timerText').style.display = 'block';
-                document.getElementById('videoSidebar').style.right = '-320px';
-                document.getElementById('clockDisplay').style.display = 'block';
-                document.getElementById('sitesBox').style.display = 'block';
-                document.getElementById('lofiPlayer').style.display = 'block';
-
-                const urlInputs = document.getElementById('urlInputs');
-                urlInputs.innerHTML = '<div class="url-container"><input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required></div>';
-
-                                if (isSignedIn && currentUser) {
-                    const users = JSON.parse(localStorage.getItem('users') || '{}');
-                    points = users[currentUser].points || 0;
-                    totalFocusTime = users[currentUser].totalFocusTime || 0;
-                    totalDistractions = users[currentUser].totalDistractions || 0;
-                    totalVideosWatched = users[currentUser].totalVideosWatched || 0;
-                    tasks = users[currentUser].tasks || [];
-                    streakDays = users[currentUser].streakDays || 0;
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> Points: ${points}`;
-                    updateAnalytics();
-                    updateAchievementLevel();
-                    updateStreak();
-                    restoreTasks();
-                }
-
-                saveState();
-                if (document.fullscreenElement) {
-                    document.exitFullscreen().catch(err => console.log('Exit fullscreen failed:', err));
-                }
-            } catch (err) {
-                console.error('Reset focus mode error:', err);
-                alert('Error resetting Focus Mode. Some data may not have been cleared properly.');
-            }
-        }
-
-        function togglePDFViewer() {
-            const pdfViewer = document.getElementById('pdfViewer');
-            if (pdfViewer.style.display === 'block') {
-                pdfViewer.style.display = 'none';
-            } else {
-                pdfViewer.style.display = 'block';
-                const pdfInput = document.getElementById('pdfInput');
-                pdfInput.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file && file.type === 'application/pdf') {
-                        const url = URL.createObjectURL(file);
-                        document.getElementById('pdfFrame').src = url;
-                    } else {
-                        alert('Please select a valid PDF file.');
-                    }
-                };
-            }
-        }
-
-        function toggleAIPopup() {
-            const aiPopup = document.getElementById('aiPopup');
-            aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
-        }
+window.addEventListener('unload', () => {
+    saveState();
+});
     </script>
 </body>
 </html>
