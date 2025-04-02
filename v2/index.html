@@ -652,7 +652,7 @@
       background: var(--bg-medium);
       padding: 8px 12px;
       border: 2px solid var(--secondary);
-      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+ Six: 4px 4px 0 rgba(0, 0, 0, 0.3);
       pointer-events: none;
     }
 
@@ -923,6 +923,41 @@
       color: var(--primary);
     }
 
+    #mysteryBoxPopup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-medium);
+      padding: 20px;
+      border: 4px solid gold;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      z-index: 105;
+      display: none;
+      text-align: center;
+      pointer-events: auto;
+      font-family: monospace;
+      width: 300px;
+    }
+
+    #mysteryBoxPopup h3 {
+      color: gold;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    #mysteryBoxPopup p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    #mysteryBoxPopup button {
+      padding: 8px 20px;
+      background: var(--accent);
+      font-size: 14px;
+      pointer-events: auto;
+    }
+
     @media (max-width: 800px) {
       .title { font-size: 24px; }
       button { padding: 8px 16px; font-size: 12px; margin: 0 5px 10px; }
@@ -936,6 +971,7 @@
       #confirmationDialog p { font-size: 14px; }
       #pdfViewer { width: 90%; height: 80%; max-height: 500px; }
       #aiPopup { width: 90%; max-width: 300px; height: 350px; }
+      #mysteryBoxPopup { width: 90%; max-width: 280px; }
     }
   </style>
 </head>
@@ -1088,6 +1124,12 @@
       <iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameBorder="0"></iframe>
     </div>
 
+    <div id="mysteryBoxPopup" style="display: none;">
+      <h3>Focus Mystery Box</h3>
+      <p id="mysteryRewardText">Click to reveal your reward!</p>
+      <button id="openMysteryBox">OPEN</button>
+    </div>
+
     <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
     <audio id="lofiAudio" preload="none" loop></audio>
   </div>
@@ -1118,7 +1160,6 @@
       let previousPoints = 0
       let streakDays = 0
       let lastFocusDate = null
-
       let isYouTubeAPILoaded = false
       let lofiAudio
       const lofiSongs = [
@@ -1141,6 +1182,19 @@
       let timeOnInputForm = 0
       const reminderIntervalTime = 20 * 60 * 1000 // 20 minutes in milliseconds
       const reminderThreshold = 20 * 60 * 1000 // 20 minutes threshold
+
+      // Mystery Box feature variables
+      let mysteryBoxCount = 0
+      let activePowerUps = {
+        doublePoints: { active: false, expiry: null },
+        streakShield: { active: false, used: false },
+      }
+      const MYSTERY_BOX_STREAK_INTERVAL = 14
+      const mysteryBoxRewards = [
+        { type: "points", value: () => Math.floor(Math.random() * 451) + 50, message: (val) => `+${val} XP` },
+        { type: "doublePoints", value: 24 * 60 * 60 * 1000, message: () => "Double Points for 24 Hours" },
+        { type: "streakShield", value: 1, message: () => "1-Day Streak Shield" },
+      ]
 
       const achievementLevels = [
         { points: 0, level: "Mortal", color: "white" },
@@ -1257,8 +1311,18 @@
           const diffTime = new Date(today) - last
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
-          if (diffDays === 1) streakDays++
-          else if (diffDays > 1) streakDays = 1
+          if (diffDays === 1) {
+            streakDays++
+            checkMysteryBoxMilestone()
+          } else if (diffDays > 1) {
+            if (activePowerUps.streakShield.active && !activePowerUps.streakShield.used) {
+              activePowerUps.streakShield.used = true
+              streakDays++
+              alert("Streak Shield activated! Your streak continues!")
+            } else {
+              streakDays = 1
+            }
+          }
         } else streakDays = 1
 
         localStorage.setItem("lastFocusDate", today)
@@ -1267,11 +1331,77 @@
         if (isSignedIn && currentUser) {
           const users = JSON.parse(localStorage.getItem("users") || "{}")
           users[currentUser].streakDays = streakDays
+          users[currentUser].mysteryBoxCount = mysteryBoxCount
+          users[currentUser].activePowerUps = activePowerUps
           localStorage.setItem("users", JSON.stringify(users))
         }
 
         const sidebarStreak = document.getElementById("sidebarStreak")
         if (sidebarStreak) sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
+      }
+
+      function checkMysteryBoxMilestone() {
+        if (streakDays > 0 && streakDays % MYSTERY_BOX_STREAK_INTERVAL === 0) {
+          mysteryBoxCount++
+          showMysteryBoxPopup()
+          saveState()
+        }
+      }
+
+      function showMysteryBoxPopup() {
+        const popup = document.getElementById("mysteryBoxPopup")
+        const rewardText = document.getElementById("mysteryRewardText")
+        if (!popup || !rewardText) return
+
+        rewardText.textContent = `You earned a Focus Mystery Box! (${mysteryBoxCount} available)`
+        popup.style.display = "block"
+      }
+
+      function openMysteryBox() {
+        if (mysteryBoxCount <= 0) return
+
+        const popup = document.getElementById("mysteryBoxPopup")
+        const rewardText = document.getElementById("mysteryRewardText")
+        if (!popup || !rewardText) return
+
+        const reward = mysteryBoxRewards[Math.floor(Math.random() * mysteryBoxRewards.length)]
+        let rewardValue = reward.value instanceof Function ? reward.value() : reward.value
+
+        switch (reward.type) {
+          case "points":
+            points += rewardValue
+            break
+          case "doublePoints":
+            activePowerUps.doublePoints.active = true
+            activePowerUps.doublePoints.expiry = Date.now() + rewardValue
+            setTimeout(() => {
+              activePowerUps.doublePoints.active = false
+              saveState()
+              alert("Double Points power-up has expired!")
+            }, rewardValue)
+            break
+          case "streakShield":
+            activePowerUps.streakShield.active = true
+            activePowerUps.streakShield.used = false
+            break
+        }
+
+        rewardText.textContent = `Reward: ${reward.message(rewardValue)}`
+        mysteryBoxCount--
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+        saveState()
+
+        setTimeout(() => {
+          if (mysteryBoxCount > 0) showMysteryBoxPopup()
+          else popup.style.display = "none"
+        }, 2000)
+      }
+
+      function applyPowerUps(pointsEarned) {
+        if (activePowerUps.doublePoints.active && Date.now() < activePowerUps.doublePoints.expiry) {
+          return pointsEarned * 2
+        }
+        return pointsEarned
       }
 
       // Reminder feature functions
@@ -1340,6 +1470,11 @@
             totalVideosWatched = state.totalVideosWatched || 0
             streakDays = state.streakDays || 0
             lastFocusDate = state.lastFocusDate || null
+            mysteryBoxCount = state.mysteryBoxCount || 0
+            activePowerUps = state.activePowerUps || {
+              doublePoints: { active: false, expiry: null },
+              streakShield: { active: false, used: false },
+            }
 
             updateAnalytics()
             updateAchievementLevel()
@@ -1355,7 +1490,8 @@
               restoreUrlInputs()
               populatePlaylistSelect()
               restoreTasks()
-              startReminderTimer() // Start reminder when loading inputForm
+              startReminderTimer()
+              if (mysteryBoxCount > 0) showMysteryBoxPopup()
             }
             if (videoIds.length > 0) {
               document.getElementById("inputForm").style.display = "none"
@@ -1365,7 +1501,7 @@
               document.getElementById("clockDisplay").style.display = "none"
               document.getElementById("sitesBox").style.display = "none"
               document.getElementById("lofiPlayer").style.display = "none"
-              stopReminderTimer() // Stop reminder in Focus Mode
+              stopReminderTimer()
               loadYouTubeAPI()
                 .then(() => {
                   setupYouTubePlayer()
@@ -1380,7 +1516,7 @@
             document.getElementById("clockDisplay").style.display = "none"
             document.getElementById("sitesBox").style.display = "none"
             document.getElementById("lofiPlayer").style.display = "none"
-            stopReminderTimer() // Ensure reminder is off on landing page
+            stopReminderTimer()
             updateAnalytics()
             updateAchievementLevel()
             updateStreak()
@@ -1402,7 +1538,7 @@
         document.getElementById("clockDisplay").style.display = "none"
         document.getElementById("sitesBox").style.display = "none"
         document.getElementById("lofiPlayer").style.display = "none"
-        stopReminderTimer() // Stop reminder on sign-in page
+        stopReminderTimer()
       }
 
       function signIn() {
@@ -1419,6 +1555,11 @@
             totalVideosWatched = users[username].totalVideosWatched || 0
             tasks = users[username].tasks || []
             streakDays = users[username].streakDays || 0
+            mysteryBoxCount = users[username].mysteryBoxCount || 0
+            activePowerUps = users[username].activePowerUps || {
+              doublePoints: { active: false, expiry: null },
+              streakShield: { active: false, used: false },
+            }
             document.getElementById("landingPage").style.display = "none"
             document.getElementById("signinForm").style.display = "none"
             document.getElementById("inputForm").style.display = "block"
@@ -1432,7 +1573,8 @@
             saveState()
             populatePlaylistSelect()
             restoreTasks()
-            startReminderTimer() // Start reminder on inputForm
+            startReminderTimer()
+            if (mysteryBoxCount > 0) showMysteryBoxPopup()
             updateSidebarDashboard()
           } else alert("Invalid username or password")
         } catch (err) {
@@ -1456,6 +1598,11 @@
               totalVideosWatched: 0,
               tasks: [],
               streakDays: 0,
+              mysteryBoxCount: 0,
+              activePowerUps: {
+                doublePoints: { active: false, expiry: null },
+                streakShield: { active: false, used: false },
+              },
             }
             localStorage.setItem("users", JSON.stringify(users))
             isSignedIn = true
@@ -1466,6 +1613,11 @@
             totalVideosWatched = 0
             tasks = []
             streakDays = 0
+            mysteryBoxCount = 0
+            activePowerUps = {
+              doublePoints: { active: false, expiry: null },
+              streakShield: { active: false, used: false },
+            }
             document.getElementById("landingPage").style.display = "none"
             document.getElementById("signinForm").style.display = "none"
             document.getElementById("inputForm").style.display = "block"
@@ -1479,7 +1631,7 @@
             saveState()
             populatePlaylistSelect()
             restoreTasks()
-            startReminderTimer() // Start reminder on inputForm
+            startReminderTimer()
             updateSidebarDashboard()
           } else alert("Please enter a username and password")
         } catch (err) {
@@ -1673,7 +1825,7 @@
           document.getElementById("clockDisplay").style.display = "none"
           document.getElementById("sitesBox").style.display = "none"
           document.getElementById("lofiPlayer").style.display = "none"
-          stopReminderTimer() // Stop reminder in Focus Mode
+          stopReminderTimer()
           pauseLofi()
           populateVideoSidebar()
           loadYouTubeAPI()
@@ -1737,7 +1889,7 @@
                     completedVideos.add(videoIds[currentVideoIndex])
                     totalVideosWatched++
                     if (completedVideos.size === videoIds.length && !allVideosCompleted && isSignedIn) {
-                      points += 150
+                      points += applyPowerUps(150)
                       document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
                       alert("Incredible! +150 points for completing the entire playlist!")
                       allVideosCompleted = true
@@ -1759,267 +1911,100 @@
                 console.error("YouTube Player Error:", event.data)
                 alert("Error loading video. Trying next video...")
                 currentVideoIndex = (currentVideoIndex + 1) % videoIds.length
-                player.loadVideoById(videoIds[currentVideoIndex])
+                                player.loadVideoById(videoIds[currentVideoIndex])
               },
             },
           })
         } catch (err) {
-          console.error("Player setup error:", err)
+          console.error("Setup YouTube player error:", err)
           alert("Failed to set up video player. Please try again.")
         }
       }
 
-      function savePlaylist() {
-        try {
-          const playlistNameInput = document.getElementById("playlistName")
-          if (!playlistNameInput) return
-
-          const playlistName = playlistNameInput.value.trim()
-          if (!playlistName) {
-            alert("Please enter a playlist name")
-            return
-          }
-          const urlInputs = document.querySelectorAll(".youtube-url")
-          const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url !== "")
-          const videoIdsForPlaylist = urls.map(extractVideoId).filter((id) => id !== null)
-          if (videoIdsForPlaylist.length === 0) {
-            alert("Please enter at least one valid YouTube URL to save a playlist")
-            return
-          }
-          playlists = playlists.filter((p) => p.name !== playlistName)
-          playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist })
-          localStorage.setItem("playlists", JSON.stringify(playlists))
-          populatePlaylistSelect()
-          alert(`Playlist "${playlistName}" saved!`)
-          playlistNameInput.value = ""
-        } catch (err) {
-          console.error("Save playlist error:", err)
-          alert("Error saving playlist. Please try again.")
-        }
-      }
-
-      function removePlaylist() {
-        try {
-          const playlistSelect = document.getElementById("playlistSelect")
-          if (!playlistSelect) return
-
-          const playlistName = playlistSelect.value
-          if (!playlistName) {
-            alert("Please select a playlist to remove")
-            return
-          }
-          if (confirm(`Are you sure you want to remove "${playlistName}" playlist?`)) {
-            playlists = playlists.filter((p) => p.name !== playlistName)
-            localStorage.setItem("playlists", JSON.stringify(playlists))
-            populatePlaylistSelect()
-            playlistSelect.value = ""
-            alert(`Playlist "${playlistName}" removed!`)
-          }
-        } catch (err) {
-          console.error("Remove playlist error:", err)
-          alert("Error removing playlist. Please try again.")
-        }
-      }
-
-      function populatePlaylistSelect() {
-        const select = document.getElementById("playlistSelect")
-        if (!select) return
-
-        select.innerHTML = '<option value="">Select a Playlist</option>'
-        playlists.forEach((playlist) => {
-          const option = document.createElement("option")
-          option.value = playlist.name
-          option.textContent = playlist.name
-          select.appendChild(option)
-        })
-      }
-
-      function loadPlaylist() {
-        try {
-          const playlistSelect = document.getElementById("playlistSelect")
-          if (!playlistSelect) return
-
-          const playlistName = playlistSelect.value
-          if (!playlistName) return
-          const playlist = playlists.find((p) => p.name === playlistName)
-          if (playlist) {
-            videoIds = playlist.videoIds
-            restoreUrlInputs()
-          }
-        } catch (err) {
-          console.error("Load playlist error:", err)
-          alert("Error loading playlist. Please try again.")
-        }
-      }
-
-      function updateAnalytics() {
-        const totalFocusTimeEl = document.getElementById("totalFocusTime")
-        const totalDistractionsEl = document.getElementById("totalDistractions")
-        const totalVideosWatchedEl = document.getElementById("totalVideosWatched")
-
-        if (totalFocusTimeEl) totalFocusTimeEl.textContent = totalFocusTime
-        if (totalDistractionsEl) totalDistractionsEl.textContent = totalDistractions
-        if (totalVideosWatchedEl) totalVideosWatchedEl.textContent = totalVideosWatched
-
-        const currentLevel = Math.floor(points / 1000)
-        const previousLevel = Math.floor(previousPoints / 1000)
-        if (currentLevel > previousLevel) showAchievementOverlay(getAchievementLevel(points).level)
-        previousPoints = points
-        updateAchievementLevel()
-      }
-
-      function toggleStats() {
-        const analytics = document.getElementById("analytics")
-        if (!analytics) return
-        if (analytics.style.display === "block") analytics.style.display = "none"
-        else {
-          updateAnalytics()
-          analytics.style.display = "block"
-        }
-      }
-
-      function saveState() {
-        try {
-          const timerText = document.getElementById("timerText")
-          if (!timerText) return
-
-          const timerTextContent = timerText.textContent || ""
-          const timerMatch = timerTextContent.match(/^(.*?): (\d+) min (\d+) sec$/)
-          let remaining = timerRemaining
-          let mode = timerMode
-          if (timerMatch) {
-            mode = timerMatch[1]
-            remaining = Number.parseInt(timerMatch[2]) * 60 + Number.parseInt(timerMatch[3])
-          }
-          const state = {
-            videoIds,
-            currentVideoIndex,
-            distractionCount,
-            points,
-            timerMode: mode,
-            timerRemaining: remaining,
-            isFocusModeActive,
-            isSignedIn,
-            currentUser,
-            completedVideos: Array.from(completedVideos),
-            allVideosCompleted,
-            totalFocusTime,
-            totalDistractions,
-            totalVideosWatched,
-            streakDays,
-            lastFocusDate: localStorage.getItem("lastFocusDate"),
-            isMinimized: timerText.style.display === "none",
-          }
-          localStorage.setItem("focusModeState", JSON.stringify(state))
-          if (isSignedIn && currentUser) {
-            const users = JSON.parse(localStorage.getItem("users") || "{}")
-            users[currentUser].points = points
-            users[currentUser].totalFocusTime = totalFocusTime
-            users[currentUser].totalDistractions = totalDistractions
-            users[currentUser].totalVideosWatched = totalVideosWatched
-            users[currentUser].tasks = tasks
-            users[currentUser].streakDays = streakDays
-            localStorage.setItem("users", JSON.stringify(users))
-          }
-        } catch (err) {
-          console.error("Save state error:", err)
-        }
-      }
-
       function onPlayerReady(event) {
-        event.target.playVideo()
+        try {
+          event.target.playVideo()
+          updateSidebarThumbnails()
+        } catch (err) {
+          console.error("Player ready error:", err)
+        }
+      }
+
+      function enterFullscreen() {
+        const playerElement = document.getElementById("player")
+        if (playerElement.requestFullscreen) playerElement.requestFullscreen()
+        else if (playerElement.mozRequestFullScreen) playerElement.mozRequestFullScreen()
+        else if (playerElement.webkitRequestFullscreen) playerElement.webkitRequestFullscreen()
+        else if (playerElement.msRequestFullscreen) playerElement.msRequestFullscreen()
       }
 
       function startFocusBreakLoop() {
         isFocusModeActive = true
         startTimer(focusDuration, "Focus Time")
-        updateStreak()
-        // Removed audio play from here
       }
 
       function startTimer(duration, mode) {
         clearInterval(countdownInterval)
-        const timerText = document.getElementById("timerText")
-        const progressFill = document.getElementById("progressFill")
-        if (!timerText || !progressFill) return
-
         timerMode = mode
-        let timeRemaining = duration / 1000
-        const totalTime = duration / 1000
+        timerRemaining = duration / 1000
+        const timerDisplay = document.getElementById("timerDisplay")
+        const progressFill = document.getElementById("progressFill")
+        const focusAudio = document.getElementById("focusAudio")
+        if (!timerDisplay || !progressFill || !focusAudio) return
 
-        timerText.textContent = `${mode}: ${Math.floor(timeRemaining / 60)} min ${Math.floor(timeRemaining % 60)} sec`
-        progressFill.style.width = "100%"
+        const totalDuration = duration / 1000
+        timerDisplay.style.display = "block"
 
         countdownInterval = setInterval(() => {
-          timeRemaining--
-          timerRemaining = timeRemaining
-          const minutes = Math.floor(timeRemaining / 60)
-          const seconds = Math.floor(timeRemaining % 60)
-          timerText.textContent = `${mode}: ${minutes} min ${seconds} sec`
-          const progress = (timeRemaining / totalTime) * 100
-          progressFill.style.width = `${progress}%`
+          timerRemaining--
+          const minutes = Math.floor(timerRemaining / 60)
+          const seconds = (timerRemaining % 60).toString().padStart(2, "0")
+          timerDisplay.querySelector("#timerText").textContent = `${timerMode}: ${minutes}:${seconds}`
 
-          if (mode === "Focus Time") totalFocusTime += 1 / 60
+          const progressPercentage = ((totalDuration - timerRemaining) / totalDuration) * 100
+          progressFill.style.width = `${progressPercentage}%`
 
-          if (timeRemaining <= 0) {
+          if (timerRemaining <= 0) {
             clearInterval(countdownInterval)
-            if (mode === "Focus Time") {
-              points += 100
+            if (timerMode === "Focus Time") {
+              points += applyPowerUps(50)
+              totalFocusTime += focusDuration / (1000 * 60)
               document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+              focusAudio.play().catch((err) => console.error("Focus audio error:", err))
+              updateStreak()
               saveState()
-              startTimer(firstBreakDuration, "Short Break")
-            } else if (mode === "Short Break") {
-              startTimer(focusDuration, "Focus Time")
-            } else if (mode === "Long Break") {
+
+              const newLevel = getAchievementLevel(points)
+              const oldLevel = getAchievementLevel(previousPoints)
+              if (newLevel.points > oldLevel.points) showAchievementOverlay(newLevel.level)
+              previousPoints = points
+              updateAchievementLevel()
+
+              startTimer(firstBreakDuration, "Break Time")
+            } else if (timerMode === "Break Time") {
               startTimer(focusDuration, "Focus Time")
             }
-            updateAnalytics()
           }
         }, 1000)
       }
 
-      function enterFullscreen() {
-        const container = document.querySelector(".game-container")
-        if (container.requestFullscreen) container.requestFullscreen()
-        else if (container.mozRequestFullScreen) container.mozRequestFullScreen()
-        else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen()
-        else if (container.msRequestFullscreen) container.msRequestFullscreen()
-      }
+      function minimizeTimer() {
+        const timerDisplay = document.getElementById("timerDisplay")
+        const minimizeBtn = document.getElementById("minimizeBtn")
+        const progressBar = document.getElementById("progressBar")
+        if (!timerDisplay || !minimizeBtn || !progressBar) return
 
-      function confirmRestart() {
-        const dialog = document.getElementById("confirmationDialog")
-        if (!dialog) return
-        dialog.style.display = "block"
-      }
-
-      function resetFocusMode() {
-        const dialog = document.getElementById("confirmationDialog")
-        if (!dialog) return
-
-        dialog.style.display = "none"
-        clearInterval(countdownInterval)
-        document.getElementById("player").style.display = "none"
-        document.getElementById("restartBtn").style.display = "none"
-        document.getElementById("inputForm").style.display = "block"
-        document.getElementById("timerDisplay").style.display = "block"
-        document.getElementById("pointsDisplay").style.display = "block"
-        document.getElementById("pdfToggle").style.display = "none"
-        document.getElementById("clockDisplay").style.display = "block"
-        document.getElementById("sitesBox").style.display = "block"
-        document.getElementById("lofiPlayer").style.display = "block"
-        document.getElementById("videoSidebar").style.right = "-320px"
-        document.getElementById("focusAudio").pause()
-        isFocusModeActive = false
-        if (player) player.stopVideo()
-        document.exitFullscreen()
-        saveState()
-        startReminderTimer() // Restart reminder on inputForm
-      }
-
-      function cancelRestart() {
-        const dialog = document.getElementById("confirmationDialog")
-        if (!dialog) return
-        dialog.style.display = "none"
+        if (minimizeBtn.textContent === "-") {
+          timerDisplay.style.fontSize = "16px"
+          timerDisplay.style.padding = "5px"
+          progressBar.style.display = "none"
+          minimizeBtn.textContent = "+"
+        } else {
+          timerDisplay.style.fontSize = "24px"
+          timerDisplay.style.padding = "10px"
+          progressBar.style.display = "block"
+          minimizeBtn.textContent = "-"
+        }
       }
 
       function populateVideoSidebar() {
@@ -2035,13 +2020,18 @@
           img.onclick = () => {
             currentVideoIndex = index
             player.loadVideoById(videoIds[currentVideoIndex])
+            updateSidebarThumbnails()
           }
           sidebar.appendChild(img)
         })
         sidebar.style.right = "0"
-        document.getElementById("minimizeBtn").onclick = () => {
-          sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
-        }
+      }
+
+      function updateSidebarThumbnails() {
+        const thumbnails = document.querySelectorAll(".thumbnail")
+        thumbnails.forEach((thumbnail, index) => {
+          thumbnail.style.border = index === currentVideoIndex ? "2px solid var(--secondary)" : "2px solid transparent"
+        })
       }
 
       function toggleVideoSidebar() {
@@ -2050,55 +2040,175 @@
         sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
       }
 
-      function minimizeTimer() {
-        const timerText = document.getElementById("timerText")
-        const progressBar = document.getElementById("progressBar")
-        const minimizeBtn = document.getElementById("minimizeBtn")
-        if (!timerText || !progressBar || !minimizeBtn) return
+      function confirmRestart() {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
+        dialog.style.display = "block"
+      }
 
-        if (timerText.style.display === "none") {
-          timerText.style.display = "inline"
-          progressBar.style.display = "block"
-          minimizeBtn.textContent = "-"
-        } else {
-          timerText.style.display = "none"
-          progressBar.style.display = "none"
-          minimizeBtn.textContent = "+"
-        }
+      function handleConfirmation(choice) {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
+
+        dialog.style.display = "none"
+        if (choice === "yes") resetFocusMode()
+      }
+
+      function resetFocusMode() {
+        clearInterval(countdownInterval)
+        isFocusModeActive = false
+        if (player) player.stopVideo()
+        document.getElementById("player").style.display = "none"
+        document.getElementById("timerDisplay").style.display = "none"
+        document.getElementById("restartBtn").style.display = "none"
+        document.getElementById("pdfToggle").style.display = "none"
+        document.getElementById("inputForm").style.display = "block"
+        document.getElementById("clockDisplay").style.display = "block"
+        document.getElementById("sitesBox").style.display = "block"
+        document.getElementById("lofiPlayer").style.display = "block"
+        document.getElementById("videoSidebar").style.right = "-320px"
+        startReminderTimer()
         saveState()
       }
 
-      function makeDraggable(element) {
-        if (!element) return
-        let posX = 0,
-          posY = 0,
-          mouseX = 0,
-          mouseY = 0
+      function saveState() {
+        const state = {
+          videoIds,
+          currentVideoIndex,
+          distractionCount,
+          points,
+          timerMode,
+          timerRemaining,
+          isFocusModeActive,
+          isSignedIn,
+          currentUser,
+          completedVideos: Array.from(completedVideos),
+          allVideosCompleted,
+          totalFocusTime,
+          totalDistractions,
+          totalVideosWatched,
+          streakDays,
+          lastFocusDate: localStorage.getItem("lastFocusDate"),
+          mysteryBoxCount,
+          activePowerUps,
+        }
+        localStorage.setItem("focusModeState", JSON.stringify(state))
+        if (isSignedIn && currentUser) {
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          users[currentUser].points = points
+          users[currentUser].totalFocusTime = totalFocusTime
+          users[currentUser].totalDistractions = totalDistractions
+          users[currentUser].totalVideosWatched = totalVideosWatched
+          users[currentUser].streakDays = streakDays
+          users[currentUser].mysteryBoxCount = mysteryBoxCount
+          users[currentUser].activePowerUps = activePowerUps
+          localStorage.setItem("users", JSON.stringify(users))
+        }
+      }
 
-        element.onmousedown = dragMouseDown
+      function updateAnalytics() {
+        document.getElementById("totalFocusTime").textContent = Math.floor(totalFocusTime)
+        document.getElementById("totalDistractions").textContent = totalDistractions
+        document.getElementById("totalVideosWatched").textContent = totalVideosWatched
+      }
 
-        function dragMouseDown(e) {
-          e.preventDefault()
-          mouseX = e.clientX
-          mouseY = e.clientY
-          document.onmouseup = closeDragElement
-          document.onmousemove = elementDrag
+      function toggleStats() {
+        const analytics = document.getElementById("analytics")
+        if (!analytics) return
+        analytics.style.display = analytics.style.display === "block" ? "none" : "block"
+      }
+
+      function populatePlaylistSelect() {
+        const select = document.getElementById("playlistSelect")
+        if (!select) return
+
+        select.innerHTML = '<option value="">Select a Playlist</option>'
+        playlists.forEach((playlist) => {
+          const option = document.createElement("option")
+          option.value = playlist.name
+          option.textContent = playlist.name
+          select.appendChild(option)
+        })
+      }
+
+      function savePlaylist() {
+        const playlistName = document.getElementById("playlistName").value.trim()
+        if (!playlistName) {
+          alert("Please enter a playlist name")
+          return
         }
 
-        function elementDrag(e) {
-          e.preventDefault()
-          posX = mouseX - e.clientX
-          posY = mouseY - e.clientY
-          mouseX = e.clientX
-          mouseY = e.clientY
-          element.style.top = `${element.offsetTop - posY}px`
-          element.style.left = `${element.offsetLeft - posX}px`
+        const urlInputs = document.querySelectorAll(".youtube-url")
+        const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url !== "")
+        const ids = urls.map(extractVideoId).filter((id) => id !== null)
+
+        if (ids.length === 0) {
+          alert("No valid YouTube URLs to save")
+          return
         }
 
-        function closeDragElement() {
-          document.onmouseup = null
-          document.onmousemove = null
+        const existingIndex = playlists.findIndex((p) => p.name === playlistName)
+        if (existingIndex !== -1) playlists[existingIndex].videoIds = ids
+        else playlists.push({ name: playlistName, videoIds: ids })
+
+        localStorage.setItem("playlists", JSON.stringify(playlists))
+        populatePlaylistSelect()
+        document.getElementById("playlistName").value = ""
+        alert(`Playlist "${playlistName}" saved!`)
+      }
+
+      function removePlaylist() {
+        const playlistName = document.getElementById("playlistSelect").value
+        if (!playlistName) {
+          alert("Please select a playlist to delete")
+          return
         }
+
+        playlists = playlists.filter((p) => p.name !== playlistName)
+        localStorage.setItem("playlists", JSON.stringify(playlists))
+        populatePlaylistSelect()
+        alert(`Playlist "${playlistName}" deleted!`)
+      }
+
+      function loadPlaylist(event) {
+        const playlistName = event.target.value
+        if (!playlistName) {
+          restoreUrlInputs()
+          return
+        }
+
+        const playlist = playlists.find((p) => p.name === playlistName)
+        if (playlist) {
+          videoIds = playlist.videoIds
+          restoreUrlInputs()
+        }
+      }
+
+      function togglePDFViewer() {
+        const pdfViewer = document.getElementById("pdfViewer")
+        if (!pdfViewer) return
+        pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block"
+      }
+
+      function loadPDFFile(event) {
+        const file = event.target.files[0]
+        if (!file || file.type !== "application/pdf") {
+          alert("Please select a valid PDF file")
+          return
+        }
+
+        const fileReader = new FileReader()
+        fileReader.onload = () => {
+          const pdfFrame = document.getElementById("pdfFrame")
+          if (pdfFrame) pdfFrame.src = fileReader.result
+        }
+        fileReader.readAsDataURL(file)
+      }
+
+      function toggleAIPopup() {
+        const aiPopup = document.getElementById("aiPopup")
+        if (!aiPopup) return
+        aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block"
       }
 
       function updateSidebarDashboard() {
@@ -2120,52 +2230,34 @@
         totalFocusTime = 0
         totalDistractions = 0
         totalVideosWatched = 0
-        tasks = []
         streakDays = 0
+        mysteryBoxCount = 0
+        activePowerUps = {
+          doublePoints: { active: false, expiry: null },
+          streakShield: { active: false, used: false },
+        }
         videoIds = []
         document.getElementById("landingPage").style.display = "block"
         document.getElementById("signinForm").style.display = "none"
         document.getElementById("inputForm").style.display = "none"
         document.getElementById("player").style.display = "none"
-        document.getElementById("restartBtn").style.display = "none"
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
         document.getElementById("clockDisplay").style.display = "none"
         document.getElementById("sitesBox").style.display = "none"
         document.getElementById("lofiPlayer").style.display = "none"
-        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
+        document.getElementById("restartBtn").style.display = "none"
+        document.getElementById("pdfToggle").style.display = "none"
         document.getElementById("videoSidebar").style.right = "-320px"
-        document.getElementById("focusAudio").pause()
-        if (player) player.stopVideo()
-        clearInterval(countdownInterval)
-        localStorage.removeItem("focusModeState")
-        stopReminderTimer() // Stop reminder on logout
         updateAchievementLevel()
+        updateStreak()
+        saveState()
+        stopReminderTimer()
         updateSidebarDashboard()
       }
 
-      function togglePDFViewer() {
-        const pdfViewer = document.getElementById("pdfViewer")
-        if (!pdfViewer) return
-        pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block"
-      }
-
-      function loadPDF(event) {
-        const file = event.target.files[0]
-        if (!file || file.type !== "application/pdf") return
-
-        const fileURL = URL.createObjectURL(file)
-        document.getElementById("pdfFrame").src = fileURL
-      }
-
-      function toggleAIPopup() {
-        const aiPopup = document.getElementById("aiPopup")
-        if (!aiPopup) return
-        aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block"
-      }
-
       document.addEventListener("DOMContentLoaded", () => {
-        loadSavedState()
         initAudio()
-
+        loadSavedState()
         setInterval(updateClock, 1000)
 
         document.querySelectorAll("button[data-action]").forEach((btn) => {
@@ -2184,8 +2276,8 @@
         })
 
         document.getElementById("restartBtn")?.addEventListener("click", confirmRestart)
-        document.getElementById("confirmBtn")?.addEventListener("click", resetFocusMode)
-        document.getElementById("cancelBtn")?.addEventListener("click", cancelRestart)
+        document.getElementById("confirmBtn")?.addEventListener("click", () => handleConfirmation("yes"))
+        document.getElementById("cancelBtn")?.addEventListener("click", () => handleConfirmation("no"))
         document.getElementById("sitesBox")?.addEventListener("click", toggleSitesPopup)
         document.getElementById("closeSitesPopup")?.addEventListener("click", closeSitesPopup)
         document.getElementById("minimizeBtn")?.addEventListener("click", minimizeTimer)
@@ -2193,40 +2285,66 @@
         document.getElementById("lofiPause")?.addEventListener("click", pauseLofi)
         document.getElementById("lofiPrev")?.addEventListener("click", prevLofi)
         document.getElementById("lofiNext")?.addEventListener("click", nextLofi)
-        document.getElementById("pdfToggle")?.addEventListener("click", togglePDFViewer)
-        document.getElementById("pdfInput")?.addEventListener("change", loadPDF)
-        document.getElementById("fireBox")?.addEventListener("click", toggleAIPopup)
-        document.getElementById("statsBtn")?.addEventListener("click", toggleStats)
         document.getElementById("todoBtn")?.addEventListener("click", toggleTodo)
+        document.getElementById("statsBtn")?.addEventListener("click", toggleStats)
         document.getElementById("pyqBtn")?.addEventListener("click", redirectToPYQs)
         document.getElementById("playlistSelect")?.addEventListener("change", loadPlaylist)
+        document.getElementById("pdfToggle")?.addEventListener("click", togglePDFViewer)
+        document.getElementById("pdfInput")?.addEventListener("change", loadPDFFile)
+        document.getElementById("fireBox")?.addEventListener("click", toggleAIPopup)
         document.getElementById("logoutBtn")?.addEventListener("click", logout)
-
-        makeDraggable(document.getElementById("timerDisplay"))
-        makeDraggable(document.getElementById("pointsDisplay"))
-        makeDraggable(document.getElementById("clockDisplay"))
-        makeDraggable(document.getElementById("sitesBox"))
-        makeDraggable(document.getElementById("lofiPlayer"))
-        makeDraggable(document.getElementById("achievementLevel"))
-        makeDraggable(document.getElementById("streakDisplay"))
+        document.getElementById("openMysteryBox")?.addEventListener("click", openMysteryBox)
 
         document.addEventListener("keydown", (e) => {
-          if (e.key.toLowerCase() === "t" && isFocusModeActive) toggleVideoSidebar()
+          if (e.key.toLowerCase() === "t" && videoIds.length > 0) toggleVideoSidebar()
+          if (e.key === "Escape" && isFocusModeActive) confirmRestart()
         })
 
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden && isFocusModeActive) {
-            distractionCount++
-            totalDistractions++
-            // Play the focus audio when tab is switched
-            document.getElementById("focusAudio").play().catch((err) => 
-              console.error("Focus audio error:", err)
-            );
-            alert("Distraction detected! Stay focused, hero!")
-            saveState()
-            updateAnalytics()
-          }
-        })
+        let isDragging = false
+        let currentX, currentY, initialX, initialY
+        const timerDisplay = document.getElementById("timerDisplay")
+        if (timerDisplay) {
+          timerDisplay.addEventListener("mousedown", (e) => {
+            isDragging = true
+            initialX = e.clientX - currentX
+            initialY = e.clientY - currentY
+          })
+          document.addEventListener("mousemove", (e) => {
+            if (isDragging) {
+              e.preventDefault()
+              currentX = e.clientX - initialX
+              currentY = e.clientY - initialY
+              timerDisplay.style.left = `${currentX}px`
+              timerDisplay.style.top = `${currentY}px`
+            }
+          })
+          document.addEventListener("mouseup", () => (isDragging = false))
+          currentX = parseInt(timerDisplay.style.left) || 10
+          currentY = parseInt(timerDisplay.style.top) || 10
+        }
+
+        const analytics = document.getElementById("analytics")
+        if (analytics) {
+          let isDraggingAnalytics = false
+          let analyticsX, analyticsY, analyticsInitialX, analyticsInitialY
+          analytics.addEventListener("mousedown", (e) => {
+            isDraggingAnalytics = true
+            analyticsInitialX = e.clientX - analyticsX
+            analyticsInitialY = e.clientY - analyticsY
+          })
+          document.addEventListener("mousemove", (e) => {
+            if (isDraggingAnalytics) {
+              e.preventDefault()
+              analyticsX = e.clientX - analyticsInitialX
+              analyticsY = e.clientY - analyticsInitialY
+              analytics.style.left = `${analyticsX}px`
+              analytics.style.top = `${analyticsY}px`
+            }
+          })
+          document.addEventListener("mouseup", () => (isDraggingAnalytics = false))
+          analyticsX = parseInt(analytics.style.left) || 10
+          analyticsY = parseInt(analytics.style.top) || 90
+        }
       })
     })()
   </script>
