@@ -1288,14 +1288,14 @@
           if (timeOnInputForm >= reminderThreshold) {
             if ("Notification" in window && Notification.permission === "granted") {
               new Notification("Check Your To-Do List!", {
-                body: "Hey hero, don’t forget to review your quests!",
+                body: "Hey hero, don't forget to review your quests!",
                 icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
               })
             } else if ("Notification" in window && Notification.permission !== "denied") {
               Notification.requestPermission().then((permission) => {
                 if (permission === "granted") {
                   new Notification("Check Your To-Do List!", {
-                    body: "Hey hero, don’t forget to review your quests!",
+                    body: "Hey hero, don't forget to review your quests!",
                     icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
                   })
                 } else {
@@ -1401,7 +1401,7 @@
         document.getElementById("inputForm").style.display = "none"
         document.getElementById("clockDisplay").style.display = "none"
         document.getElementById("sitesBox").style.display = "none"
-        document.getElementById("lofiPlayer").style.display = "none ".
+        document.getElementById("lofiPlayer").style.display = "none"
         stopReminderTimer() // Stop reminder on sign-in page
       }
 
@@ -1918,7 +1918,7 @@
             users[currentUser].totalDistractions = totalDistractions
             users[currentUser].totalVideosWatched = totalVideosWatched
             users[currentUser].tasks = tasks
-                        users[currentUser].streakDays = streakDays
+            users[currentUser].streakDays = streakDays
             localStorage.setItem("users", JSON.stringify(users))
           }
         } catch (err) {
@@ -1934,7 +1934,7 @@
         isFocusModeActive = true
         startTimer(focusDuration, "Focus Time")
         updateStreak()
-        document.getElementById("focusAudio").play().catch((err) => console.error("Focus audio error:", err))
+        // Removed audio play from here
       }
 
       function startTimer(duration, mode) {
@@ -2142,6 +2142,26 @@
         updateSidebarDashboard()
       }
 
+      function togglePDFViewer() {
+        const pdfViewer = document.getElementById("pdfViewer")
+        if (!pdfViewer) return
+        pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block"
+      }
+
+      function loadPDF(event) {
+        const file = event.target.files[0]
+        if (!file || file.type !== "application/pdf") return
+
+        const fileURL = URL.createObjectURL(file)
+        document.getElementById("pdfFrame").src = fileURL
+      }
+
+      function toggleAIPopup() {
+        const aiPopup = document.getElementById("aiPopup")
+        if (!aiPopup) return
+        aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block"
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
         loadSavedState()
         initAudio()
@@ -2198,6 +2218,10 @@
           if (document.hidden && isFocusModeActive) {
             distractionCount++
             totalDistractions++
+            // Play the focus audio when tab is switched
+            document.getElementById("focusAudio").play().catch((err) => 
+              console.error("Focus audio error:", err)
+            );
             alert("Distraction detected! Stay focused, hero!")
             saveState()
             updateAnalytics()
