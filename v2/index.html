@@ -702,7 +702,8 @@
     }
 
     #confirmationDialog,
-    #streakShieldDialog {
+    #streakShieldDialog,
+    #doublePointsDialog {
       position: fixed;
       top: 50%;
       left: 50%;
@@ -719,13 +720,15 @@
     }
 
     #confirmationDialog p,
-    #streakShieldDialog p {
+    #streakShieldDialog p,
+    #doublePointsDialog p {
       font-size: 16px;
       margin-bottom: 20px;
     }
 
     #confirmationDialog button,
-    #streakShieldDialog button {
+    #streakShieldDialog button,
+    #doublePointsDialog button {
       padding: 8px 20px;
       margin: 0 10px;
       font-size: 14px;
@@ -734,12 +737,14 @@
     }
 
     #confirmBtn,
-    #streakShieldConfirmBtn {
+    #streakShieldConfirmBtn,
+    #doublePointsConfirmBtn {
       background: var(--accent);
     }
 
     #cancelBtn,
-    #streakShieldCancelBtn {
+    #streakShieldCancelBtn,
+    #doublePointsCancelBtn {
       background: var(--primary);
     }
 
@@ -972,8 +977,8 @@
       #achievementLevel, #streakDisplay { font-size: 14px; padding: 5px 8px; }
       #videoSidebar { width: 250px; }
       #lofiPlayer button { padding: 3px 6px; font-size: 10px; }
-      #confirmationDialog, #streakShieldDialog { width: 90%; max-width: 300px; }
-      #confirmationDialog p, #streakShieldDialog p { font-size: 14px; }
+      #confirmationDialog, #streakShieldDialog, #doublePointsDialog { width: 90%; max-width: 300px; }
+      #confirmationDialog p, #streakShieldDialog p, #doublePointsDialog p { font-size: 14px; }
       #pdfViewer { width: 90%; height: 80%; max-height: 500px; }
       #aiPopup { width: 90%; max-width: 300px; height: 350px; }
       #mysteryBoxPopup { width: 90%; max-width: 280px; }
@@ -1002,6 +1007,7 @@
       <div class="sidebar-section">
         <h3>Account</h3>
         <button id="streakShieldBtn">STREAK SHIELD</button>
+        <button id="doublePointsBtn">DOUBLE POINTS POWER-UP</button>
         <button id="logoutBtn">LOGOUT</button>
       </div>
     </div>
@@ -1123,6 +1129,12 @@
       <button id="streakShieldCancelBtn">NO</button>
     </div>
 
+    <div id="doublePointsDialog" style="display: none;">
+      <p>Are you sure you want to buy Double Points Power-Up for 800 XP? (Doubles points for 24 hours)</p>
+      <button id="doublePointsConfirmBtn">YES</button>
+      <button id="doublePointsCancelBtn">NO</button>
+    </div>
+
     <button id="pdfToggle">PDF UPLOAD</button>
 
     <div id="pdfViewer">
@@ -1195,7 +1207,7 @@
       const reminderIntervalTime = 20 * 60 * 1000 // 20 minutes in milliseconds
       const reminderThreshold = 20 * 60 * 1000 // 20 minutes threshold
 
-      // Mystery Box and Streak Shield feature variables
+      // Mystery Box and Power-Up feature variables
       let mysteryBoxCount = 0
       let activePowerUps = {
         doublePoints: { active: false, expiry: null },
@@ -1203,10 +1215,12 @@
       }
       const STREAK_SHIELD_COST = 800
       const STREAK_SHIELD_DURATION = 7 * 24 * 60 * 60 * 1000 // 1 week in milliseconds
+      const DOUBLE_POINTS_COST = 800
+      const DOUBLE_POINTS_DURATION = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
       const MYSTERY_BOX_STREAK_INTERVAL = 14
       const mysteryBoxRewards = [
         { type: "points", value: () => Math.floor(Math.random() * 451) + 50, message: (val) => `+${val} XP` },
-        { type: "doublePoints", value: 24 * 60 * 60 * 1000, message: () => "Double Points for 24 Hours" },
+        { type: "doublePoints", value: DOUBLE_POINTS_DURATION, message: () => "Double Points for 24 Hours" },
         { type: "streakShield", value: 1, message: () => "1-Day Streak Shield" },
       ]
 
@@ -1456,6 +1470,36 @@
         }
       }
 
+      function showDoublePointsDialog() {
+        const dialog = document.getElementById("doublePointsDialog")
+        if (!dialog) return
+        if (points < DOUBLE_POINTS_COST) {
+          alert("Not enough XP! You need 800 XP to buy Double Points Power-Up.")
+          return
+        }
+        dialog.style.display = "block"
+      }
+
+      function handleDoublePointsConfirmation(choice) {
+        const dialog = document.getElementById("doublePointsDialog")
+        if (!dialog) return
+
+        dialog.style.display = "none"
+        if (choice === "yes") {
+          points -= DOUBLE_POINTS_COST
+          activePowerUps.doublePoints.active = true
+          activePowerUps.doublePoints.expiry = Date.now() + DOUBLE_POINTS_DURATION
+          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          alert("Double Points Power-Up activated for 24 hours!")
+          saveState()
+          setTimeout(() => {
+            activePowerUps.doublePoints.active = false
+            saveState()
+            alert("Your Double Points Power-Up has expired!")
+          }, DOUBLE_POINTS_DURATION)
+        }
+      }
+
       // Reminder feature functions
       function startReminderTimer() {
         const inputForm = document.getElementById("inputForm")
@@ -1618,7 +1662,7 @@
             document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
             document.getElementById("clockDisplay").style.display = "block"
             document.getElementById("sitesBox").style.display = "block"
-            document.getElementById("lofiPlayer").多元
+            document.getElementById("lofiPlayer").style.display = "block"
             updateAnalytics()
             updateAchievementLevel()
             updateStreak()
@@ -1862,11 +1906,15 @@
           const urlInputs = document.querySelectorAll(".youtube-url")
           if (!urlInputs.length) return
 
-          const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url !== "")
-          videoIds = urls.map(extractVideoId).filter((id) => id !== null)
+          const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
+          if (!urls.length) {
+            alert("Please enter at least one YouTube URL.")
+            return
+          }
 
+          videoIds = urls.map((url) => extractVideoId(url)).filter((id) => id)
           if (videoIds.length === 0) {
-            alert("Please enter at least one valid YouTube URL (videos or live streams)")
+            alert("No valid YouTube URLs provided.")
             return
           }
 
@@ -1878,79 +1926,46 @@
           document.getElementById("sitesBox").style.display = "none"
           document.getElementById("lofiPlayer").style.display = "none"
           stopReminderTimer()
-          pauseLofi()
-          populateVideoSidebar()
+
           loadYouTubeAPI()
             .then(() => {
               setupYouTubePlayer()
-              enterFullscreen()
-              startFocusBreakLoop()
+              startTimer(focusDuration, "Focus Time")
               saveState()
             })
             .catch((err) => {
-              console.error("Playback start error:", err)
-              alert("Failed to start video playback. Please check your connection and try again.")
-              resetFocusMode()
+              console.error("YouTube API load failed:", err)
+              alert("Failed to load YouTube player. Please try again.")
             })
-
-          alert('Note: Use "T" to toggle video sidebar. Live streams won\'t auto-advance.')
-                    .catch((err) => {
-              console.error("Playback start error:", err)
-              alert("Failed to start video playback. Please check your connection and try again.")
-              resetFocusMode()
-            })
-
-          alert('Note: Use "T" to toggle video sidebar. Live streams won\'t auto-advance.')
         } catch (err) {
           console.error("Start playback error:", err)
-          alert("An error occurred starting Focus Mode. Please try again.")
+          alert("An error occurred while starting playback.")
         }
       }
 
       function loadYouTubeAPI() {
         return new Promise((resolve, reject) => {
-          if (window.YT && window.YT.Player) {
-            isYouTubeAPILoaded = true
-            resolve()
-          } else if (!document.getElementById("youtube-api-script")) {
+          if (isYouTubeAPILoaded) resolve()
+          else {
             const tag = document.createElement("script")
-            tag.id = "youtube-api-script"
             tag.src = "https://www.youtube.com/iframe_api"
-            const firstScriptTag = document.getElementsByTagName("script")[0]
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-            window.onYouTubeIframeAPIReady = () => {
-              isYouTubeAPILoaded = true
-              resolve()
-            }
-            tag.onerror = () => reject(new Error("Failed to load YouTube API"))
-          } else {
-            const checkAPI = setInterval(() => {
-              if (window.YT && window.YT.Player) {
-                clearInterval(checkAPI)
+            tag.onload = () => {
+              window.onYouTubeIframeAPIReady = () => {
                 isYouTubeAPILoaded = true
                 resolve()
               }
-            }, 100)
-            setTimeout(() => {
-              if (!isYouTubeAPILoaded) {
-                clearInterval(checkAPI)
-                reject(new Error("YouTube API timeout"))
-              }
-            }, 10000)
+            }
+            tag.onerror = () => reject(new Error("Failed to load YouTube API"))
+            document.head.appendChild(tag)
           }
         })
       }
 
       function setupYouTubePlayer() {
-        if (!isYouTubeAPILoaded || !window.YT || !window.YT.Player) {
-          console.error("YouTube API not loaded")
-          return
-        }
+        if (!videoIds.length) return
 
         const playerDiv = document.getElementById("player")
         if (!playerDiv) return
-
-        if (player) player.destroy()
 
         player = new YT.Player("player", {
           height: "100%",
@@ -1959,101 +1974,167 @@
           playerVars: {
             autoplay: 1,
             controls: 1,
-            rel: 0,
             modestbranding: 1,
-            playsinline: 1,
+            rel: 0,
+            showinfo: 0,
           },
           events: {
             onReady: onPlayerReady,
             onStateChange: onPlayerStateChange,
-            onError: onPlayerError,
           },
         })
+
+        setupVideoSidebar()
       }
 
       function onPlayerReady(event) {
         event.target.playVideo()
-        updateVideoSidebarHighlight()
       }
 
       function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.ENDED && !isLiveStream(videoIds[currentVideoIndex])) {
+        if (event.data === YT.PlayerState.ENDED) {
           completedVideos.add(videoIds[currentVideoIndex])
           totalVideosWatched++
-          points += applyPowerUps(50)
+          points += applyPowerUps(50) // Base 50 points per video, doubled if power-up active
           document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          checkLevelUp()
           saveState()
           updateAnalytics()
 
-          const previousLevel = getAchievementLevel(previousPoints)
-          const currentLevel = getAchievementLevel(points)
-          if (currentLevel.points > previousLevel.points) showAchievementOverlay(currentLevel.level)
-          previousPoints = points
-          updateAchievementLevel()
-
-          if (completedVideos.size === videoIds.length) {
-            allVideosCompleted = true
-            alert("All videos completed! Great job, hero!")
-            resetFocusMode()
+          currentVideoIndex++
+          if (currentVideoIndex < videoIds.length) {
+            player.loadVideoById(videoIds[currentVideoIndex])
           } else {
-            playNextVideo()
+            allVideosCompleted = true
+            endFocusSession()
           }
         }
       }
 
-      function onPlayerError(event) {
-        console.error("Player error:", event.data)
-        alert("An error occurred with the video player. Skipping to next video.")
-        playNextVideo()
-      }
-
-      function isLiveStream(videoId) {
-        return fetch(`https://www.youtube.com/get_video_info?video_id=${videoId}`)
-          .then((response) => response.text())
-          .then((data) => {
-            const info = new URLSearchParams(data)
-            return info.get("is_live") === "1"
-          })
-          .catch(() => false)
-      }
-
-      function playNextVideo() {
-        currentVideoIndex = (currentVideoIndex + 1) % videoIds.length
-        while (completedVideos.has(videoIds[currentVideoIndex]) && completedVideos.size < videoIds.length) {
-          currentVideoIndex = (currentVideoIndex + 1) % videoIds.length
-        }
-        if (player) {
-          player.loadVideoById(videoIds[currentVideoIndex])
-          updateVideoSidebarHighlight()
-          saveState()
-        }
-      }
-
-      function populateVideoSidebar() {
+      function setupVideoSidebar() {
         const sidebar = document.getElementById("videoSidebar")
         if (!sidebar) return
 
         sidebar.innerHTML = '<button id="minimizeBtn">-</button>'
         videoIds.forEach((id, index) => {
-          const img = document.createElement("img")
-          img.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`
-          img.className = "thumbnail"
-          img.alt = `Video ${index + 1}`
-          img.onclick = () => {
+          const thumbnail = document.createElement("img")
+          thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`
+          thumbnail.className = "thumbnail"
+          thumbnail.onclick = () => {
             currentVideoIndex = index
-            if (player) player.loadVideoById(videoIds[currentVideoIndex])
-            updateVideoSidebarHighlight()
-            saveState()
+            player.loadVideoById(videoIds[currentVideoIndex])
           }
-          sidebar.appendChild(img)
+          sidebar.appendChild(thumbnail)
         })
+        sidebar.style.right = "0"
       }
 
-      function updateVideoSidebarHighlight() {
-        const thumbnails = document.querySelectorAll(".thumbnail")
-        thumbnails.forEach((thumbnail, index) => {
-          thumbnail.style.border = index === currentVideoIndex ? "2px solid var(--secondary)" : "2px solid transparent"
-        })
+      function startTimer(duration, mode) {
+        const timerDisplay = document.getElementById("timerDisplay")
+        const progressFill = document.getElementById("progressFill")
+        const progressBar = document.getElementById("progressBar")
+        if (!timerDisplay || !progressFill || !progressBar) return
+
+        isFocusModeActive = true
+        timerMode = mode
+        let timeRemaining = duration / 1000
+        timerRemaining = timeRemaining
+        progressBar.style.display = "block"
+        const totalDuration = duration / 1000
+
+        updateStreak()
+
+        clearInterval(countdownInterval)
+        countdownInterval = setInterval(() => {
+          const minutes = Math.floor(timeRemaining / 60)
+          const seconds = Math.floor(timeRemaining % 60)
+          timerDisplay.querySelector("#timerText").textContent = `${timerMode}: ${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+          const progress = ((totalDuration - timeRemaining) / totalDuration) * 100
+          progressFill.style.width = `${progress}%`
+
+          if (mode === "Focus Time") totalFocusTime += 1
+          timeRemaining--
+          timerRemaining = timeRemaining
+
+          if (timeRemaining < 0) {
+            clearInterval(countdownInterval)
+            progressBar.style.display = "none"
+            if (mode === "Focus Time") {
+              points += applyPowerUps(100) // Base 100 points per focus session, doubled if power-up active
+              document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+              checkLevelUp()
+              startTimer(firstBreakDuration, "Break Time")
+              playFocusAudio()
+            } else if (mode === "Break Time") {
+              startTimer(secondBreakDuration, "Short Break")
+            } else {
+              startTimer(focusDuration, "Focus Time")
+            }
+            saveState()
+          }
+        }, 1000)
+      }
+
+      function checkLevelUp() {
+        const currentLevel = getAchievementLevel(previousPoints)
+        const newLevel = getAchievementLevel(points)
+        if (newLevel.points > currentLevel.points) showAchievementOverlay(newLevel.level)
+        previousPoints = points
+        updateAchievementLevel()
+      }
+
+      function playFocusAudio() {
+        const audio = document.getElementById("focusAudio")
+        if (audio) audio.play().catch((err) => console.error("Audio play error:", err))
+      }
+
+      function endFocusSession() {
+        clearInterval(countdownInterval)
+        isFocusModeActive = false
+        const timerDisplay = document.getElementById("timerDisplay")
+        const progressBar = document.getElementById("progressBar")
+        if (timerDisplay && progressBar) {
+          timerDisplay.querySelector("#timerText").textContent = "Focus Complete!"
+          progressBar.style.display = "none"
+        }
+        saveState()
+      }
+
+      function restartSession() {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
+        dialog.style.display = "block"
+      }
+
+      function handleRestartConfirmation(choice) {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
+
+        dialog.style.display = "none"
+        if (choice === "yes") {
+          clearInterval(countdownInterval)
+          isFocusModeActive = false
+          videoIds = []
+          currentVideoIndex = 0
+          completedVideos.clear()
+          allVideosCompleted = false
+          if (player) player.destroy()
+          document.getElementById("player").style.display = "none"
+          document.getElementById("restartBtn").style.display = "none"
+          document.getElementById("pdfToggle").style.display = "none"
+          document.getElementById("videoSidebar").style.right = "-320px"
+          document.getElementById("inputForm").style.display = "block"
+          document.getElementById("clockDisplay").style.display = "block"
+          document.getElementById("sitesBox").style.display = "block"
+          document.getElementById("lofiPlayer").style.display = "block"
+          const progressBar = document.getElementById("progressBar")
+          if (progressBar) progressBar.style.display = "none"
+          restoreUrlInputs()
+          saveState()
+          startReminderTimer()
+        }
       }
 
       function toggleVideoSidebar() {
@@ -2062,130 +2143,30 @@
         sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
       }
 
-      function enterFullscreen() {
-        const container = document.querySelector(".game-container")
-        if (container.requestFullscreen) container.requestFullscreen()
-        else if (container.mozRequestFullScreen) container.mozRequestFullScreen()
-        else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen()
-        else if (container.msRequestFullscreen) container.msRequestFullscreen()
+      function updateAnalytics() {
+        document.getElementById("totalFocusTime").textContent = Math.floor(totalFocusTime / 60)
+        document.getElementById("totalDistractions").textContent = totalDistractions
+        document.getElementById("totalVideosWatched").textContent = totalVideosWatched
       }
 
-      function startFocusBreakLoop() {
-        startTimer(focusDuration, "Focus Time")
-      }
-
-      function startTimer(duration, mode) {
-        const timerDisplay = document.getElementById("timerDisplay")
-        const progressBar = document.getElementById("progressBar")
-        const progressFill = document.getElementById("progressFill")
-        if (!timerDisplay || !progressBar || !progressFill) return
-
-        isFocusModeActive = true
-        timerMode = mode
-        let timeLeft = duration / 1000
-        timerRemaining = timeLeft
-        progressBar.style.display = "block"
-
-        const totalTime = duration / 1000
-        const focusAudio = document.getElementById("focusAudio")
-        if (mode === "Focus Time" && focusAudio) focusAudio.play().catch((err) => console.error("Audio play error:", err))
-
-        clearInterval(countdownInterval)
-        countdownInterval = setInterval(() => {
-          const minutes = Math.floor(timeLeft / 60)
-          const seconds = Math.floor(timeLeft % 60)
-          timerDisplay.querySelector("#timerText").textContent = `${mode}: ${minutes}:${seconds < 10 ? "0" + seconds : seconds}`
-          const progress = ((totalTime - timeLeft) / totalTime) * 100
-          progressFill.style.width = `${progress}%`
-
-          if (mode === "Focus Time") {
-            totalFocusTime += 1
-            updateAnalytics()
-            points += applyPowerUps(0.1)
-            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${Math.floor(points)}`
-            const previousLevel = getAchievementLevel(previousPoints)
-            const currentLevel = getAchievementLevel(points)
-            if (currentLevel.points > previousLevel.points) showAchievementOverlay(currentLevel.level)
-            previousPoints = points
-            updateAchievementLevel()
-          }
-
-          if (timeLeft <= 0) {
-            clearInterval(countdownInterval)
-            progressBar.style.display = "none"
-            if (mode === "Focus Time") {
-              updateStreak()
-              focusAudio.pause()
-              focusAudio.currentTime = 0
-              startTimer(firstBreakDuration, "Short Break")
-            } else if (mode === "Short Break") {
-              startTimer(focusDuration, "Focus Time")
-            } else if (mode === "Long Break") {
-              startTimer(focusDuration, "Focus Time")
-            }
-          }
-          timeLeft--
-          timerRemaining = timeLeft
-          saveState()
-        }, 1000)
-      }
-
-      function toggleTimer() {
-        const timerDisplay = document.getElementById("timerDisplay")
-        if (!timerDisplay) return
-        timerDisplay.style.display = timerDisplay.style.display === "none" ? "block" : "none"
-      }
-
-      function resetFocusMode() {
-        clearInterval(countdownInterval)
-        isFocusModeActive = false
-        if (player) player.stopVideo()
-        document.getElementById("player").style.display = "none"
-        document.getElementById("restartBtn").style.display = "none"
-        document.getElementById("pdfToggle").style.display = "none"
-        document.getElementById("inputForm").style.display = "block"
-        document.getElementById("clockDisplay").style.display = "block"
-        document.getElementById("sitesBox").style.display = "block"
-        document.getElementById("lofiPlayer").style.display = "block"
-        document.getElementById("videoSidebar").style.right = "-320px"
-        const progressBar = document.getElementById("progressBar")
-        if (progressBar) progressBar.style.display = "none"
-        const focusAudio = document.getElementById("focusAudio")
-        if (focusAudio) {
-          focusAudio.pause()
-          focusAudio.currentTime = 0
-        }
-        startReminderTimer()
-        saveState()
-      }
-
-      function showConfirmationDialog() {
-        const dialog = document.getElementById("confirmationDialog")
-        if (!dialog) return
-        dialog.style.display = "block"
-      }
-
-      function handleConfirmation(choice) {
-        const dialog = document.getElementById("confirmationDialog")
-        if (!dialog) return
-
-        dialog.style.display = "none"
-        if (choice === "yes") resetFocusMode()
+      function toggleAnalytics() {
+        const analytics = document.getElementById("analytics")
+        if (!analytics) return
+        analytics.style.display = analytics.style.display === "block" ? "none" : "block"
       }
 
       function savePlaylist() {
         const playlistName = document.getElementById("playlistName").value.trim()
         const urlInputs = document.querySelectorAll(".youtube-url")
         if (!playlistName || !urlInputs.length) {
-          alert("Please enter a playlist name and at least one URL")
+          alert("Please enter a playlist name and at least one URL.")
           return
         }
 
-        const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url !== "")
-        const videoIdsForPlaylist = urls.map(extractVideoId).filter((id) => id !== null)
-
+        const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
+        const videoIdsForPlaylist = urls.map((url) => extractVideoId(url)).filter((id) => id)
         if (videoIdsForPlaylist.length === 0) {
-          alert("No valid YouTube URLs to save")
+          alert("No valid YouTube URLs to save.")
           return
         }
 
@@ -2193,26 +2174,21 @@
         playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist })
         localStorage.setItem("playlists", JSON.stringify(playlists))
         populatePlaylistSelect()
-        alert(`Playlist "${playlistName}" saved!`)
+        document.getElementById("playlistName").value = ""
       }
 
       function removePlaylist() {
         const playlistSelect = document.getElementById("playlistSelect")
-        const selectedPlaylist = playlistSelect.value
-        if (!selectedPlaylist) {
-          alert("Please select a playlist to delete")
+        const selectedName = playlistSelect.value
+        if (!selectedName) {
+          alert("Please select a playlist to remove.")
           return
         }
 
-        playlists = playlists.filter((p) => p.name !== selectedPlaylist)
+        playlists = playlists.filter((p) => p.name !== selectedName)
         localStorage.setItem("playlists", JSON.stringify(playlists))
         populatePlaylistSelect()
-        document.getElementById("urlInputs").innerHTML = `
-          <div class="url-container">
-            <input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required />
-          </div>
-        `
-        alert(`Playlist "${selectedPlaylist}" deleted!`)
+        restoreUrlInputs()
       }
 
       function populatePlaylistSelect() {
@@ -2228,31 +2204,15 @@
         })
 
         playlistSelect.onchange = () => {
-          const selectedPlaylist = playlistSelect.value
-          if (selectedPlaylist) {
-            const playlist = playlists.find((p) => p.name === selectedPlaylist)
-            if (playlist) {
-              videoIds = playlist.videoIds
+          const selectedName = playlistSelect.value
+          if (selectedName) {
+            const selectedPlaylist = playlists.find((p) => p.name === selectedName)
+            if (selectedPlaylist) {
+              videoIds = selectedPlaylist.videoIds
               restoreUrlInputs()
             }
           }
         }
-      }
-
-      function updateAnalytics() {
-        const totalFocusTimeSpan = document.getElementById("totalFocusTime")
-        const totalDistractionsSpan = document.getElementById("totalDistractions")
-        const totalVideosWatchedSpan = document.getElementById("totalVideosWatched")
-        if (totalFocusTimeSpan) totalFocusTimeSpan.textContent = Math.floor(totalFocusTime / 60)
-        if (totalDistractionsSpan) totalDistractionsSpan.textContent = totalDistractions
-        if (totalVideosWatchedSpan) totalVideosWatchedSpan.textContent = totalVideosWatched
-        saveState()
-      }
-
-      function toggleAnalytics() {
-        const analytics = document.getElementById("analytics")
-        if (!analytics) return
-        analytics.style.display = analytics.style.display === "block" ? "none" : "block"
       }
 
       function togglePDFViewer() {
@@ -2261,19 +2221,19 @@
         pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block"
       }
 
-      function handlePDFFile(event) {
+      function handlePDFUpload(event) {
         const file = event.target.files[0]
         if (!file || file.type !== "application/pdf") {
-          alert("Please upload a valid PDF file")
+          alert("Please upload a valid PDF file.")
           return
         }
 
         const pdfFrame = document.getElementById("pdfFrame")
         if (!pdfFrame) return
 
-        const fileURL = URL.createObjectURL(file)
-        pdfFrame.src = fileURL
-        togglePDFViewer()
+        const url = URL.createObjectURL(file)
+        pdfFrame.src = url
+        document.getElementById("pdfViewer").style.display = "block"
       }
 
       function toggleAIPopup() {
@@ -2320,15 +2280,17 @@
       }
 
       function updateSidebarDashboard() {
-        if (!isSignedIn || !currentUser) return
         const sidebarUsername = document.getElementById("sidebarUsername")
         const sidebarLevel = document.getElementById("sidebarLevel")
         const sidebarXP = document.getElementById("sidebarXP")
         const sidebarStreak = document.getElementById("sidebarStreak")
-        if (sidebarUsername) sidebarUsername.textContent = currentUser
-        if (sidebarLevel) sidebarLevel.textContent = getAchievementLevel(points).level
-        if (sidebarXP) sidebarXP.textContent = Math.floor(points)
-        if (sidebarStreak) sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
+        if (!sidebarUsername || !sidebarLevel || !sidebarXP || !sidebarStreak) return
+
+        sidebarUsername.textContent = currentUser || "Guest"
+        const level = getAchievementLevel(points)
+        sidebarLevel.textContent = level.level
+        sidebarXP.textContent = points
+        sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
       }
 
       function logout() {
@@ -2346,29 +2308,39 @@
           streakShield: { active: false, used: false, expiry: null },
         }
         videoIds = []
-        document.getElementById("landingPage").style.display = "block"
-        document.getElementById("signinForm").style.display = "none"
-        document.getElementById("inputForm").style.display = "none"
+        currentVideoIndex = 0
+        completedVideos.clear()
+        allVideosCompleted = false
+        clearInterval(countdownInterval)
+        isFocusModeActive = false
+        if (player) player.destroy()
         document.getElementById("player").style.display = "none"
-        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
+        document.getElementById("restartBtn").style.display = "none"
+        document.getElementById("pdfToggle").style.display = "none"
+        document.getElementById("videoSidebar").style.right = "-320px"
+        document.getElementById("inputForm").style.display = "none"
+        document.getElementById("landingPage").style.display = "block"
         document.getElementById("clockDisplay").style.display = "none"
         document.getElementById("sitesBox").style.display = "none"
         document.getElementById("lofiPlayer").style.display = "none"
-        document.getElementById("videoSidebar").style.right = "-320px"
-        document.getElementById("achievementLevel").innerHTML = ""
-        document.getElementById("streakDisplay").innerHTML = ""
-        localStorage.removeItem("focusModeState")
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
+        const progressBar = document.getElementById("progressBar")
+        if (progressBar) progressBar.style.display = "none"
+        saveState()
         stopReminderTimer()
+        updateAnalytics()
+        updateAchievementLevel()
         updateSidebarDashboard()
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        loadSavedState()
         initAudio()
+        loadSavedState()
+        setInterval(updateClock, 1000)
 
-        document.querySelectorAll("button[data-action]").forEach((button) => {
-          button.addEventListener("click", () => {
-            const action = button.getAttribute("data-action")
+        document.querySelectorAll("button[data-action]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const action = btn.getAttribute("data-action")
             switch (action) {
               case "start-game":
                 showSignIn()
@@ -2401,69 +2373,59 @@
           })
         })
 
-        document.getElementById("restartBtn")?.addEventListener("click", showConfirmationDialog)
-        document.getElementById("confirmBtn")?.addEventListener("click", () => handleConfirmation("yes"))
-        document.getElementById("cancelBtn")?.addEventListener("click", () => handleConfirmation("no"))
+        document.getElementById("restartBtn").addEventListener("click", restartSession)
+        document.getElementById("confirmBtn").addEventListener("click", () => handleRestartConfirmation("yes"))
+        document.getElementById("cancelBtn").addEventListener("click", () => handleRestartConfirmation("no"))
+        document.getElementById("minimizeBtn").addEventListener("click", toggleVideoSidebar)
+        document.getElementById("sitesBox").addEventListener("click", toggleSitesPopup)
+        document.getElementById("closeSitesPopup").addEventListener("click", closeSitesPopup)
+        document.getElementById("lofiPlay").addEventListener("click", playLofi)
+        document.getElementById("lofiPause").addEventListener("click", pauseLofi)
+        document.getElementById("lofiPrev").addEventListener("click", prevLofi)
+        document.getElementById("lofiNext").addEventListener("click", nextLofi)
+        document.getElementById("statsBtn").addEventListener("click", toggleAnalytics)
+        document.getElementById("todoBtn").addEventListener("click", toggleTodo)
+        document.getElementById("pyqBtn").addEventListener("click", redirectToPYQs)
+        document.getElementById("pdfToggle").addEventListener("click", togglePDFViewer)
+        document.getElementById("pdfInput").addEventListener("change", handlePDFUpload)
+        document.getElementById("fireBox").addEventListener("click", toggleAIPopup)
+        document.getElementById("streakShieldBtn").addEventListener("click", showStreakShieldDialog)
+        document
+          .getElementById("streakShieldConfirmBtn")
+          .addEventListener("click", () => handleStreakShieldConfirmation("yes"))
+        document
+          .getElementById("streakShieldCancelBtn")
+          .addEventListener("click", () => handleStreakShieldConfirmation("no"))
+        document.getElementById("doublePointsBtn").addEventListener("click", showDoublePointsDialog)
+        document
+          .getElementById("doublePointsConfirmBtn")
+          .addEventListener("click", () => handleDoublePointsConfirmation("yes"))
+        document
+          .getElementById("doublePointsCancelBtn")
+          .addEventListener("click", () => handleDoublePointsConfirmation("no"))
+        document.getElementById("logoutBtn").addEventListener("click", logout)
+        document.getElementById("openMysteryBox").addEventListener("click", openMysteryBox)
 
-        document.getElementById("streakShieldBtn")?.addEventListener("click", showStreakShieldDialog)
-        document.getElementById("streakShieldConfirmBtn")?.addEventListener("click", () => handleStreakShieldConfirmation("yes"))
-        document.getElementById("streakShieldCancelBtn")?.addEventListener("click", () => handleStreakShieldConfirmation("no"))
+        const timerDisplay = document.getElementById("timerDisplay")
+        let isDragging = false
+        let currentX
+        let currentY
+        let xOffset = 0
+        let yOffset = 0
 
-        document.getElementById("minimizeBtn")?.addEventListener("click", toggleTimer)
-        document.getElementById("sitesBox")?.addEventListener("click", toggleSitesPopup)
-        document.getElementById("closeSitesPopup")?.addEventListener("click", closeSitesPopup)
-
-        document.getElementById("lofiPlay")?.addEventListener("click", playLofi)
-        document.getElementById("lofiPause")?.addEventListener("click", pauseLofi)
-        document.getElementById("lofiPrev")?.addEventListener("click", prevLofi)
-        document.getElementById("lofiNext")?.addEventListener("click", nextLofi)
-
-        document.getElementById("todoBtn")?.addEventListener("click", toggleTodo)
-        document.getElementById("statsBtn")?.addEventListener("click", toggleAnalytics)
-        document.getElementById("pyqBtn")?.addEventListener("click", redirectToPYQs)
-
-        document.getElementById("pdfToggle")?.addEventListener("click", togglePDFViewer)
-        document.getElementById("pdfInput")?.addEventListener("change", handlePDFFile)
-
-        document.getElementById("fireBox")?.addEventListener("click", toggleAIPopup)
-        document.getElementById("logoutBtn")?.addEventListener("click", logout)
-
-        document.getElementById("openMysteryBox")?.addEventListener("click", openMysteryBox)
-
-        document.addEventListener("keydown", (e) => {
-          if (e.key.toLowerCase() === "t" && isFocusModeActive) toggleVideoSidebar()
-        })
-
-        setInterval(updateClock, 1000)
-      })
-
-      document.addEventListener("visibilitychange", () => {
-        if (document.hidden && isFocusModeActive) {
-          distractionCount++
-          totalDistractions++
-          updateAnalytics()
-          saveState()
-        }
-      })
-
-      let isDragging = false
-      let currentX, currentY, initialX, initialY
-
-      const timerDisplay = document.getElementById("timerDisplay")
-      if (timerDisplay) {
         timerDisplay.addEventListener("mousedown", (e) => {
           isDragging = true
-          initialX = e.clientX - currentX
-          initialY = e.clientY - currentY
+          currentX = e.clientX - xOffset
+          currentY = e.clientY - yOffset
         })
 
         document.addEventListener("mousemove", (e) => {
           if (isDragging) {
             e.preventDefault()
-            currentX = e.clientX - initialX
-            currentY = e.clientY - initialY
-            timerDisplay.style.left = `${currentX}px`
-            timerDisplay.style.top = `${currentY}px`
+            xOffset = e.clientX - currentX
+            yOffset = e.clientY - currentY
+            timerDisplay.style.left = `${xOffset}px`
+            timerDisplay.style.top = `${yOffset}px`
           }
         })
 
@@ -2471,9 +2433,15 @@
           isDragging = false
         })
 
-        currentX = parseInt(window.getComputedStyle(timerDisplay).left) || 10
-        currentY = parseInt(window.getComputedStyle(timerDisplay).top) || 10
-      }
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && isFocusModeActive) {
+            distractionCount++
+            totalDistractions++
+            pauseLofi()
+            saveState()
+          } else if (!document.hidden && isFocusModeActive) playLofi()
+        })
+      })
     })()
   </script>
 </body>
