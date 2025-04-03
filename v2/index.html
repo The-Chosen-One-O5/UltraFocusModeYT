@@ -690,7 +690,7 @@
       padding: 20px;
       border: 4px solid var(--accent);
       box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
-      z-index: 105;
+      z-index: 105; /* Ensure this is lower than Pomodoro overlay */
       display: none;
       text-align: center;
       pointer-events: auto;
@@ -715,7 +715,7 @@
       margin: 0 10px;
       font-size: 14px;
       pointer-events: auto;
-      z-index: 106;
+      z-index: 106; /* Ensure buttons are clickable */
     }
 
     #confirmBtn,
@@ -858,7 +858,7 @@
       width: 20px;
       height: 80px;
       background: var(--primary);
-      z-index: 199;
+      z-index: 199; /* Ensure below sidebar content */
       border-radius: 0 5px 5px 0;
       cursor: pointer;
       display: flex;
@@ -1043,16 +1043,26 @@
        left: 0;
        width: 100vw;
        height: 100vh;
-       background-color: rgba(15, 15, 27, 0.7); /* Semi-transparent dark background */
-       backdrop-filter: blur(5px); /* Apply blur to background via overlay */
+       background-color: rgba(15, 15, 27, 0.85); /* Slightly darker overlay */
+       backdrop-filter: blur(8px); /* Apply blur to background via overlay */
        display: none; /* Hidden by default */
        justify-content: center;
        align-items: center;
-       z-index: 250; /* Ensure it's above sidebar trigger but below modals */
-       pointer-events: auto; /* Allow interaction with overlay content */
+       z-index: 250; /* High z-index */
+       /* pointer-events: none; /* Default to none, enable when shown */
+       /* Set pointer-events via JS */
        flex-direction: column; /* Center content vertically */
        font-family: monospace;
+       opacity: 0; /* Start hidden for transition */
+       transition: opacity 0.3s ease-in-out;
     }
+
+    #pomodoroOverlay.visible {
+        display: flex;
+        opacity: 1;
+        pointer-events: auto; /* Allow interaction ONLY when visible */
+    }
+
 
      #pomodoroTimerDisplay {
        font-size: 6rem; /* Large timer display */
@@ -1073,6 +1083,8 @@
        padding: 10px 25px;
        font-size: 1rem;
        margin: 0 15px;
+       z-index: 251; /* Ensure controls are above overlay background */
+       pointer-events: auto; /* Ensure buttons are always clickable when overlay is visible */
        /* Use default button styles inherited from global button rules */
     }
      #pomodoroStartBtn {
@@ -1110,7 +1122,8 @@
   </style>
 </head>
 <body>
-  <div class="game-container" id="gameContainer">
+  <!-- Removed id="gameContainer" as it's not needed for blur -->
+  <div class="game-container">
     <div class="sidebar-trigger">MENU</div>
     <div class="game-sidebar">
       <div class="sidebar-section">
@@ -1312,22 +1325,23 @@
       <button id="closeAudioStore" style="background: #ff4444; margin-top: 15px;">CLOSE</button>
     </div>
 
-    <!-- Quiet Pomodoro Overlay -->
-    <div id="pomodoroOverlay">
+  </div> <!-- End of .game-container -->
+
+  <!-- Quiet Pomodoro Overlay - Placed outside .game-container -->
+  <div id="pomodoroOverlay">
       <div id="pomodoroStatus">WORK</div>
-      <div id="pomodoroTimerDisplay">25:00</div>
+      <div id="pomodoroTimerDisplay">50:00</div> <!-- Default to 50 mins -->
       <div id="pomodoroControls">
         <button id="pomodoroStartBtn">START</button>
-        <button id="pomodoroResetBtn">RESET</button>
+        <button id="pomodoroResetBtn">RESET</button> <!-- Changed text to RESET -->
       </div>
-    </div>
+   </div>
 
 
     <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
     <audio id="lofiAudio" preload="none" loop></audio>
     <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
 
-  </div>
 
   <script>
     ;(() => {
@@ -1425,7 +1439,7 @@
       let pomodoroInterval = null;
       let isPomodoroRunning = false;
       let pomodoroMode = 'Work'; // 'Work' or 'Break'
-      const POMODORO_WORK_MINS = 25; // Default 25 mins work
+      const POMODORO_WORK_MINS = 50; // CHANGED TO 50 MINUTES
       const POMODORO_BREAK_MINS = 5; // Default 5 mins break
       let pomodoroTimeRemaining = POMODORO_WORK_MINS * 60; // in seconds
       // --- End Pomodoro Variables ---
@@ -2205,7 +2219,7 @@
             document.getElementById("signinForm").style.display = "none";
             document.getElementById("inputForm").style.display = "none";
             document.getElementById("clockDisplay").style.display = "none";
-            // Removed sitesBox display toggle
+            // Removed sitesBox toggle
             document.getElementById("lofiPlayer").style.display = "none";
             stopReminderTimer();
             updateAnalytics();
@@ -3551,6 +3565,7 @@
 
            if (pomodoroMode === 'Work') {
                // Award points for completed work session
+               // Use the constant POMODORO_WORK_MINS for calculation
                const pointsEarned = applyPowerUps(POMODORO_WORK_MINS * 1); // 1 point per min base
                points += pointsEarned;
                document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
@@ -3565,7 +3580,7 @@
            } else {
                // Switch back to Work
                pomodoroMode = 'Work';
-               pomodoroTimeRemaining = POMODORO_WORK_MINS * 60;
+               pomodoroTimeRemaining = POMODORO_WORK_MINS * 60; // Use constant here too
            }
            updatePomodoroDisplay();
            // Automatically start the next phase
@@ -3614,14 +3629,18 @@
           pomodoroInterval = null;
           isPomodoroRunning = false;
           pomodoroMode = 'Work';
-          pomodoroTimeRemaining = POMODORO_WORK_MINS * 60;
+          pomodoroTimeRemaining = POMODORO_WORK_MINS * 60; // Use constant
           updatePomodoroDisplay();
           document.getElementById('pomodoroStartBtn').textContent = 'START';
 
           if (hideOverlay) {
                const overlay = document.getElementById('pomodoroOverlay');
-               if (overlay) overlay.style.display = 'none';
-               // No need to manipulate gameContainer class anymore
+               if (overlay) {
+                   overlay.classList.remove('visible');
+                   // Optionally set display none after transition
+                   // setTimeout(() => { overlay.style.display = 'none'; }, 300); 
+                   overlay.style.pointerEvents = 'none'; // Explicitly disable pointer events
+               }
           }
            console.log("Pomodoro Reset.");
       }
@@ -3631,7 +3650,7 @@
           const overlay = document.getElementById('pomodoroOverlay');
           if (!overlay) return;
 
-          const isVisible = overlay.style.display === 'flex';
+          const isVisible = overlay.classList.contains('visible'); // Check using class
 
           if (isVisible) {
                // Hide Pomodoro
@@ -3640,7 +3659,7 @@
           } else {
                // Show Pomodoro
                resetPomodoro(false); // Reset timer state without hiding
-               overlay.style.display = 'flex';
+               overlay.classList.add('visible'); // Use class to show and trigger transition
                 // Ensure sidebar is closed when opening pomodoro
                 const sidebar = document.querySelector('.game-sidebar');
                 if (sidebar) sidebar.style.left = '-250px'; 
@@ -3725,7 +3744,7 @@
           saveState(); // Save current user's progress before logging out
 
            // Reset Pomodoro if active
-           if (document.getElementById('pomodoroOverlay').style.display === 'flex') {
+           if (document.getElementById('pomodoroOverlay').classList.contains('visible')) {
                 resetPomodoro(true); 
            }
 
