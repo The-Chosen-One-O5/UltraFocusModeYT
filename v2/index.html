@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,13 +50,10 @@
       justify-content: center;
       align-items: center;
       z-index: 1;
-      transition: filter 0.3s ease-in-out; /* Added for blur transition */
+      /* Removed blur transition and filter from here */
     }
 
-    .game-container.blur-background {
-       filter: blur(5px); /* Apply blur when pomodoro is active */
-       pointer-events: none; /* Disable interaction with background */
-    }
+    /* Removed .game-container.blur-background rule */
 
 
     .game-container::before {
@@ -1076,16 +1074,16 @@
        padding: 10px 25px;
        font-size: 1rem;
        margin: 0 15px;
-       /* Use default button styles */
+       /* Use default button styles inherited from global button rules */
     }
      #pomodoroStartBtn {
-        background-color: var(--primary);
+        background-color: var(--primary); /* Specific style for start */
      }
       #pomodoroStartBtn:hover {
          background-color: var(--primary-dark);
      }
       #pomodoroResetBtn {
-        background-color: var(--accent);
+        background-color: var(--accent); /* Specific style for reset */
      }
       #pomodoroResetBtn:hover {
          background-color: var(--accent-alt);
@@ -1428,8 +1426,8 @@
       let pomodoroInterval = null;
       let isPomodoroRunning = false;
       let pomodoroMode = 'Work'; // 'Work' or 'Break'
-      const POMODORO_WORK_MINS = 25;
-      const POMODORO_BREAK_MINS = 5;
+      const POMODORO_WORK_MINS = 25; // Default 25 mins work
+      const POMODORO_BREAK_MINS = 5; // Default 5 mins break
       let pomodoroTimeRemaining = POMODORO_WORK_MINS * 60; // in seconds
       // --- End Pomodoro Variables ---
 
@@ -1557,6 +1555,7 @@
           const today = new Date().toDateString();
           const lastDateStr = localStorage.getItem("lastFocusDate");
           let shouldUpdateStorage = false;
+          let streakMaintainedToday = false; // Flag if streak was already updated today
 
           if (lastDateStr) {
               const last = new Date(lastDateStr);
@@ -1567,6 +1566,7 @@
                   streakDays++;
                   checkMysteryBoxMilestone(); // Check *after* incrementing
                   shouldUpdateStorage = true;
+                  streakMaintainedToday = true;
               } else if (diffDays > 1) {
                   // Streak potentially broken
                   if (activePowerUps.streakShield.active && !activePowerUps.streakShield.used && Date.now() < activePowerUps.streakShield.expiry) {
@@ -1575,36 +1575,46 @@
                        streakDays++; // Maintain and increment streak
                        alert("Streak Shield protected your streak!");
                        shouldUpdateStorage = true;
+                       streakMaintainedToday = true;
                    } else {
                        // Reset streak if no shield or expired/used
                        streakDays = 1; // Reset to 1 for today's session
                        shouldUpdateStorage = true;
+                       streakMaintainedToday = true;
                    }
               } else if (diffDays === 0) {
-                  // Focused multiple times today, don't change streak or date yet
-                  // But maybe update storage if other things changed? (Handled elsewhere by saveState)
+                   // Focused multiple times today, don't increment streak again
+                   streakMaintainedToday = true; // Mark that activity occurred today
+                   // Don't set shouldUpdateStorage = true unless other state changed
               } else {
                  // Edge case (e.g., system time changed backwards) - reset?
                  streakDays = 1;
                  shouldUpdateStorage = true;
+                 streakMaintainedToday = true;
               }
           } else {
               // First focus session ever for this user/device
               streakDays = 1;
               shouldUpdateStorage = true;
+              streakMaintainedToday = true;
           }
 
-          if (shouldUpdateStorage) {
+          // Update localStorage for lastFocusDate only if the streak was advanced or reset today
+          if (streakMaintainedToday) {
              localStorage.setItem("lastFocusDate", today);
           }
           
           streakDisplay.innerHTML = `<span style="color: #8e2de2;">🔥</span> ${streakDays} day${streakDays === 1 ? "" : "s"} of focus`;
 
-          saveState(); // Save state including potentially updated streak/shield status
+          // Save state if anything potentially changed (streak, shield status, or just the date update)
+          if (shouldUpdateStorage || streakMaintainedToday) {
+              saveState(); 
+          }
 
           const sidebarStreak = document.getElementById("sidebarStreak");
           if (sidebarStreak) sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`;
       }
+
 
 
       function checkMysteryBoxMilestone() {
@@ -1649,10 +1659,11 @@
                 messagePrefix = "Extended! ";
             }
             setTimeout(() => {
-              activePowerUps.doublePoints.active = false
-              saveState()
-              // Maybe alert user? Decided against alert spam
-            }, activePowerUps.doublePoints.expiry - Date.now());
+               if (activePowerUps.doublePoints.active && Date.now() >= activePowerUps.doublePoints.expiry) {
+                 activePowerUps.doublePoints.active = false;
+                 saveState();
+               }
+            }, activePowerUps.doublePoints.expiry - Date.now() + 1000); // Check slightly after expiry
             break;
           case "streakShield":
             // Give one shield charge (simplification from original duration)
@@ -3547,6 +3558,7 @@
                checkLevelUp();
                saveState();
                console.log(`Pomodoro work session complete! +${pointsEarned} XP`);
+               updateAnalytics(); // Update displayed stats
 
                // Switch to Break
                pomodoroMode = 'Break';
@@ -3557,7 +3569,7 @@
                pomodoroTimeRemaining = POMODORO_WORK_MINS * 60;
            }
            updatePomodoroDisplay();
-           // Automatically start the next phase? Or require user interaction? Let's auto-start.
+           // Automatically start the next phase
            startPomodoroTimer(); 
        }
 
@@ -3574,6 +3586,7 @@
 
                if (pomodoroTimeRemaining < 0) {
                    clearInterval(pomodoroInterval);
+                   pomodoroInterval = null; // Clear interval ID
                    isPomodoroRunning = false;
                    document.getElementById('pomodoroStartBtn').textContent = 'START';
                    pomodoroSessionComplete();
@@ -3584,6 +3597,7 @@
         function pausePomodoroTimer() {
              if (!isPomodoroRunning) return;
              clearInterval(pomodoroInterval);
+             pomodoroInterval = null; // Clear interval ID
              isPomodoroRunning = false;
              document.getElementById('pomodoroStartBtn').textContent = 'START';
         }
@@ -3607,9 +3621,8 @@
 
           if (hideOverlay) {
                const overlay = document.getElementById('pomodoroOverlay');
-               const container = document.getElementById('gameContainer');
                if (overlay) overlay.style.display = 'none';
-               if (container) container.classList.remove('blur-background');
+               // No need to manipulate gameContainer class anymore
           }
            console.log("Pomodoro Reset.");
       }
@@ -3617,22 +3630,22 @@
 
       function toggleQuietPomodoro() {
           const overlay = document.getElementById('pomodoroOverlay');
-          const container = document.getElementById('gameContainer');
-          if (!overlay || !container) return;
+          if (!overlay) return;
 
           const isVisible = overlay.style.display === 'flex';
 
           if (isVisible) {
                // Hide Pomodoro
                resetPomodoro(true); // Reset and hide
+               console.log("Quiet Pomodoro Deactivated");
           } else {
                // Show Pomodoro
                resetPomodoro(false); // Reset timer state without hiding
                overlay.style.display = 'flex';
-               container.classList.add('blur-background');
                 // Ensure sidebar is closed when opening pomodoro
                 const sidebar = document.querySelector('.game-sidebar');
                 if (sidebar) sidebar.style.left = '-250px'; 
+               console.log("Quiet Pomodoro Activated");
           }
       }
       // --- End Pomodoro Functions ---
@@ -3967,3 +3980,4 @@
   </script>
 </body>
 </html>
+```
