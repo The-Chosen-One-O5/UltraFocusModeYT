@@ -532,7 +532,6 @@
       padding: 5px;
       border: 1px solid var(--primary);
       pointer-events: auto;
-      position: relative;
     }
 
     .task-line input[type="checkbox"] {
@@ -595,47 +594,33 @@
     }
 
     .task-line .set-deadline {
-      margin-left: 10px;
+      margin-left: 5px;
       color: var(--primary);
       font-size: 14px;
       cursor: pointer;
       background: none;
       border: none;
-      padding: 0 5px;
+      padding: 2px 5px;
+      border: 1px solid var(--primary);
       pointer-events: auto;
       z-index: 11;
     }
 
-    .deadline-popup {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 280px;
-      background: var(--bg-medium);
-      padding: 10px;
-      border: 2px solid var(--primary);
-      display: none;
-      z-index: 12;
-      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+    .task-line .set-deadline:hover {
+      background: var(--primary);
+      color: var(--text);
     }
 
-    .deadline-popup input[type="datetime-local"] {
-      width: 100%;
-      margin: 5px 0;
-      font-size: 14px;
-    }
-
-    .deadline-popup input[type="number"] {
-      width: 100%;
-      margin: 5px 0;
-      font-size: 14px;
-    }
-
-    .deadline-popup button {
-      width: 100%;
-      margin: 5px 0;
-      padding: 8px;
+    .task-line .deadline-info {
+      margin-left: 5px;
       font-size: 12px;
+      color: var(--accent-alt);
+    }
+
+    .task-line .points-info {
+      margin-left: 5px;
+      font-size: 12px;
+      color: var(--secondary);
     }
 
     #lofiPlayer {
@@ -748,7 +733,9 @@
 
     #confirmationDialog,
     #streakShieldDialog,
-    #doublePointsDialog {
+    #doublePointsDialog,
+    #deadlineDialog,
+    #sessionCompleteDialog {
       position: fixed;
       top: 50%;
       left: 50%;
@@ -766,14 +753,18 @@
 
     #confirmationDialog p,
     #streakShieldDialog p,
-    #doublePointsDialog p {
+    #doublePointsDialog p,
+    #deadlineDialog p,
+    #sessionCompleteDialog p {
       font-size: 16px;
       margin-bottom: 20px;
     }
 
     #confirmationDialog button,
     #streakShieldDialog button,
-    #doublePointsDialog button {
+    #doublePointsDialog button,
+    #deadlineDialog button,
+    #sessionCompleteDialog button {
       padding: 8px 20px;
       margin: 0 10px;
       font-size: 14px;
@@ -783,14 +774,25 @@
 
     #confirmBtn,
     #streakShieldConfirmBtn,
-    #doublePointsConfirmBtn {
+    #doublePointsConfirmBtn,
+    #deadlineConfirmBtn,
+    #sessionContinueBtn {
       background: var(--accent);
     }
 
     #cancelBtn,
     #streakShieldCancelBtn,
-    #doublePointsCancelBtn {
+    #doublePointsCancelBtn,
+    #deadlineCancelBtn,
+    #sessionEndBtn {
       background: var(--primary);
+    }
+
+    #deadlineDialog input,
+    #deadlineDialog select {
+      margin: 10px auto;
+      width: 100%;
+      max-width: 250px;
     }
 
     #pdfToggle {
@@ -1013,6 +1015,63 @@
       pointer-events: auto;
     }
 
+    /* Audio tracks store styles */
+    #audioTracksStore {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      max-height: 500px;
+      background: var(--bg-medium);
+      padding: 20px;
+      border: 4px solid var(--secondary);
+      box-shadow: 0 0 20px rgba(142, 45, 226, 0.5);
+      z-index: 105;
+      display: none;
+      text-align: center;
+      pointer-events: auto;
+      font-family: monospace;
+      overflow-y: auto;
+    }
+
+    #audioTracksStore h3 {
+      color: var(--secondary);
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .audio-track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: var(--bg-light);
+      border: 1px solid var(--primary);
+    }
+
+    .audio-track-item.locked .track-name {
+      color: var(--text-dim);
+    }
+
+    .audio-track-item.unlocked .track-name {
+      color: var(--accent-alt);
+    }
+
+    .unlock-track-btn {
+      padding: 5px 10px;
+      background: var(--secondary);
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .unlock-track-btn:disabled {
+      background: var(--bg-light);
+      color: var(--text-dim);
+      cursor: not-allowed;
+    }
+
     @media (max-width: 800px) {
       .title { font-size: 24px; }
       button { padding: 8px 16px; font-size: 12px; margin: 0 5px 10px; }
@@ -1027,6 +1086,7 @@
       #pdfViewer { width: 90%; height: 80%; max-height: 500px; }
       #aiPopup { width: 90%; max-width: 300px; height: 350px; }
       #mysteryBoxPopup { width: 90%; max-width: 280px; }
+      #audioTracksStore { width: 90%; max-width: 350px; }
     }
   </style>
 </head>
@@ -1053,6 +1113,7 @@
         <h3>Account</h3>
         <button id="streakShieldBtn">STREAK SHIELD</button>
         <button id="doublePointsBtn">DOUBLE POINTS POWER-UP</button>
+        <button id="audioStoreBtn">AUDIO TRACKS STORE</button>
         <button id="logoutBtn">LOGOUT</button>
       </div>
     </div>
@@ -1095,13 +1156,8 @@
           <div class="task-line">
             <input type="checkbox" class="task-check" />
             <input type="text" class="task-text" placeholder="Add a quest..." />
-            <span class="set-deadline">⏰</span>
+            <button class="set-deadline">⏰</button>
             <span class="remove-task">x</span>
-            <div class="deadline-popup">
-              <input type="datetime-local" class="deadline-input" />
-              <input type="number" class="points-input" min="50" max="300" step="10" placeholder="Points (50-300)" />
-              <button class="save-deadline">Save</button>
-            </div>
           </div>
         </div>
         <button data-action="save-tasks">SAVE QUESTS</button>
@@ -1186,6 +1242,29 @@
       <button id="doublePointsCancelBtn">NO</button>
     </div>
 
+    <div id="deadlineDialog" style="display: none;">
+      <h3>Set Task Deadline</h3>
+      <p>Set a deadline for your task to earn points!</p>
+      <input type="date" id="deadlineDate" />
+      <input type="time" id="deadlineTime" />
+      <select id="taskDifficulty">
+        <option value="50">Easy (50 points)</option>
+        <option value="100">Medium (100 points)</option>
+        <option value="200">Hard (200 points)</option>
+        <option value="300">Very Hard (300 points)</option>
+      </select>
+      <button id="deadlineConfirmBtn">SET DEADLINE</button>
+      <button id="deadlineCancelBtn">CANCEL</button>
+    </div>
+
+    <div id="sessionCompleteDialog" style="display: none;">
+      <h3>Session Complete!</h3>
+      <p>Great work! You've completed a focus session.</p>
+      <p>One more session for +100 bonus points?</p>
+      <button id="sessionContinueBtn">CONTINUE (+100 XP)</button>
+      <button id="sessionEndBtn">END SESSION</button>
+    </div>
+
     <button id="pdfToggle">PDF UPLOAD</button>
 
     <div id="pdfViewer">
@@ -1203,6 +1282,13 @@
       <h3>Focus Mystery Box</h3>
       <p id="mysteryRewardText">Click to reveal your reward!</p>
       <button id="openMysteryBox">OPEN</button>
+    </div>
+
+    <div id="audioTracksStore" style="display: none;">
+      <h3>AUDIO TRACKS STORE</h3>
+      <p>Unlock exclusive Lo-Fi tracks to enhance your focus sessions!</p>
+      <div id="audioTracksList"></div>
+      <button id="closeAudioStore" style="background: #ff4444; margin-top: 15px;">CLOSE</button>
     </div>
 
     <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
@@ -1250,7 +1336,18 @@
         "https://www.dropbox.com/scl/fi/bw4n0ne8nli4dkp7p26po/Jaob-not-just-another-hopecore-playlist.mp3?rlkey=jy0umwkadkxj9cju1yf2wz7hw&st=yjxhzw0s&dl=1",
         "https://www.dropbox.com/scl/fi/evhrjdri6a9n9bk05qhcu/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=lauo50rz3indg5n3to5gfks1y&st=gcqmonsf&dl=1",
       ]
+      
+      // Premium audio tracks that can be unlocked
+      const premiumLofiTracks = [
+        { id: "track1", name: "Celestial Dreams", url: "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1", unlocked: false, cost: 100 },
+        { id: "track2", name: "Midnight Study", url: "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1", unlocked: false, cost: 100 },
+        { id: "track3", name: "Rainy Day Focus", url: "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1", unlocked: false, cost: 100 },
+        { id: "track4", name: "Epic Concentration", url: "https://www.dropbox.com/scl/fi/lb5f47widcz8mwhg79jiz/Kate-Grove-SKYRIM-THEME-skyrim-elderscrolls-ocarina.mp3?rlkey=f8kpm1ipyowc1wv998myu06us&st=bm9qmodf&dl=1", unlocked: false, cost: 100 },
+        { id: "track5", name: "Zen Garden", url: "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1", unlocked: false, cost: 100 },
+      ]
+      
       let currentLofiIndex = 0
+      let currentTaskForDeadline = null
 
       // Reminder feature variables
       let reminderInterval
@@ -1593,6 +1690,198 @@
         }
       }
 
+      // Task deadline functions
+      function showDeadlineDialog(taskElement) {
+        const dialog = document.getElementById("deadlineDialog")
+        if (!dialog) return
+        
+        currentTaskForDeadline = taskElement
+        
+        // Set default date to tomorrow
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const dateInput = document.getElementById("deadlineDate")
+        dateInput.value = tomorrow.toISOString().split('T')[0]
+        
+        // Set default time to current time
+        const timeInput = document.getElementById("deadlineTime")
+        const now = new Date()
+        timeInput.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+        
+        dialog.style.display = "block"
+      }
+
+      function handleDeadlineConfirmation(choice) {
+        const dialog = document.getElementById("deadlineDialog")
+        if (!dialog || !currentTaskForDeadline) return
+
+        dialog.style.display = "none"
+        
+        if (choice === "yes") {
+          const dateInput = document.getElementById("deadlineDate").value
+          const timeInput = document.getElementById("deadlineTime").value
+          const difficultySelect = document.getElementById("taskDifficulty")
+          const points = difficultySelect.value
+          
+          const deadlineDate = new Date(`${dateInput}T${timeInput}`)
+          
+          // Add deadline info to the task
+          const deadlineInfo = document.createElement("span")
+          deadlineInfo.className = "deadline-info"
+          deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
+          
+          const pointsInfo = document.createElement("span")
+          pointsInfo.className = "points-info"
+          pointsInfo.textContent = `+${points}pts`
+          
+          // Remove existing deadline info if any
+          const existingDeadline = currentTaskForDeadline.querySelector(".deadline-info")
+          if (existingDeadline) existingDeadline.remove()
+          
+          const existingPoints = currentTaskForDeadline.querySelector(".points-info")
+          if (existingPoints) existingPoints.remove()
+          
+          currentTaskForDeadline.appendChild(deadlineInfo)
+          currentTaskForDeadline.appendChild(pointsInfo)
+          
+          // Store deadline in task data
+          const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(currentTaskForDeadline)
+          if (taskIndex !== -1 && tasks[taskIndex]) {
+            tasks[taskIndex].deadline = deadlineDate.getTime()
+            tasks[taskIndex].points = parseInt(points)
+            saveTasks()
+          }
+        }
+        
+        currentTaskForDeadline = null
+      }
+
+      function checkTaskDeadlines() {
+        const now = Date.now()
+        let tasksUpdated = false
+        
+        tasks.forEach((task, index) => {
+          // Skip tasks without deadlines or already completed
+          if (!task.deadline || task.completed || task.deadlineChecked) return
+          
+          if (now > task.deadline) {
+            // Deadline passed
+            if (task.completed) {
+              // Task was completed on time
+              const earnedPoints = task.points || 50
+              points += applyPowerUps(earnedPoints)
+              alert(`Task "${task.text}" completed on time! +${earnedPoints} XP`)
+            } else {
+              // Task was not completed on time
+              const lostPoints = Math.floor((task.points || 50) / 2)
+              alert(`Task "${task.text}" deadline missed! -${lostPoints} XP`)
+              points = Math.max(0, points - lostPoints)
+            }
+            
+            // Mark as checked so we don't process it again
+            tasks[index].deadlineChecked = true
+            tasksUpdated = true
+            
+            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          }
+        })
+        
+        if (tasksUpdated) {
+          saveTasks()
+          saveState()
+        }
+      }
+
+      // Audio tracks store functions
+      function showAudioTracksStore() {
+        const store = document.getElementById("audioTracksStore")
+        const tracksList = document.getElementById("audioTracksList")
+        if (!store || !tracksList) return
+        
+        tracksList.innerHTML = ""
+        
+        premiumLofiTracks.forEach(track => {
+          const trackItem = document.createElement("div")
+          trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`
+          
+          const trackName = document.createElement("div")
+          trackName.className = "track-name"
+          trackName.textContent = track.name
+          
+          const unlockBtn = document.createElement("button")
+          unlockBtn.className = "unlock-track-btn"
+          
+          if (track.unlocked) {
+            unlockBtn.textContent = "UNLOCKED"
+            unlockBtn.disabled = true
+          } else {
+            unlockBtn.textContent = `UNLOCK (${track.cost} XP)`
+            unlockBtn.disabled = points < track.cost
+            unlockBtn.onclick = () => unlockAudioTrack(track.id)
+          }
+          
+          trackItem.appendChild(trackName)
+          trackItem.appendChild(unlockBtn)
+          tracksList.appendChild(trackItem)
+        })
+        
+        store.style.display = "block"
+      }
+
+      function closeAudioTracksStore() {
+        const store = document.getElementById("audioTracksStore")
+        if (store) store.style.display = "none"
+      }
+
+      function unlockAudioTrack(trackId) {
+        const track = premiumLofiTracks.find(t => t.id === trackId)
+        if (!track || track.unlocked || points < track.cost) return
+        
+        // Deduct points and unlock the track
+        points -= track.cost
+        track.unlocked = true
+        
+        // Add to lofi songs if not already there
+        if (!lofiSongs.includes(track.url)) {
+          lofiSongs.push(track.url)
+        }
+        
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+        alert(`Successfully unlocked "${track.name}"!`)
+        
+        // Update the store display
+        showAudioTracksStore()
+        saveState()
+      }
+
+      // Session complete dialog
+      function showSessionCompleteDialog() {
+        const dialog = document.getElementById("sessionCompleteDialog")
+        if (!dialog) return
+        dialog.style.display = "block"
+      }
+
+      function handleSessionContinue(choice) {
+        const dialog = document.getElementById("sessionCompleteDialog")
+        if (!dialog) return
+        
+        dialog.style.display = "none"
+        
+        if (choice === "continue") {
+          // Award bonus points
+          points += applyPowerUps(100)
+          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          
+          // Start a new focus session
+          startTimer(focusDuration, "Focus Time")
+        } else {
+          // End the session
+          endFocusSession()
+        }
+        
+        saveState()
+      }
+
       function loadSavedState() {
         try {
           const savedState = localStorage.getItem("focusModeState")
@@ -1621,6 +1910,19 @@
             activePowerUps = state.activePowerUps || {
               doublePoints: { active: false, expiry: null },
               streakShield: { active: false, used: false, expiry: null },
+            }
+            
+            // Load premium tracks state
+            if (state.premiumLofiTracks) {
+              state.premiumLofiTracks.forEach(savedTrack => {
+                const track = premiumLofiTracks.find(t => t.id === savedTrack.id)
+                if (track) {
+                  track.unlocked = savedTrack.unlocked
+                  if (track.unlocked && !lofiSongs.includes(track.url)) {
+                    lofiSongs.push(track.url)
+                  }
+                }
+              })
             }
 
             updateAnalytics()
@@ -1707,6 +2009,20 @@
               doublePoints: { active: false, expiry: null },
               streakShield: { active: false, used: false, expiry: null },
             }
+            
+            // Load premium tracks
+            if (users[username].premiumLofiTracks) {
+              users[username].premiumLofiTracks.forEach(savedTrack => {
+                const track = premiumLofiTracks.find(t => t.id === savedTrack.id)
+                if (track) {
+                  track.unlocked = savedTrack.unlocked
+                  if (track.unlocked && !lofiSongs.includes(track.url)) {
+                    lofiSongs.push(track.url)
+                  }
+                }
+              })
+            }
+            
             document.getElementById("landingPage").style.display = "none"
             document.getElementById("signinForm").style.display = "none"
             document.getElementById("inputForm").style.display = "block"
@@ -1750,6 +2066,10 @@
                 doublePoints: { active: false, expiry: null },
                 streakShield: { active: false, used: false, expiry: null },
               },
+              premiumLofiTracks: premiumLofiTracks.map(track => ({
+                id: track.id,
+                unlocked: false
+              }))
             }
             localStorage.setItem("users", JSON.stringify(users))
             isSignedIn = true
@@ -1853,11 +2173,11 @@
         const checkbox = document.createElement("input")
         checkbox.type = "checkbox"
         checkbox.className = "task-check"
-        checkbox.onchange = () => handleTaskCompletion(checkbox)
+        checkbox.onchange = () => saveTasks()
         const input = document.createElement("input")
         input.type = "text"
         input.className = "task-text"
-        input.placeholder = "Add a quest..."
+        input.placeholder = "Write a task..."
         input.onkeydown = (e) => {
           if (e.key === "Enter") {
             e.preventDefault()
@@ -1866,653 +2186,709 @@
           }
         }
         input.onchange = () => saveTasks()
-        const deadlineBtn = document.createElement("span")
+        
+        const deadlineBtn = document.createElement("button")
         deadlineBtn.className = "set-deadline"
         deadlineBtn.textContent = "⏰"
-        deadlineBtn.onclick = () => toggleDeadlinePopup(deadlineBtn)
+        deadlineBtn.onclick = () => showDeadlineDialog(container)
+        
         const removeBtn = document.createElement("span")
         removeBtn.className = "remove-task"
         removeBtn.textContent = "x"
         removeBtn.onclick = () => removeTask(removeBtn)
-        const popup = document.createElement("div")
-        popup.className = "deadline-popup"
-        const deadlineInput = document.createElement("input")
-        deadlineInput.type = "datetime-local"
-        deadlineInput.className = "deadline-input"
-        const pointsInput = document.createElement("input")
-        pointsInput.type = "number"
-        pointsInput.className = "points-input"
-        pointsInput.min = "50"
-        pointsInput.max = "300"
-        pointsInput.step = "10"
-        pointsInput.placeholder = "Points (50-300)"
-        const saveDeadlineBtn = document.createElement("button")
-        saveDeadlineBtn.className = "save-deadline"
-        saveDeadlineBtn.textContent = "Save"
-        saveDeadlineBtn.onclick = () => saveDeadline(container)
-        popup.appendChild(deadlineInput)
-popup.appendChild(pointsInput)
-popup.appendChild(saveDeadlineBtn)
-container.appendChild(checkbox)
-container.appendChild(input)
-container.appendChild(deadlineBtn)
-container.appendChild(removeBtn)
-container.appendChild(popup)
-tasksDiv.appendChild(container)
-return input
-}
+        
+        container.appendChild(checkbox)
+        container.appendChild(input)
+        container.appendChild(deadlineBtn)
+        container.appendChild(removeBtn)
+        tasksDiv.appendChild(container)
+        return input
+      }
 
-function toggleDeadlinePopup(deadlineBtn) {
-const popup = deadlineBtn.nextElementSibling.nextElementSibling // Navigate to the popup div
-if (!popup) return
-popup.style.display = popup.style.display === "block" ? "none" : "block"
-}
+      function removeTask(element) {
+        const tasksDiv = document.getElementById("tasks")
+        if (!tasksDiv || !element || !element.parentElement) return
 
-function saveDeadline(taskLine) {
-const deadlineInput = taskLine.querySelector(".deadline-input")
-const pointsInput = taskLine.querySelector(".points-input")
-const taskText = taskLine.querySelector(".task-text")
-if (!deadlineInput || !pointsInput || !taskText) return
+        if (tasksDiv.children.length > 1) {
+          tasksDiv.removeChild(element.parentElement)
+          saveTasks()
+        }
+      }
 
-const deadline = deadlineInput.value ? new Date(deadlineInput.value).getTime() : null
-let pointsValue = parseInt(pointsInput.value) || 0
-pointsValue = Math.max(50, Math.min(300, pointsValue)) // Clamp points between 50 and 300
+      function restoreTasks() {
+        const tasksDiv = document.getElementById("tasks")
+        if (!tasksDiv) return
 
-const taskData = {
-text: taskText.value,
-completed: taskLine.querySelector(".task-check").checked,
-deadline: deadline,
-points: pointsValue,
-}
+        tasksDiv.innerHTML = ""
+        if (tasks.length === 0) addTaskLine()
+        else {
+          tasks.forEach((task) => {
+            const container = document.createElement("div")
+            container.className = "task-line"
+            
+            const checkbox = document.createElement("input")
+            checkbox.type = "checkbox"
+            checkbox.className = "task-check"
+            checkbox.checked = task.completed
+            checkbox.onchange = () => saveTasks()
+            
+            const input = document.createElement("input")
+            input.type = "text"
+            input.className = "task-text"
+            input.value = task.text
+            input.placeholder = "Write a task..."
+            input.onchange = () => saveTasks()
+            
+            const deadlineBtn = document.createElement("button")
+            deadlineBtn.className = "set-deadline"
+            deadlineBtn.textContent = "⏰"
+            deadlineBtn.onclick = () => showDeadlineDialog(container)
+            
+            const removeBtn = document.createElement("span")
+            removeBtn.className = "remove-task"
+            removeBtn.textContent = "x"
+            removeBtn.onclick = () => removeTask(removeBtn)
+            
+            container.appendChild(checkbox)
+            container.appendChild(input)
+            container.appendChild(deadlineBtn)
+            container.appendChild(removeBtn)
+            
+            // Add deadline info if exists
+            if (task.deadline) {
+              const deadlineDate = new Date(task.deadline)
+              const deadlineInfo = document.createElement("span")
+              deadlineInfo.className = "deadline-info"
+              deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
+              container.appendChild(deadlineInfo)
+              
+              const pointsInfo = document.createElement("span")
+              pointsInfo.className = "points-info"
+              pointsInfo.textContent = `+${task.points || 50}pts`
+              container.appendChild(pointsInfo)
+            }
+            
+            tasksDiv.appendChild(container)
+          })
+        }
+        
+        // Check for any passed deadlines
+        checkTaskDeadlines()
+      }
 
-updateTaskInList(taskLine, taskData)
-taskLine.querySelector(".deadline-popup").style.display = "none"
-saveTasks()
-checkDeadlines()
-}
+      function saveTasks() {
+        const taskLines = document.querySelectorAll(".task-line")
+        if (!taskLines.length) return
 
-function updateTaskInList(taskLine, taskData) {
-const index = Array.from(taskLine.parentElement.children).indexOf(taskLine)
-if (index >= 0 && index < tasks.length) {
-tasks[index] = taskData
-} else {
-tasks.push(taskData)
-}
-}
+        tasks = Array.from(taskLines)
+          .map((line) => {
+            const checkbox = line.querySelector(".task-check")
+            const input = line.querySelector(".task-text")
+            const deadlineInfo = line.querySelector(".deadline-info")
+            const pointsInfo = line.querySelector(".points-info")
+            
+            // Get existing task to preserve deadline if it exists
+            const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(line)
+            const existingTask = tasks[taskIndex] || {}
+            
+            return {
+              text: input ? input.value.trim() : "",
+              completed: checkbox ? checkbox.checked : false,
+              deadline: existingTask.deadline || null,
+              points: existingTask.points || null,
+              deadlineChecked: existingTask.deadlineChecked || false
+            }
+          })
+          .filter((task) => task.text !== "")
+        localStorage.setItem("tasks", JSON.stringify(tasks))
+        if (isSignedIn && currentUser) {
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          users[currentUser].tasks = tasks
+          localStorage.setItem("users", JSON.stringify(users))
+        }
+      }
 
-function removeTask(removeBtn) {
-const taskLine = removeBtn.parentElement
-const index = Array.from(taskLine.parentElement.children).indexOf(taskLine)
-if (index >= 0 && index < tasks.length) {
-tasks.splice(index, 1)
-}
-taskLine.remove()
-saveTasks()
-}
+      function toggleTodo() {
+        const todoList = document.getElementById("todoList")
+        if (!todoList) return
+        todoList.style.display = todoList.style.display === "block" ? "none" : "block"
+      }
 
-function handleTaskCompletion(checkbox) {
-const taskLine = checkbox.parentElement
-const index = Array.from(taskLine.parentElement.children).indexOf(taskLine)
-if (index < 0 || index >= tasks.length) return
+      function extractVideoId(url) {
+        try {
+          let videoId = null
+          const urlObj = new URL(url)
+          const hostname = urlObj.hostname.toLowerCase()
+          const pathname = urlObj.pathname
 
-const task = tasks[index]
-task.completed = checkbox.checked
+          if (hostname.includes("youtube.com")) {
+            if (pathname.startsWith("/watch")) videoId = urlObj.searchParams.get("v")
+            else if (pathname.startsWith("/live")) videoId = pathname.split("/live/")[1]?.split("/")[0] || pathname.split("/live/")[1]
+          } else if (hostname.includes("youtu.be")) videoId = pathname.substring(1)
 
-if (task.completed && task.deadline && Date.now() <= task.deadline) {
-let earnedPoints = task.points
-earnedPoints = applyPowerUps(earnedPoints)
-points += earnedPoints
-document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-updateAchievementLevel()
-}
+          if (videoId && videoId.length === 11) return videoId
+          throw new Error("Invalid YouTube URL")
+        } catch (e) {
+          console.error("Invalid URL:", url, e)
+          return null
+        }
+      }
 
-saveTasks()
-checkLevelUp()
-}
+      function startPlayback() {
+        try {
+          const urlInputs = document.querySelectorAll(".youtube-url")
+          if (!urlInputs.length) return
 
-function restoreTasks() {
-const tasksDiv = document.getElementById("tasks")
-if (!tasksDiv) return
+          const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
+          if (!urls.length) {
+            alert("Please enter at least one YouTube URL.")
+            return
+          }
 
-tasksDiv.innerHTML = ""
-tasks.forEach((task) => {
-const taskLine = addTaskLine()
-if (!taskLine) return
-taskLine.value = task.text
-taskLine.previousElementSibling.checked = task.completed
-if (task.deadline) {
-const deadlineInput = taskLine.parentElement.querySelector(".deadline-input")
-deadlineInput.value = new Date(task.deadline).toISOString().slice(0, 16)
-}
-if (task.points) {
-const pointsInput = taskLine.parentElement.querySelector(".points-input")
-pointsInput.value = task.points
-}
-})
-if (tasks.length === 0) addTaskLine()
-checkDeadlines()
-}
+          videoIds = urls.map((url) => extractVideoId(url)).filter((id) => id)
+          if (videoIds.length === 0) {
+            alert("No valid YouTube URLs provided.")
+            return
+          }
 
-function saveTasks() {
-const taskLines = document.querySelectorAll(".task-line")
-tasks = Array.from(taskLines).map((line) => {
-const deadlineInput = line.querySelector(".deadline-input")
-const pointsInput = line.querySelector(".points-input")
-return {
-text: line.querySelector(".task-text").value,
-completed: line.querySelector(".task-check").checked,
-deadline: deadlineInput.value ? new Date(deadlineInput.value).getTime() : null,
-points: parseInt(pointsInput.value) || 0,
-}
-})
-localStorage.setItem("tasks", JSON.stringify(tasks))
-if (isSignedIn && currentUser) {
-const users = JSON.parse(localStorage.getItem("users") || "{}")
-users[currentUser].tasks = tasks
-localStorage.setItem("users", JSON.stringify(users))
-}
-}
+          document.getElementById("inputForm").style.display = "none"
+          document.getElementById("player").style.display = "block"
+          document.getElementById("restartBtn").style.display = "block"
+          document.getElementById("pdfToggle").style.display = "block"
+          document.getElementById("clockDisplay").style.display = "none"
+          document.getElementById("sitesBox").style.display = "none"
+          document.getElementById("lofiPlayer").style.display = "none"
+          stopReminderTimer()
 
-function checkDeadlines() {
-const now = Date.now()
-tasks.forEach((task, index) => {
-if (task.deadline && !task.completed && now > task.deadline) {
-const penalty = Math.floor(task.points / 2)
-points -= penalty
-points = Math.max(0, points)
-document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-alert(`Deadline missed for "${task.text}"! -${penalty} XP`)
-task.completed = true // Mark as completed to prevent repeated penalties
-const taskLine = document.querySelectorAll(".task-line")[index]
-if (taskLine) taskLine.querySelector(".task-check").checked = true
-}
-})
-saveTasks()
-updateAchievementLevel()
-}
+          loadYouTubeAPI()
+            .then(() => {
+              setupYouTubePlayer()
+              startTimer(focusDuration, "Focus Time")
+              saveState()
+            })
+            .catch((err) => {
+              console.error("YouTube API load failed:", err)
+              alert("Failed to load YouTube player. Please try again.")
+            })
+        } catch (err) {
+          console.error("Start playback error:", err)
+          alert("An error occurred while starting playback.")
+        }
+      }
 
-function checkLevelUp() {
-const currentLevel = getAchievementLevel(previousPoints)
-const newLevel = getAchievementLevel(points)
-if (newLevel.points > currentLevel.points) {
-showAchievementOverlay(newLevel.level)
-}
-previousPoints = points
-}
+      function loadYouTubeAPI() {
+        return new Promise((resolve, reject) => {
+          if (isYouTubeAPILoaded) resolve()
+          else {
+            const tag = document.createElement("script")
+            tag.src = "https://www.youtube.com/iframe_api"
+            tag.onload = () => {
+              window.onYouTubeIframeAPIReady = () => {
+                isYouTubeAPILoaded = true
+                resolve()
+              }
+            }
+            tag.onerror = () => reject(new Error("Failed to load YouTube API"))
+            document.head.appendChild(tag)
+          }
+        })
+      }
 
-function populatePlaylistSelect() {
-const select = document.getElementById("playlistSelect")
-if (!select) return
+      function setupYouTubePlayer() {
+        if (!videoIds.length) return
 
-select.innerHTML = '<option value="">Select a Playlist</option>'
-playlists.forEach((playlist) => {
-const option = document.createElement("option")
-option.value = playlist.name
-option.textContent = playlist.name
-select.appendChild(option)
-})
-select.onchange = () => {
-const selected = playlists.find((p) => p.name === select.value)
-if (selected) {
-videoIds = selected.videoIds
-restoreUrlInputs()
-}
-}
-}
+        const playerDiv = document.getElementById("player")
+        if (!playerDiv) return
 
-function savePlaylist() {
-const playlistName = document.getElementById("playlistName").value.trim()
-if (!playlistName) {
-alert("Please enter a playlist name")
-return
-}
-const urls = Array.from(document.querySelectorAll(".youtube-url")).map((input) => input.value.trim())
-const newVideoIds = urls.map((url) => extractVideoId(url)).filter((id) => id)
-if (newVideoIds.length === 0) {
-alert("No valid YouTube URLs provided")
-return
-}
-const existingIndex = playlists.findIndex((p) => p.name === playlistName)
-if (existingIndex >= 0) {
-playlists[existingIndex].videoIds = newVideoIds
-} else {
-playlists.push({ name: playlistName, videoIds: newVideoIds })
-}
-localStorage.setItem("playlists", JSON.stringify(playlists))
-populatePlaylistSelect()
-document.getElementById("playlistName").value = ""
-alert("Playlist saved!")
-}
+        player = new YT.Player("player", {
+          height: "100%",
+          width: "100%",
+          videoId: videoIds[currentVideoIndex],
+          playerVars: {
+            autoplay: 1,
+            controls: 1,
+            modestbranding: 1,
+            rel: 0,
+            showinfo: 0,
+          },
+          events: {
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange,
+          },
+        })
 
-function removePlaylist() {
-const select = document.getElementById("playlistSelect")
-const playlistName = select.value
-if (!playlistName) {
-alert("Please select a playlist to delete")
-return
-}
-playlists = playlists.filter((p) => p.name !== playlistName)
-localStorage.setItem("playlists", JSON.stringify(playlists))
-populatePlaylistSelect()
-document.getElementById("urlInputs").innerHTML = ""
-addUrlInput()
-select.value = ""
-alert("Playlist deleted!")
-}
+        setupVideoSidebar()
+      }
 
-function extractVideoId(url) {
-const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
-const match = url.match(regex)
-return match ? match[1] : null
-}
+      function onPlayerReady(event) {
+        event.target.playVideo()
+      }
 
-function startPlayback() {
-const urls = Array.from(document.querySelectorAll(".youtube-url")).map((input) => input.value.trim())
-videoIds = urls.map((url) => extractVideoId(url)).filter((id) => id)
-if (videoIds.length === 0) {
-alert("Please enter at least one valid YouTube URL")
-return
-}
-document.getElementById("inputForm").style.display = "none"
-document.getElementById("player").style.display = "block"
-document.getElementById("restartBtn").style.display = "block"
-document.getElementById("pdfToggle").style.display = "block"
-document.getElementById("clockDisplay").style.display = "none"
-document.getElementById("sitesBox").style.display = "none"
-document.getElementById("lofiPlayer").style.display = "none"
-stopReminderTimer()
-loadYouTubeAPI()
-.then(() => {
-setupYouTubePlayer()
-startTimer(focusDuration, "Focus Time")
-})
-.catch((err) => console.error("YouTube API load failed:", err))
-}
+      function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+          completedVideos.add(videoIds[currentVideoIndex])
+          totalVideosWatched++
+          points += applyPowerUps(50) // Base 50 points per video, doubled if power-up active
+          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          checkLevelUp()
+          saveState()
+          updateAnalytics()
 
-function loadYouTubeAPI() {
-if (isYouTubeAPILoaded) return Promise.resolve()
-return new Promise((resolve) => {
-const tag = document.createElement("script")
-tag.src = "https://www.youtube.com/iframe_api"
-const firstScriptTag = document.getElementsByTagName("script")[0]
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-window.onYouTubeIframeAPIReady = () => {
-isYouTubeAPILoaded = true
-resolve()
-}
-})
-}
+          currentVideoIndex++
+          if (currentVideoIndex < videoIds.length) {
+            player.loadVideoById(videoIds[currentVideoIndex])
+          } else {
+            allVideosCompleted = true
+            endFocusSession()
+          }
+        }
+      }
 
-function setupYouTubePlayer() {
-if (!isYouTubeAPILoaded) return
-const playerDiv = document.getElementById("player")
-if (!playerDiv) return
+      function setupVideoSidebar() {
+        const sidebar = document.getElementById("videoSidebar")
+        if (!sidebar) return
 
-player = new YT.Player("player", {
-height: "100%",
-width: "100%",
-videoId: videoIds[currentVideoIndex],
-playerVars: {
-autoplay: 1,
-controls: 1,
-rel: 0,
-fs: 1,
-modestbranding: 1,
-},
-events: {
-onReady: onPlayerReady,
-onStateChange: onPlayerStateChange,
-onError: onPlayerError,
-},
-})
-populateVideoSidebar()
-}
+        sidebar.innerHTML = '<button id="minimizeBtn">-</button>'
+        videoIds.forEach((id, index) => {
+          const thumbnail = document.createElement("img")
+          thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`
+          thumbnail.className = "thumbnail"
+          thumbnail.onclick = () => {
+            currentVideoIndex = index
+            player.loadVideoById(videoIds[currentVideoIndex])
+          }
+          sidebar.appendChild(thumbnail)
+        })
+        sidebar.style.right = "0"
+      }
 
-function onPlayerReady(event) {
-event.target.playVideo()
-}
+      function startTimer(duration, mode) {
+        const timerDisplay = document.getElementById("timerDisplay")
+        const progressFill = document.getElementById("progressFill")
+        const progressBar = document.getElementById("progressBar")
+        if (!timerDisplay || !progressFill || !progressBar) return
 
-function onPlayerStateChange(event) {
-if (event.data === YT.PlayerState.ENDED) {
-completedVideos.add(videoIds[currentVideoIndex])
-totalVideosWatched++
-updateAnalytics()
-currentVideoIndex++
-if (currentVideoIndex < videoIds.length) {
-player.loadVideoById(videoIds[currentVideoIndex])
-} else {
-allVideosCompleted = true
-alert("All videos completed! Great job, hero!")
-endFocusMode()
-}
-}
-}
+        isFocusModeActive = true
+        timerMode = mode
+        let timeRemaining = duration / 1000
+        timerRemaining = timeRemaining
+        progressBar.style.display = "block"
+        const totalDuration = duration / 1000
 
-function onPlayerError(event) {
-console.error("YouTube Player Error:", event.data)
-currentVideoIndex++
-if (currentVideoIndex < videoIds.length) {
-player.loadVideoById(videoIds[currentVideoIndex])
-} else {
-allVideosCompleted = true
-alert("All videos completed or an error occurred!")
-endFocusMode()
-}
-}
+        updateStreak()
 
-function populateVideoSidebar() {
-const sidebar = document.getElementById("videoSidebar")
-if (!sidebar) return
+        clearInterval(countdownInterval)
+        countdownInterval = setInterval(() => {
+          const minutes = Math.floor(timeRemaining / 60)
+          const seconds = Math.floor(timeRemaining % 60)
+          timerDisplay.querySelector("#timerText").textContent = `${timerMode}: ${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+          const progress = ((totalDuration - timeRemaining) / totalDuration) * 100
+          progressFill.style.width = `${progress}%`
 
-sidebar.innerHTML = '<button id="minimizeBtn">-</button>'
-videoIds.forEach((id, index) => {
-const img = document.createElement("img")
-img.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`
-img.className = "thumbnail"
-img.alt = `Video ${index + 1}`
-img.onclick = () => {
-currentVideoIndex = index
-player.loadVideoById(videoIds[currentVideoIndex])
-sidebar.style.right = "-320px"
-}
-sidebar.appendChild(img)
-})
-sidebar.style.right = "0px"
-document.getElementById("minimizeBtn").onclick = () => {
-sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
-}
-}
+          if (mode === "Focus Time") totalFocusTime += 1
+          timeRemaining--
+          timerRemaining = timeRemaining
 
-function startTimer(duration, mode) {
-const timerDisplay = document.getElementById("timerDisplay")
-const progressFill = document.getElementById("progressFill")
-const progressBar = document.getElementById("progressBar")
-if (!timerDisplay || !progressFill || !progressBar) return
+          if (timeRemaining < 0) {
+            clearInterval(countdownInterval)
+            progressBar.style.display = "none"
+            if (mode === "Focus Time") {
+              points += applyPowerUps(100) // Base 100 points per focus session, doubled if power-up active
+              document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+              checkLevelUp()
+              
+              // Show session complete dialog instead of automatically starting break
+              showSessionCompleteDialog()
+              playFocusAudio()
+            } else if (mode === "Break Time") {
+              startTimer(secondBreakDuration, "Short Break")
+            } else {
+              startTimer(focusDuration, "Focus Time")
+            }
+            saveState()
+          }
+        }, 1000)
+      }
 
-isFocusModeActive = true
-timerMode = mode
-let timeLeft = duration / 1000
-timerRemaining = timeLeft
-progressBar.style.display = "block"
+      function checkLevelUp() {
+        const currentLevel = getAchievementLevel(previousPoints)
+        const newLevel = getAchievementLevel(points)
+        if (newLevel.points > currentLevel.points) showAchievementOverlay(newLevel.level)
+        previousPoints = points
+        updateAchievementLevel()
+      }
 
-const totalTime = duration / 1000
-clearInterval(countdownInterval)
-countdownInterval = setInterval(() => {
-timeLeft--
-timerRemaining = timeLeft
-const minutes = Math.floor(timeLeft / 60)
-const seconds = (timeLeft % 60).toString().padStart(2, "0")
-timerDisplay.querySelector("#timerText").textContent = `${timerMode}: ${minutes}:${seconds}`
+      function playFocusAudio() {
+        const audio = document.getElementById("focusAudio")
+        if (audio) audio.play().catch((err) => console.error("Audio play error:", err))
+      }
 
-const progress = ((totalTime - timeLeft) / totalTime) * 100
-progressFill.style.width = `${progress}%`
+      function endFocusSession() {
+        clearInterval(countdownInterval)
+        isFocusModeActive = false
+        const timerDisplay = document.getElementById("timerDisplay")
+        const progressBar = document.getElementById("progressBar")
+        if (timerDisplay && progressBar) {
+          timerDisplay.querySelector("#timerText").textContent = "Focus Complete!"
+          progressBar.style.display = "none"
+        }
+        saveState()
+      }
 
-if (timerMode === "Focus Time") totalFocusTime += 1
+      function restartSession() {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
+        dialog.style.display = "block"
+      }
 
-if (timeLeft <= 0) {
-clearInterval(countdownInterval)
-progressBar.style.display = "none"
-if (timerMode === "Focus Time") {
-let pointsEarned = 50
-pointsEarned = applyPowerUps(pointsEarned)
-points += pointsEarned
-document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-startTimer(firstBreakDuration, "Short Break")
-updateStreak()
-playFocusAudio()
-} else if (timerMode === "Short Break") {
-startTimer(focusDuration, "Focus Time")
-} else if (timerMode === "Long Break") {
-startTimer(focusDuration, "Focus Time")
-}
-updateAchievementLevel()
-checkLevelUp()
-saveState()
-}
-saveState()
-updateAnalytics()
-}, 1000)
+      function handleRestartConfirmation(choice) {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
 
-makeElementDraggable(timerDisplay)
-}
+        dialog.style.display = "none"
+        if (choice === "yes") {
+          clearInterval(countdownInterval)
+          isFocusModeActive = false
+          videoIds = []
+          currentVideoIndex = 0
+          completedVideos.clear()
+          allVideosCompleted = false
+          if (player) player.destroy()
+          document.getElementById("player").style.display = "none"
+          document.getElementById("restartBtn").style.display = "none"
+          document.getElementById("pdfToggle").style.display = "none"
+          document.getElementById("videoSidebar").style.right = "-320px"
+          document.getElementById("inputForm").style.display = "block"
+          document.getElementById("clockDisplay").style.display = "block"
+          document.getElementById("sitesBox").style.display = "block"
+          document.getElementById("lofiPlayer").style.display = "block"
+          const progressBar = document.getElementById("progressBar")
+          if (progressBar) progressBar.style.display = "none"
+          restoreUrlInputs()
+          saveState()
+          startReminderTimer()
+        }
+      }
 
-function playFocusAudio() {
-const focusAudio = document.getElementById("focusAudio")
-if (focusAudio) focusAudio.play().catch((err) => console.error("Focus audio error:", err))
-}
+      function toggleVideoSidebar() {
+        const sidebar = document.getElementById("videoSidebar")
+        if (!sidebar) return
+        sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
+      }
 
-function endFocusMode() {
-clearInterval(countdownInterval)
-isFocusModeActive = false
-document.getElementById("player").style.display = "none"
-document.getElementById("restartBtn").style.display = "none"
-document.getElementById("pdfToggle").style.display = "none"
-document.getElementById("timerDisplay").querySelector("#timerText").textContent = ""
-document.getElementById("progressBar").style.display = "none"
-document.getElementById("inputForm").style.display = "block"
-document.getElementById("clockDisplay").style.display = "block"
-document.getElementById("sitesBox").style.display = "block"
-document.getElementById("lofiPlayer").style.display = "block"
-startReminderTimer()
-if (player) player.destroy()
-restoreUrlInputs()
-saveState()
-checkDeadlines()
-}
+      function updateAnalytics() {
+        document.getElementById("totalFocusTime").textContent = Math.floor(totalFocusTime / 60)
+        document.getElementById("totalDistractions").textContent = totalDistractions
+        document.getElementById("totalVideosWatched").textContent = totalVideosWatched
+      }
 
-function makeElementDraggable(element) {
-let pos1 = 0,
-pos2 = 0,
-pos3 = 0,
-pos4 = 0
-element.onmousedown = dragMouseDown
+      function toggleAnalytics() {
+        const analytics = document.getElementById("analytics")
+        if (!analytics) return
+        analytics.style.display = analytics.style.display === "block" ? "none" : "block"
+      }
 
-function dragMouseDown(e) {
-e.preventDefault()
-pos3 = e.clientX
-pos4 = e.clientY
-document.onmouseup = closeDragElement
-document.onmousemove = elementDrag
-}
+      function savePlaylist() {
+        const playlistName = document.getElementById("playlistName").value.trim()
+        const urlInputs = document.querySelectorAll(".youtube-url")
+        if (!playlistName || !urlInputs.length) {
+          alert("Please enter a playlist name and at least one URL.")
+          return
+        }
 
-function elementDrag(e) {
-e.preventDefault()
-pos1 = pos3 - e.clientX
-pos2 = pos4 - e.clientY
-pos3 = e.clientX
-pos4 = e.clientY
-element.style.top = element.offsetTop - pos2 + "px"
-element.style.left = element.offsetLeft - pos1 + "px"
-}
+        const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
+        const videoIdsForPlaylist = urls.map((url) => extractVideoId(url)).filter((id) => id)
+        if (videoIdsForPlaylist.length === 0) {
+          alert("No valid YouTube URLs to save.")
+          return
+        }
 
-function closeDragElement() {
-document.onmouseup = null
-document.onmousemove = null
-}
-}
+        playlists = playlists.filter((p) => p.name !== playlistName)
+        playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist })
+        localStorage.setItem("playlists", JSON.stringify(playlists))
+        populatePlaylistSelect()
+        document.getElementById("playlistName").value = ""
+      }
 
-function toggleAnalytics() {
-const analytics = document.getElementById("analytics")
-if (!analytics) return
-analytics.style.display = analytics.style.display === "block" ? "none" : "block"
-}
+      function removePlaylist() {
+        const playlistSelect = document.getElementById("playlistSelect")
+        const selectedName = playlistSelect.value
+        if (!selectedName) {
+          alert("Please select a playlist to remove.")
+          return
+        }
 
-function toggleTodoList() {
-const todoList = document.getElementById("todoList")
-if (!todoList) return
-todoList.style.display = todoList.style.display === "block" ? "none" : "block"
-}
+        playlists = playlists.filter((p) => p.name !== selectedName)
+        localStorage.setItem("playlists", JSON.stringify(playlists))
+        populatePlaylistSelect()
+        restoreUrlInputs()
+      }
 
-function updateAnalytics() {
-document.getElementById("totalFocusTime").textContent = Math.floor(totalFocusTime / 60)
-document.getElementById("totalDistractions").textContent = totalDistractions
-document.getElementById("totalVideosWatched").textContent = totalVideosWatched
-if (isSignedIn && currentUser) {
-const users = JSON.parse(localStorage.getItem("users") || "{}")
-users[currentUser].totalFocusTime = totalFocusTime
-users[currentUser].totalDistractions = totalDistractions
-users[currentUser].totalVideosWatched = totalVideosWatched
-localStorage.setItem("users", JSON.stringify(users))
-}
-}
+      function populatePlaylistSelect() {
+        const playlistSelect = document.getElementById("playlistSelect")
+        if (!playlistSelect) return
 
-function saveState() {
-const state = {
-videoIds,
-currentVideoIndex,
-distractionCount,
-points,
-timerMode,
-timerRemaining,
-isFocusModeActive,
-isSignedIn,
-currentUser,
-completedVideos: Array.from(completedVideos),
-allVideosCompleted,
-totalFocusTime,
-totalDistractions,
-totalVideosWatched,
-streakDays,
-lastFocusDate: localStorage.getItem("lastFocusDate"),
-mysteryBoxCount,
-activePowerUps,
-}
-localStorage.setItem("focusModeState", JSON.stringify(state))
-}
+        playlistSelect.innerHTML = '<option value="">Select a Playlist</option>'
+        playlists.forEach((playlist) => {
+          const option = document.createElement("option")
+          option.value = playlist.name
+          option.textContent = playlist.name
+          playlistSelect.appendChild(option)
+        })
 
-function togglePDFViewer() {
-const pdfViewer = document.getElementById("pdfViewer")
-const pdfToggle = document.getElementById("pdfToggle")
-if (!pdfViewer || !pdfToggle) return
+        playlistSelect.onchange = () => {
+          const selectedName = playlistSelect.value
+          if (selectedName) {
+            const selectedPlaylist = playlists.find((p) => p.name === selectedName)
+            if (selectedPlaylist) {
+              videoIds = selectedPlaylist.videoIds
+              restoreUrlInputs()
+            }
+          }
+        }
+      }
 
-if (pdfViewer.style.display === "block") {
-pdfViewer.style.display = "none"
-pdfToggle.style.display = "block"
-} else {
-pdfViewer.style.display = "block"
-pdfToggle.style.display = "none"
-}
+      function togglePDFViewer() {
+        const pdfViewer = document.getElementById("pdfViewer")
+        if (!pdfViewer) return
+        pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block"
+      }
 
-const pdfInput = document.getElementById("pdfInput")
-const pdfFrame = document.getElementById("pdfFrame")
-if (pdfInput && pdfFrame) {
-pdfInput.onchange = (e) => {
-const file = e.target.files[0]
-if (file && file.type === "application/pdf") {
-const url = URL.createObjectURL(file)
-pdfFrame.src = url
-} else {
-alert("Please upload a valid PDF file")
-}
-}
-}
-}
+      function handlePDFUpload(event) {
+        const file = event.target.files[0]
+        if (!file || file.type !== "application/pdf") {
+          alert("Please upload a valid PDF file.")
+          return
+        }
 
-function toggleAIPopup() {
-const aiPopup = document.getElementById("aiPopup")
-const fireBox = document.getElementById("fireBox")
-if (!aiPopup || !fireBox) return
+        const pdfFrame = document.getElementById("pdfFrame")
+        if (!pdfFrame) return
 
-aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block"
-}
+        const url = URL.createObjectURL(file)
+        pdfFrame.src = url
+        document.getElementById("pdfViewer").style.display = "block"
+      }
 
-function updateSidebarDashboard() {
-const sidebarUsername = document.getElementById("sidebarUsername")
-const sidebarLevel = document.getElementById("sidebarLevel")
-const sidebarXP = document.getElementById("sidebarXP")
-const sidebarStreak = document.getElementById("sidebarStreak")
-if (!sidebarUsername || !sidebarLevel || !sidebarXP || !sidebarStreak) return
+      function toggleAIPopup() {
+        const aiPopup = document.getElementById("aiPopup")
+        if (!aiPopup) return
+        aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block"
+      }
 
-sidebarUsername.textContent = currentUser || "Guest"
-sidebarLevel.textContent = getAchievementLevel(points).level
-sidebarXP.textContent = points
-sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
-}
+      function saveState() {
+        const state = {
+          videoIds,
+          currentVideoIndex,
+          distractionCount,
+          points,
+          timerMode,
+          timerRemaining,
+          isFocusModeActive,
+          isSignedIn,
+          currentUser,
+          completedVideos: Array.from(completedVideos),
+          allVideosCompleted,
+          totalFocusTime,
+          totalDistractions,
+          totalVideosWatched,
+          streakDays,
+          lastFocusDate: localStorage.getItem("lastFocusDate"),
+          mysteryBoxCount,
+          activePowerUps,
+          premiumLofiTracks
+        }
+        localStorage.setItem("focusModeState", JSON.stringify(state))
 
-document.addEventListener("DOMContentLoaded", () => {
-initAudio()
-loadSavedState()
-setInterval(updateClock, 1000)
+        if (isSignedIn && currentUser) {
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          users[currentUser].points = points
+          users[currentUser].totalFocusTime = totalFocusTime
+          users[currentUser].totalDistractions = totalDistractions
+          users[currentUser].totalVideosWatched = totalVideosWatched
+          users[currentUser].tasks = tasks
+          users[currentUser].streakDays = streakDays
+          users[currentUser].mysteryBoxCount = mysteryBoxCount
+          users[currentUser].activePowerUps = activePowerUps
+          users[currentUser].premiumLofiTracks = premiumLofiTracks
+          localStorage.setItem("users", JSON.stringify(users))
+        }
+      }
 
-document.querySelectorAll("button[data-action]").forEach((btn) => {
-btn.addEventListener("click", () => {
-const action = btn.getAttribute("data-action")
-if (action === "start-game") showSignIn()
-else if (action === "github") window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank")
-else if (action === "sign-in") signIn()
-else if (action === "create-account") createAccount()
-else if (action === "add-url") addUrlInput()
-else if (action === "start-playback") startPlayback()
-else if (action === "save-playlist") savePlaylist()
-else if (action === "remove-playlist") removePlaylist()
-else if (action === "save-tasks") saveTasks()
-})
-})
+      function updateSidebarDashboard() {
+        const sidebarUsername = document.getElementById("sidebarUsername")
+        const sidebarLevel = document.getElementById("sidebarLevel")
+        const sidebarXP = document.getElementById("sidebarXP")
+        const sidebarStreak = document.getElementById("sidebarStreak")
+        if (!sidebarUsername || !sidebarLevel || !sidebarXP || !sidebarStreak) return
 
-document.getElementById("restartBtn")?.addEventListener("click", () => {
-const dialog = document.getElementById("confirmationDialog")
-if (dialog) {
-dialog.style.display = "block"
-document.getElementById("confirmBtn").onclick = () => {
-dialog.style.display = "none"
-endFocusMode()
-}
-document.getElementById("cancelBtn").onclick = () => (dialog.style.display = "none")
-}
-})
+        sidebarUsername.textContent = currentUser || "Guest"
+        const level = getAchievementLevel(points)
+        sidebarLevel.textContent = level.level
+        sidebarXP.textContent = points
+        sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
+      }
 
-document.getElementById("sitesBox")?.addEventListener("click", toggleSitesPopup)
-document.getElementById("closeSitesPopup")?.addEventListener("click", closeSitesPopup)
-document.getElementById("lofiPlay")?.addEventListener("click", playLofi)
-document.getElementById("lofiPause")?.addEventListener("click", pauseLofi)
-document.getElementById("lofiPrev")?.addEventListener("click", prevLofi)
-document.getElementById("lofiNext")?.addEventListener("click", nextLofi)
-document.getElementById("statsBtn")?.addEventListener("click", toggleAnalytics)
-document.getElementById("todoBtn")?.addEventListener("click", toggleTodoList)
-document.getElementById("pyqBtn")?.addEventListener("click", redirectToPYQs)
-document.getElementById("pdfToggle")?.addEventListener("click", togglePDFViewer)
-document.getElementById("fireBox")?.addEventListener("click", toggleAIPopup)
-document.getElementById("openMysteryBox")?.addEventListener("click", openMysteryBox)
+      function logout() {
+        isSignedIn = false
+        currentUser = null
+        points = 0
+        totalFocusTime = 0
+        totalDistractions = 0
+        totalVideosWatched = 0
+        tasks = []
+        streakDays = 0
+        mysteryBoxCount = 0
+        activePowerUps = {
+          doublePoints: { active: false, expiry: null },
+          streakShield: { active: false, used: false, expiry: null },
+        }
+        videoIds = []
+        currentVideoIndex = 0
+        completedVideos.clear()
+        allVideosCompleted = false
+        clearInterval(countdownInterval)
+        isFocusModeActive = false
+        if (player) player.destroy()
+        document.getElementById("player").style.display = "none"
+        document.getElementById("restartBtn").style.display = "none"
+        document.getElementById("pdfToggle").style.display = "none"
+        document.getElementById("videoSidebar").style.right = "-320px"
+        document.getElementById("inputForm").style.display = "none"
+        document.getElementById("landingPage").style.display = "block"
+        document.getElementById("clockDisplay").style.display = "none"
+        document.getElementById("sitesBox").style.display = "none"
+        document.getElementById("lofiPlayer").style.display = "none"
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
+        const progressBar = document.getElementById("progressBar")
+        if (progressBar) progressBar.style.display = "none"
+        saveState()
+        stopReminderTimer()
+        updateAnalytics()
+        updateAchievementLevel()
+        updateSidebarDashboard()
+      }
 
-document.getElementById("streakShieldBtn")?.addEventListener("click", showStreakShieldDialog)
-document.getElementById("streakShieldConfirmBtn")?.addEventListener("click", () => handleStreakShieldConfirmation("yes"))
-document.getElementById("streakShieldCancelBtn")?.addEventListener("click", () => handleStreakShieldConfirmation("no"))
+      document.addEventListener("DOMContentLoaded", () => {
+        initAudio()
+        loadSavedState()
+        setInterval(updateClock, 1000)
 
-document.getElementById("doublePointsBtn")?.addEventListener("click", showDoublePointsDialog)
-document.getElementById("doublePointsConfirmBtn")?.addEventListener("click", () => handleDoublePointsConfirmation("yes"))
-document.getElementById("doublePointsCancelBtn")?.addEventListener("click", () => handleDoublePointsConfirmation("no"))
+        document.querySelectorAll("button[data-action]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const action = btn.getAttribute("data-action")
+            switch (action) {
+              case "start-game":
+                showSignIn()
+                break
+              case "github":
+                window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank")
+                break
+              case "sign-in":
+                signIn()
+                break
+              case "create-account":
+                createAccount()
+                break
+              case "add-url":
+                addUrlInput()
+                break
+              case "start-playback":
+                startPlayback()
+                break
+              case "save-playlist":
+                savePlaylist()
+                break
+              case "remove-playlist":
+                removePlaylist()
+                break
+              case "save-tasks":
+                saveTasks()
+                break
+            }
+          })
+        })
 
-document.getElementById("logoutBtn")?.addEventListener("click", () => {
-isSignedIn = false
-currentUser = null
-points = 0
-totalFocusTime = 0
-totalDistractions = 0
-totalVideosWatched = 0
-tasks = []
-streakDays = 0
-mysteryBoxCount = 0
-activePowerUps = {
-doublePoints: { active: false, expiry: null },
-streakShield: { active: false, used: false, expiry: null },
-}
-localStorage.removeItem("focusModeState")
-document.getElementById("landingPage").style.display = "block"
-document.getElementById("inputForm").style.display = "none"
-document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
-document.getElementById("clockDisplay").style.display = "none"
-document.getElementById("sitesBox").style.display = "none"
-document.getElementById("lofiPlayer").style.display = "none"
-document.getElementById("achievementLevel").innerHTML = ""
-document.getElementById("streakDisplay").innerHTML = ""
-stopReminderTimer()
-updateSidebarDashboard()
-})
+        document.getElementById("restartBtn").addEventListener("click", restartSession)
+        document.getElementById("confirmBtn").addEventListener("click", () => handleRestartConfirmation("yes"))
+        document.getElementById("cancelBtn").addEventListener("click", () => handleRestartConfirmation("no"))
+        document.getElementById("minimizeBtn").addEventListener("click", toggleVideoSidebar)
+        document.getElementById("sitesBox").addEventListener("click", toggleSitesPopup)
+        document.getElementById("closeSitesPopup").addEventListener("click", closeSitesPopup)
+        document.getElementById("lofiPlay").addEventListener("click", playLofi)
+        document.getElementById("lofiPause").addEventListener("click", pauseLofi)
+        document.getElementById("lofiPrev").addEventListener("click", prevLofi)
+        document.getElementById("lofiNext").addEventListener("click", nextLofi)
+        document.getElementById("statsBtn").addEventListener("click", toggleAnalytics)
+        document.getElementById("todoBtn").addEventListener("click", toggleTodo)
+        document.getElementById("pyqBtn").addEventListener("click", redirectToPYQs)
+        document.getElementById("pdfToggle").addEventListener("click", togglePDFViewer)
+        document.getElementById("pdfInput").addEventListener("change", handlePDFUpload)
+        document.getElementById("fireBox").addEventListener("click", toggleAIPopup)
+        document.getElementById("streakShieldBtn").addEventListener("click", showStreakShieldDialog)
+        document
+          .getElementById("streakShieldConfirmBtn")
+          .addEventListener("click", () => handleStreakShieldConfirmation("yes"))
+        document
+          .getElementById("streakShieldCancelBtn")
+          .addEventListener("click", () => handleStreakShieldConfirmation("no"))
+        document.getElementById("doublePointsBtn").addEventListener("click", showDoublePointsDialog)
+        document
+          .getElementById("doublePointsConfirmBtn")
+          .addEventListener("click", () => handleDoublePointsConfirmation("yes"))
+        document
+          .getElementById("doublePointsCancelBtn")
+          .addEventListener("click", () => handleDoublePointsConfirmation("no"))
+        document.getElementById("logoutBtn").addEventListener("click", logout)
+        document.getElementById("openMysteryBox").addEventListener("click", openMysteryBox)
+        document.getElementById("deadlineConfirmBtn").addEventListener("click", () => handleDeadlineConfirmation("yes"))
+        document.getElementById("deadlineCancelBtn").addEventListener("click", () => handleDeadlineConfirmation("no"))
+        document.getElementById("sessionContinueBtn").addEventListener("click", () => handleSessionContinue("continue"))
+        document.getElementById("sessionEndBtn").addEventListener("click", () => handleSessionContinue("end"))
+        document.getElementById("audioStoreBtn").addEventListener("click", showAudioTracksStore)
+        document.getElementById("closeAudioStore").addEventListener("click", closeAudioTracksStore)
 
-setInterval(checkDeadlines, 60 * 1000) // Check deadlines every minute
-})
-})
-})();
-</script>
+        const timerDisplay = document.getElementById("timerDisplay")
+        let isDragging = false
+        let currentX
+        let currentY
+        let xOffset = 0
+        let yOffset = 0
+
+        timerDisplay.addEventListener("mousedown", (e) => {
+          isDragging = true
+          currentX = e.clientX - xOffset
+          currentY = e.clientY - yOffset
+        })
+
+        document.addEventListener("mousemove", (e) => {
+          if (isDragging) {
+            e.preventDefault()
+            xOffset = e.clientX - currentX
+            yOffset = e.clientY - currentY
+            timerDisplay.style.left = `${xOffset}px`
+            timerDisplay.style.top = `${yOffset}px`
+          }
+        })
+
+        document.addEventListener("mouseup", () => {
+          isDragging = false
+        })
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && isFocusModeActive) {
+            distractionCount++
+            totalDistractions++
+            pauseLofi()
+            saveState()
+          } else if (!document.hidden && isFocusModeActive) playLofi()
+        })
+        
+        // Check task deadlines periodically
+        setInterval(checkTaskDeadlines, 60000) // Check every minute
+      })
+    })()
+  </script>
 </body>
 </html>
