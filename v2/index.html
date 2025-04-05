@@ -315,10 +315,16 @@
 
     #clockDisplay .time {
       color: var(--primary);
+      font-weight: 600;
+      text-shadow: 3px 3px 0px var(--primary-dark);
+      letter-spacing: 2px;
     }
 
     #clockDisplay .period {
       color: var(--secondary);
+      font-weight: 600;
+      text-shadow: 3px 3px 0px var(--primary-dark);
+      letter-spacing: 2px;
     }
 
     #progressBar {
@@ -1164,11 +1170,17 @@
         <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer">DAILY QUEST PLANNER</a>
       </div>
       <div class="sidebar-section">
-        <h3>Account</h3>
+        <h3>Self Study</h3>
+        <button id="quietPomodoroBtn">QUIET POMODORO</button>
+      </div>
+      <div class="sidebar-section">
+        <h3>Shops</h3>
         <button id="streakShieldBtn">STREAK SHIELD</button>
         <button id="doublePointsBtn">DOUBLE POINTS POWER-UP</button>
         <button id="audioStoreBtn">AUDIO TRACKS STORE</button>
-        <button id="quietPomodoroBtn">QUIET POMODORO</button>
+      </div>
+      <div class="sidebar-section">
+        <h3>Account</h3>
         <button id="logoutBtn">LOGOUT</button>
       </div>
     </div>
@@ -1256,7 +1268,7 @@
     <div id="pointsDisplay"><span style="color: #8e2de2;">⭐</span> XP: 0</div>
     <div id="clockDisplay"></div>
 
-    <div id="sitesBox">ALLIED REALMS 👇</div>
+    <div id="sitesBox" style="display: none;">ALLIED REALMS 👇</div>
     <div id="sitesPopup">
       <button id="closeSitesPopup">X</button>
       <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer">FOREST QUEST - TASK MANAGEMENT</a>
@@ -2113,7 +2125,7 @@
               document.getElementById("inputForm").style.display = "block"
               document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
               document.getElementById("clockDisplay").style.display = "block"
-              document.getElementById("sitesBox").style.display = "block"
+              document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
               document.getElementById("lofiPlayer").style.display = "block"
               restoreUrlInputs()
               populatePlaylistSelect()
@@ -2207,7 +2219,7 @@
             document.getElementById("inputForm").style.display = "block"
             document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
             document.getElementById("clockDisplay").style.display = "block"
-            document.getElementById("sitesBox").style.display = "block"
+            document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
             document.getElementById("lofiPlayer").style.display = "block"
             updateAnalytics()
             updateAchievementLevel()
@@ -2269,7 +2281,7 @@
             document.getElementById("inputForm").style.display = "block"
             document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
             document.getElementById("clockDisplay").style.display = "block"
-            document.getElementById("sitesBox").style.display = "block"
+            document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
             document.getElementById("lofiPlayer").style.display = "block"
             updateAnalytics()
             updateAchievementLevel()
@@ -2780,7 +2792,7 @@
           document.getElementById("videoSidebar").style.right = "-320px"
           document.getElementById("inputForm").style.display = "block"
           document.getElementById("clockDisplay").style.display = "block"
-          document.getElementById("sitesBox").style.display = "block"
+          document.getElementById("sitesBox").style.display = "none"
           document.getElementById("lofiPlayer").style.display = "block"
           const progressBar = document.getElementById("progressBar")
           if (progressBar) progressBar.style.display = "none"
