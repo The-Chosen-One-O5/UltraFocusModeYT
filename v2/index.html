@@ -22,6 +22,11 @@
       --bg-light: #252538;
       --text: #e0e0ff;
       --text-dim: #9090b0;
+      --calendar-blue-1: #0a1a3f;
+      --calendar-blue-2: #1e3a8a;
+      --calendar-blue-3: #3b5dc9;
+      --calendar-blue-4: #4169e1;
+      --calendar-blue-5: #6384e8;
     }
 
     body {
@@ -655,6 +660,16 @@
       z-index: 102;
     }
 
+    /* Audio visualizer styles */
+    #audioVisualizer {
+      width: 100%;
+      height: 40px;
+      margin-bottom: 10px;
+      background: var(--bg-dark);
+      border: 1px solid var(--primary);
+      display: none;
+    }
+
     #achievementOverlay {
       position: fixed;
       top: 0;
@@ -1130,6 +1145,151 @@
       margin-top: 15px;
     }
 
+    /* Detailed Stats Calendar styles */
+    #detailedStatsOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 15, 27, 0.9);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+
+    #detailedStatsContainer {
+      width: 700px;
+      max-width: 90vw;
+      background: var(--bg-medium);
+      padding: 30px;
+      border: 4px solid var(--primary);
+      box-shadow: 0 0 30px rgba(65, 105, 225, 0.5);
+      text-align: center;
+      pointer-events: auto;
+    }
+
+    #detailedStatsContainer h3 {
+      color: var(--primary);
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 0px var(--primary-dark);
+    }
+
+    #calendarContainer {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin: 20px 0;
+    }
+
+    .calendar-day-header {
+      font-weight: bold;
+      color: var(--secondary);
+      padding: 5px;
+      text-align: center;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid var(--primary);
+      padding: 5px;
+      font-size: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .calendar-day .date {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .calendar-day .points {
+      font-size: 10px;
+    }
+
+    .calendar-day.empty {
+      background: var(--bg-light);
+      opacity: 0.5;
+    }
+
+    .calendar-day.today {
+      border: 2px solid var(--accent);
+    }
+
+    .calendar-day.level-0 {
+      background: var(--calendar-blue-1);
+    }
+
+    .calendar-day.level-1 {
+      background: var(--calendar-blue-2);
+    }
+
+    .calendar-day.level-2 {
+      background: var(--calendar-blue-3);
+    }
+
+    .calendar-day.level-3 {
+      background: var(--calendar-blue-4);
+    }
+
+    .calendar-day.level-4 {
+      background: var(--calendar-blue-5);
+    }
+
+    .calendar-legend {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .legend-color {
+      width: 15px;
+      height: 15px;
+      margin-right: 5px;
+    }
+
+    #calendarControls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    #calendarControls button {
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+
+    #currentMonth {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    #closeDetailedStats {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent);
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+
     @media (max-width: 800px) {
       .title { font-size: 24px; }
       button { padding: 8px 16px; font-size: 12px; margin: 0 5px 10px; }
@@ -1147,6 +1307,9 @@
       #audioTracksStore { width: 90%; max-width: 350px; }
       #pomodoroContainer { width: 90%; max-width: 350px; padding: 20px; }
       #pomodoroTimer { font-size: 60px; }
+      #detailedStatsContainer { width: 95%; padding: 15px; }
+      .calendar-day { font-size: 10px; }
+      .calendar-day .points { font-size: 8px; }
     }
   </style>
 </head>
@@ -1162,6 +1325,7 @@
           <p><span>XP:</span> <span id="sidebarXP">0</span></p>
           <p><span>Streak:</span> <span id="sidebarStreak">0 days</span></p>
         </div>
+        <button id="detailedStatsBtn">DETAILED STATS</button>
       </div>
       <div class="sidebar-section">
         <h3>Allied Realms</h3>
@@ -1281,6 +1445,7 @@
     <div id="videoSidebar"></div>
 
     <div id="lofiPlayer">
+      <canvas id="audioVisualizer"></canvas>
       <div style="text-align: center; margin-bottom: 5px;">LOFI MUSIC ♬</div>
       <button id="lofiPrev">◄</button>
       <button id="lofiPlay">▶</button>
@@ -1317,7 +1482,6 @@
         <option value="50">Easy (50 points)</option>
         <option value="100">Medium (100 points)</option>
         <option value="200">Hard (200 points)</option>
-        <option value="300">Very Hard (300 points)</option>
       </select>
       <button id="deadlineConfirmBtn">SET DEADLINE</button>
       <button id="deadlineCancelBtn">CANCEL</button>
@@ -1329,6 +1493,41 @@
       <p>One more session for +100 bonus points?</p>
       <button id="sessionContinueBtn">CONTINUE (+100 XP)</button>
       <button id="sessionEndBtn">END SESSION</button>
+    </div>
+
+    <div id="detailedStatsOverlay" style="display: none;">
+      <div id="detailedStatsContainer">
+        <h3>DETAILED STATS</h3>
+        <div id="calendarControls">
+          <button id="prevMonthBtn">◄ PREV</button>
+          <div id="currentMonth">January 2023</div>
+          <button id="nextMonthBtn">NEXT ►</button>
+        </div>
+        <div id="calendarContainer"></div>
+        <div class="calendar-legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--calendar-blue-1);"></div>
+            <span>0-50 XP</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--calendar-blue-2);"></div>
+            <span>51-100 XP</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--calendar-blue-3);"></div>
+            <span>101-200 XP</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--calendar-blue-4);"></div>
+            <span>201-300 XP</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--calendar-blue-5);"></div>
+            <span>300+ XP</span>
+          </div>
+        </div>
+        <button id="closeDetailedStats">CLOSE</button>
+      </div>
     </div>
 
     <button id="pdfToggle">PDF UPLOAD</button>
@@ -1409,7 +1608,7 @@
         "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1",
         "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1",
         "https://www.dropbox.com/scl/fi/lb5f47widcz8mwhg79jiz/Kate-Grove-SKYRIM-THEME-skyrim-elderscrolls-ocarina.mp3?rlkey=f8kpm1ipyowc1wv998myu06us&st=bm9qmodf&dl=1",
-        "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1",
+        "https://www.dropbox.com/scl/fi/8wf64nv0rwub7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1",
         "https://www.dropbox.com/scl/fi/7xoemzmrgq0wzbxc9i9tp/Jumping-_brick-Sidewalks-and-skeletons-goth-slowed-reverb-best-part-loop.mp3?rlkey=d4dt6rv6sdzteextqek29geug&st=4umnyp0c&dl=1",
         "https://www.dropbox.com/scl/fi/macw47c2kvur0yfi4r9up/St3phen-If-Youre-A-Gamer-This-Song-FOUND-You.mp3?rlkey=qudky54311tppavhvnpra89ff&st=7dgshk5k&dl=1",
         "https://www.dropbox.com/scl/fi/c1iy5yjmf3d57jrb1aokc/KestrelTapes-what-nostalgia-sounds-like...mp3?rlkey=qcdj1vpdnzwdb03fxp0vk0661&st=fyqrl6ge&dl=1",
@@ -1424,8 +1623,22 @@
         { id: "track2", name: "Midnight Study", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=ui3kdsq5&dl=1", unlocked: false, cost: 100 },
         { id: "track3", name: "Rainy Day Focus", url: "https://www.dropbox.com/scl/fi/iaouozc1osse7h5ea9lon/thunder-chosic.com.mp3?rlkey=o7u0rarnh4kk657qhmcgyiolz&st=2r9f625j&dl=1", unlocked: false, cost: 100 },
         { id: "track4", name: "Epic Concentration", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=cq8j3dij&dl=1", unlocked: false, cost: 100 },
-        { id: "track5", name: "Zen Garden", url: "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1", unlocked: false, cost: 100 },
+        { id: "track5", name: "Zen Garden", url: "https://www.dropbox.com/scl/fi/8wf64nv0rwub7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1", unlocked: false, cost: 100 },
       ]
+      
+      // Audio visualizer variables
+      let audioContext
+      let analyser
+      let audioSource
+      let visualizerCanvas
+      let visualizerCtx
+      let isVisualizerActive = false
+      let visualizerAnimationFrame
+      
+      // Daily points tracking for calendar
+      let dailyPointsData = {}
+      let currentCalendarMonth = new Date().getMonth()
+      let currentCalendarYear = new Date().getFullYear()
       
       let currentLofiIndex = 0
       let currentTaskForDeadline = null
@@ -1476,7 +1689,255 @@
 
       function initAudio() {
         lofiAudio = document.getElementById("lofiAudio")
-        if (lofiAudio) lofiAudio.src = lofiSongs[currentLofiIndex]
+        if (lofiAudio) {
+          lofiAudio.src = lofiSongs[currentLofiIndex]
+          lofiAudio.load() // Ensure the audio is loaded
+        }
+        
+        // Initialize audio visualizer
+        visualizerCanvas = document.getElementById("audioVisualizer")
+        if (visualizerCanvas) {
+          visualizerCtx = visualizerCanvas.getContext("2d")
+          visualizerCanvas.width = visualizerCanvas.offsetWidth
+          visualizerCanvas.height = visualizerCanvas.offsetHeight
+        }
+      }
+      
+      // Initialize audio context for visualizer
+      function initAudioContext() {
+        if (!audioContext) {
+          try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)()
+            analyser = audioContext.createAnalyser()
+            analyser.fftSize = 256
+            
+            // Create the audio source only when playing to avoid errors
+            if (lofiAudio && lofiAudio.src) {
+              audioSource = audioContext.createMediaElementSource(lofiAudio)
+              audioSource.connect(analyser)
+              analyser.connect(audioContext.destination)
+            }
+          } catch (e) {
+            console.error("Web Audio API is not supported in this browser", e)
+          }
+        }
+      }
+      
+      // Draw audio visualizer
+      function drawVisualizer() {
+        if (!isVisualizerActive || !analyser || !visualizerCtx) return
+        
+        const bufferLength = analyser.frequencyBinCount
+        const dataArray = new Uint8Array(bufferLength)
+        analyser.getByteFrequencyData(dataArray)
+        
+        visualizerCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height)
+        
+        const barWidth = (visualizerCanvas.width / bufferLength) * 2.5
+        let barHeight
+        let x = 0
+        
+        for (let i = 0; i < bufferLength; i++) {
+          barHeight = dataArray[i] / 2
+          
+          // Create gradient for bars
+          const gradient = visualizerCtx.createLinearGradient(0, 0, 0, visualizerCanvas.height)
+          gradient.addColorStop(0, "#8e2de2")
+          gradient.addColorStop(1, "#4169e1")
+          
+          visualizerCtx.fillStyle = gradient
+          visualizerCtx.fillRect(x, visualizerCanvas.height - barHeight, barWidth, barHeight)
+          
+          x += barWidth + 1
+        }
+        
+        visualizerAnimationFrame = requestAnimationFrame(drawVisualizer)
+      }
+      
+      // Start visualizer
+      function startVisualizer() {
+        if (!visualizerCanvas) return
+        
+        visualizerCanvas.style.display = "block"
+        isVisualizerActive = true
+        
+        if (!audioContext) {
+          initAudioContext()
+        }
+        
+        if (audioContext && audioContext.state === "suspended") {
+          audioContext.resume()
+        }
+        
+        // Make sure we have a valid audio source
+        if (!audioSource && audioContext && lofiAudio) {
+          try {
+            audioSource = audioContext.createMediaElementSource(lofiAudio)
+            audioSource.connect(analyser)
+            analyser.connect(audioContext.destination)
+          } catch (e) {
+            console.error("Error connecting audio source:", e)
+          }
+        }
+        
+        drawVisualizer()
+      }
+      
+      // Stop visualizer
+      function stopVisualizer() {
+        isVisualizerActive = false
+        
+        if (visualizerAnimationFrame) {
+          cancelAnimationFrame(visualizerAnimationFrame)
+        }
+        
+        if (visualizerCanvas) {
+          visualizerCanvas.style.display = "none"
+        }
+      }
+      
+      // Calendar functions
+      function loadDailyPointsData() {
+        if (isSignedIn && currentUser) {
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          if (users[currentUser] && users[currentUser].dailyPointsData) {
+            dailyPointsData = users[currentUser].dailyPointsData
+          }
+        } else {
+          dailyPointsData = JSON.parse(localStorage.getItem("dailyPointsData") || "{}")
+        }
+      }
+      
+      function saveDailyPointsData() {
+        if (isSignedIn && currentUser) {
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          if (users[currentUser]) {
+            users[currentUser].dailyPointsData = dailyPointsData
+            localStorage.setItem("users", JSON.stringify(users))
+          }
+        } else {
+          localStorage.setItem("dailyPointsData", JSON.stringify(dailyPointsData))
+        }
+      }
+      
+      function updateDailyPoints(pointsEarned) {
+        const today = new Date().toISOString().split('T')[0]
+        
+        if (!dailyPointsData[today]) {
+          dailyPointsData[today] = 0
+        }
+        
+        dailyPointsData[today] += pointsEarned
+        saveDailyPointsData()
+      }
+      
+      function getPointsLevel(points) {
+        if (points === 0) return 0
+        if (points <= 50) return 0
+        if (points <= 100) return 1
+        if (points <= 200) return 2
+        if (points <= 300) return 3
+        return 4
+      }
+      
+      function renderCalendar() {
+        const calendarContainer = document.getElementById("calendarContainer")
+        const currentMonthElement = document.getElementById("currentMonth")
+        
+        if (!calendarContainer || !currentMonthElement) return
+        
+        // Clear previous calendar
+        calendarContainer.innerHTML = ""
+        
+        // Set current month display
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        currentMonthElement.textContent = `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`
+        
+        // Add day headers
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        dayNames.forEach(day => {
+          const dayHeader = document.createElement("div")
+          dayHeader.className = "calendar-day-header"
+          dayHeader.textContent = day
+          calendarContainer.appendChild(dayHeader)
+        })
+        
+        // Get first day of month and total days
+        const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1)
+        const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0)
+        const totalDays = lastDay.getDate()
+        const startingDayOfWeek = firstDay.getDay()
+        
+        // Add empty cells for days before first day of month
+        for (let i = 0; i < startingDayOfWeek; i++) {
+          const emptyDay = document.createElement("div")
+          emptyDay.className = "calendar-day empty"
+          calendarContainer.appendChild(emptyDay)
+        }
+        
+        // Add days of the month
+        const today = new Date()
+        const isCurrentMonth = today.getMonth() === currentCalendarMonth && today.getFullYear() === currentCalendarYear
+        
+        for (let day = 1; day <= totalDays; day++) {
+          const dayElement = document.createElement("div")
+          dayElement.className = "calendar-day"
+          
+          // Check if this is today
+          if (isCurrentMonth && today.getDate() === day) {
+            dayElement.classList.add("today")
+          }
+          
+          // Add date number
+          const dateSpan = document.createElement("div")
+          dateSpan.className = "date"
+          dateSpan.textContent = day
+          dayElement.appendChild(dateSpan)
+          
+          // Check if we have points data for this day
+          const dateString = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+          const dayPoints = dailyPointsData[dateString] || 0
+          
+          // Add points info
+          const pointsSpan = document.createElement("div")
+          pointsSpan.className = "points"
+          pointsSpan.textContent = `${dayPoints} XP`
+          dayElement.appendChild(pointsSpan)
+          
+          // Color based on points level
+          const level = getPointsLevel(dayPoints)
+          dayElement.classList.add(`level-${level}`)
+          
+          calendarContainer.appendChild(dayElement)
+        }
+      }
+      
+      function showDetailedStats() {
+        loadDailyPointsData()
+        renderCalendar()
+        document.getElementById("detailedStatsOverlay").style.display = "flex"
+      }
+      
+      function closeDetailedStats() {
+        document.getElementById("detailedStatsOverlay").style.display = "none"
+      }
+      
+      function navigateCalendar(direction) {
+        if (direction === "prev") {
+          currentCalendarMonth--
+          if (currentCalendarMonth < 0) {
+            currentCalendarMonth = 11
+            currentCalendarYear--
+          }
+        } else {
+          currentCalendarMonth++
+          if (currentCalendarMonth > 11) {
+            currentCalendarMonth = 0
+            currentCalendarYear++
+          }
+        }
+        
+        renderCalendar()
       }
 
       function getAchievementLevel(points) {
@@ -1529,12 +1990,40 @@
 
       function playLofi() {
         if (!lofiAudio) return
-        lofiAudio.play().catch((err) => console.error("Lofi play error:", err))
+        
+        // Initialize audio context on user interaction
+        if (!audioContext) {
+          initAudioContext()
+        } else if (audioContext.state === "suspended") {
+          audioContext.resume()
+        }
+        
+        // Create audio source if it doesn't exist yet
+        if (!audioSource && audioContext) {
+          try {
+            audioSource = audioContext.createMediaElementSource(lofiAudio)
+            audioSource.connect(analyser)
+            analyser.connect(audioContext.destination)
+          } catch (e) {
+            console.error("Error connecting audio source:", e)
+          }
+        }
+        
+        lofiAudio.play().then(() => {
+          // Start visualizer when music plays successfully
+          startVisualizer()
+        }).catch((err) => {
+          console.error("Lofi play error:", err)
+        })
       }
 
       function pauseLofi() {
         if (!lofiAudio) return
+        
         lofiAudio.pause()
+        
+        // Stop visualizer when music pauses
+        stopVisualizer()
       }
 
       function prevLofi() {
@@ -1635,6 +2124,7 @@
         switch (reward.type) {
           case "points":
             points += rewardValue
+            updateDailyPoints(rewardValue)
             break
           case "doublePoints":
             activePowerUps.doublePoints.active = true
@@ -1807,6 +2297,7 @@
         document.getElementById("audioStoreBtn").onclick = showAudioTracksStore
         document.getElementById("quietPomodoroBtn").onclick = showPomodoroOverlay
         document.getElementById("logoutBtn").onclick = logout
+        document.getElementById("detailedStatsBtn").onclick = showDetailedStats
       }
 
       function updatePomodoroDisplay() {
@@ -1831,6 +2322,7 @@
         const minutesCompleted = 60 - Math.floor(pomodoroTimeRemaining / 60)
         const pointsEarned = applyPowerUps(minutesCompleted)
         points += pointsEarned
+        updateDailyPoints(pointsEarned)
         
         document.getElementById("pomodoroStatus").textContent = `Completed! Earned ${pointsEarned} XP`
         document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
@@ -1960,7 +2452,9 @@
             if (task.completed) {
               // Task was completed on time
               const earnedPoints = task.points || 50
-              points += applyPowerUps(earnedPoints)
+              const pointsToAdd = applyPowerUps(earnedPoints)
+              points += pointsToAdd
+              updateDailyPoints(pointsToAdd)
               alert(`Task "${task.text}" completed on time! +${earnedPoints} XP`)
             } else {
               // Task was not completed on time
@@ -2060,7 +2554,9 @@
         
         if (choice === "continue") {
           // Award bonus points
-          points += applyPowerUps(100)
+          const bonusPoints = applyPowerUps(100)
+          points += bonusPoints
+          updateDailyPoints(bonusPoints)
           document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
           
           // Start a new focus session
@@ -2103,6 +2599,13 @@
               streakShield: { active: false, used: false, expiry: null },
             }
             
+            // Load daily points data
+            if (state.dailyPointsData) {
+              dailyPointsData = state.dailyPointsData
+            } else {
+              loadDailyPointsData()
+            }
+            
             // Load premium tracks state
             if (state.premiumLofiTracks) {
               state.premiumLofiTracks.forEach(savedTrack => {
@@ -2127,11 +2630,13 @@
               document.getElementById("clockDisplay").style.display = "block"
               document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
               document.getElementById("lofiPlayer").style.display = "block"
+              pauseLofi() // Ensure lofi doesn't autoplay
               restoreUrlInputs()
               populatePlaylistSelect()
               restoreTasks()
               startReminderTimer()
               if (mysteryBoxCount > 0) showMysteryBoxPopup()
+              updateSidebarDashboard()
             }
             if (videoIds.length > 0) {
               document.getElementById("inputForm").style.display = "none"
@@ -2201,6 +2706,13 @@
               streakShield: { active: false, used: false, expiry: null },
             }
             
+            // Load daily points data
+            if (users[username].dailyPointsData) {
+              dailyPointsData = users[username].dailyPointsData
+            } else {
+              loadDailyPointsData()
+            }
+            
             // Load premium tracks
             if (users[username].premiumLofiTracks) {
               users[username].premiumLofiTracks.forEach(savedTrack => {
@@ -2257,6 +2769,7 @@
                 doublePoints: { active: false, expiry: null },
                 streakShield: { active: false, used: false, expiry: null },
               },
+              dailyPointsData: {},
               premiumLofiTracks: premiumLofiTracks.map(track => ({
                 id: track.id,
                 unlocked: false
@@ -2272,6 +2785,7 @@
             tasks = []
             streakDays = 0
             mysteryBoxCount = 0
+            dailyPointsData = {}
             activePowerUps = {
               doublePoints: { active: false, expiry: null },
               streakShield: { active: false, used: false, expiry: null },
@@ -2649,7 +3163,9 @@
         if (event.data === YT.PlayerState.ENDED) {
           completedVideos.add(videoIds[currentVideoIndex])
           totalVideosWatched++
-          points += applyPowerUps(50) // Base 50 points per video, doubled if power-up active
+          const videoPoints = applyPowerUps(50) // Base 50 points per video, doubled if power-up active
+          points += videoPoints
+          updateDailyPoints(videoPoints)
           document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
           checkLevelUp()
           saveState()
@@ -2686,7 +3202,10 @@
       // Add keyboard shortcut for toggling sidebar
       document.addEventListener('keydown', function(e) {
         if (e.key === 't' || e.key === 'T') {
-          toggleVideoSidebar()
+          const sidebar = document.getElementById("videoSidebar")
+          if (sidebar) {
+            sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
+          }
         }
       })
 
@@ -2723,7 +3242,9 @@
             clearInterval(countdownInterval)
             progressBar.style.display = "none"
             if (mode === "Focus Time") {
-              points += applyPowerUps(100) // Base 100 points per focus session, doubled if power-up active
+              const sessionPoints = applyPowerUps(100) // Base 100 points per focus session, doubled if power-up active
+              points += sessionPoints
+              updateDailyPoints(sessionPoints)
               document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
               checkLevelUp()
               
@@ -2929,7 +3450,8 @@
           lastFocusDate: localStorage.getItem("lastFocusDate"),
           mysteryBoxCount,
           activePowerUps,
-          premiumLofiTracks
+          premiumLofiTracks,
+          dailyPointsData
         }
         localStorage.setItem("focusModeState", JSON.stringify(state))
 
@@ -2944,6 +3466,7 @@
           users[currentUser].mysteryBoxCount = mysteryBoxCount
           users[currentUser].activePowerUps = activePowerUps
           users[currentUser].premiumLofiTracks = premiumLofiTracks
+          users[currentUser].dailyPointsData = dailyPointsData
           localStorage.setItem("users", JSON.stringify(users))
         }
       }
@@ -2972,6 +3495,7 @@
         tasks = []
         streakDays = 0
         mysteryBoxCount = 0
+        dailyPointsData = {}
         activePowerUps = {
           doublePoints: { active: false, expiry: null },
           streakShield: { active: false, used: false, expiry: null },
@@ -3083,6 +3607,18 @@
         document.getElementById("pomodoroStartBtn").addEventListener("click", startPomodoro)
         document.getElementById("pomodoroResetBtn").addEventListener("click", resetPomodoro)
         document.getElementById("pomodoroCloseBtn").addEventListener("click", closePomodoroOverlay)
+        document.getElementById("detailedStatsBtn").addEventListener("click", showDetailedStats)
+        document.getElementById("closeDetailedStats").addEventListener("click", closeDetailedStats)
+        document.getElementById("prevMonthBtn").addEventListener("click", () => navigateCalendar("prev"))
+        document.getElementById("nextMonthBtn").addEventListener("click", () => navigateCalendar("next"))
+
+        // Set up audio visualizer resize handler
+        window.addEventListener("resize", () => {
+          if (visualizerCanvas) {
+            visualizerCanvas.width = visualizerCanvas.offsetWidth
+            visualizerCanvas.height = visualizerCanvas.offsetHeight
+          }
+        })
 
         const timerDisplay = document.getElementById("timerDisplay")
         let isDragging = false
@@ -3116,14 +3652,32 @@
             distractionCount++
             totalDistractions++
             pauseLofi()
+            
+            // Play focus audio when user is distracted
+            const focusAudio = document.getElementById("focusAudio")
+            if (focusAudio) {
+              focusAudio.play().catch(err => console.error("Focus audio play error:", err))
+            }
+            
             saveState()
-          } else if (!document.hidden && isFocusModeActive) playLofi()
+          } else if (!document.hidden && isFocusModeActive) {
+            // Resume lofi music when user returns
+            playLofi()
+          }
         })
         
         // Check task deadlines periodically
         setInterval(checkTaskDeadlines, 60000) // Check every minute
+        
+        // Add event listener for lofi audio ended to automatically play next track
+        if (lofiAudio) {
+          lofiAudio.addEventListener('ended', () => {
+            nextLofi()
+          })
+        }
       })
     })()
   </script>
 </body>
 </html>
+
