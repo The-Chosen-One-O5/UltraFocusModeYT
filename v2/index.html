@@ -1361,14 +1361,17 @@
 
     #lofiPlayer {
       position: fixed;
-      bottom: 60px;
+      bottom: 10px;
       right: 10px;
       background: var(--bg-medium);
-      padding: 10px;
+      padding: 5px;
       border: 2px solid var(--secondary);
-      z-index: 101;
       box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      z-index: 101;
       pointer-events: auto;
+      display: flex;
+      align-items: center;
+      border-radius: 4px;
       display: none;
     }
 
@@ -1376,34 +1379,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-    }
-
-    .title-box {
-      text-align: center;
-    }
-
-    .title-1 {
-      font-size: 14px;
-      color: var(--text);
-      font-family: monospace;
-    }
-
-    .title-2 {
-      font-size: 12px;
-      color: var(--text-dim);
-      font-family: monospace;
+      gap: 5px;
     }
 
     .controls {
       display: flex;
-      gap: 10px;
+      gap: 5px;
     }
 
     .controls button {
       background: var(--primary);
       border: none;
-      padding: 5px;
+      padding: 2px;
       cursor: pointer;
       width: 30px;
       height: 30px;
@@ -1411,13 +1398,21 @@
       align-items: center;
       justify-content: center;
       box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
-      pointer-events: auto;
+      border-radius: 2px;
+      transition: all 0.2s;
     }
 
     .controls button:hover {
       background: var(--secondary);
       transform: translate(1px, 1px);
       box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .controls button svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--text);
+      stroke: var(--text);
     }
 
     @media (max-width: 800px) {
@@ -1547,6 +1542,7 @@
             <span class="remove-task">x</span>
           </div>
         </div>
+        <button id="addTaskBtn" style="background: var(--accent); padding: 5px 10px; font-size: 14px;">+</button>
         <button data-action="save-tasks">SAVE QUESTS</button>
       </div>
 
@@ -1686,30 +1682,28 @@
 
     <div id="lofiPlayer" style="display: none;">
       <div class="lofi-player">
-        <div class="title-box">
-          <p class="title-1"></p>
-          <p class="title-2"></p>
-        </div>
         <div class="controls">
-          <button id="lofiPrev">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button id="lofiPrev" title="Previous">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="11 4 4 12 11 20"></polyline>
               <line x1="20" y1="12" x2="4" y2="12"></line>
             </svg>
           </button>
-          <button id="lofiPause">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <button id="lofiPlay" title="Play/Pause">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path fill-rule="evenodd" d="M12 21.6a9.6 9.6 0 1 0 0-19.2 9.6 9.6 0 0 0 0 19.2ZM9.6 7.2a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Zm4.8 0a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Z" clip-rule="evenodd"></path>
             </svg>
           </button>
-          <button id="lofiNext">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button id="lofiNext" title="Next">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="13 4 20 12 13 20"></polyline>
               <line x1="4" y1="12" x2="20" y2="12"></line>
             </svg>
           </button>
-          <button id="volumeButton">
-            🔊
+          <button id="volumeButton" title="Toggle Volume">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11 5L6 9H2v6h4l5 4V5zM14.434 7.434l-1.414 1.414a3.987 3.987 0 0 1 0 5.656l1.414 1.414a5.981 5.981 0 0 0 0-8.484zM16.485 9.485l-1.415 1.414a1.994 1.994 0 0 1 0 2.828l1.415 1.414a3.987 3.987 0 0 0 0-5.656z"></path>
+            </svg>
           </button>
         </div>
       </div>
@@ -1860,7 +1854,7 @@
       document.getElementById('sitesBox').style.display = 'block';
       document.getElementById('pdfToggle').style.display = 'block';
       document.getElementById('lofiPlayer').style.display = 'block';
-      playAudioTrack(); // Start playing the first unlocked track
+      playAudioTrack();
       loadVideoSidebar();
       initializePlayer();
       startTimer();
@@ -1979,7 +1973,7 @@
       }, 3000);
     }
 
-    function startClock() {
+        function startClock() {
       setInterval(() => {
         const now = new Date();
         const hours = now.getHours() % 12 || 12;
@@ -1992,28 +1986,34 @@
 
     document.getElementById('timerDisplay').addEventListener('mousedown', (e) => {
       isDragging = true;
-      offsetX = e.clientX - document.getElementById('timerDisplay').offsetLeft;
-      offsetY = e.clientY - document.getElementById('timerDisplay').offsetTop;
+      offsetX = e.clientX - document.getElementById('timerDisplay').getBoundingClientRect().left;
+      offsetY = e.clientY - document.getElementById('timerDisplay').getBoundingClientRect().top;
+      document.addEventListener('mousemove', dragTimer);
+      document.addEventListener('mouseup', stopDragging);
     });
 
-    document.addEventListener('mousemove', (e) => {
+    function dragTimer(e) {
       if (isDragging) {
-        document.getElementById('timerDisplay').style.left = `${e.clientX - offsetX}px`;
-        document.getElementById('timerDisplay').style.top = `${e.clientY - offsetY}px`;
+        const timer = document.getElementById('timerDisplay');
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
+        const containerWidth = window.innerWidth - timer.offsetWidth;
+        const containerHeight = window.innerHeight - timer.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, containerWidth));
+        newY = Math.max(0, Math.min(newY, containerHeight));
+
+        timer.style.left = newX + 'px';
+        timer.style.top = newY + 'px';
+        timer.style.position = 'absolute';
       }
-    });
+    }
 
-    document.addEventListener('mouseup', () => {
+    function stopDragging() {
       isDragging = false;
-    });
-
-    document.getElementById('sitesBox').addEventListener('click', () => {
-      document.getElementById('sitesPopup').style.display = 'block';
-    });
-
-    document.getElementById('closeSitesPopup').addEventListener('click', () => {
-      document.getElementById('sitesPopup').style.display = 'none';
-    });
+      document.removeEventListener('mousemove', dragTimer);
+      document.removeEventListener('mouseup', stopDragging);
+    }
 
     document.getElementById('restartBtn').addEventListener('click', () => {
       document.getElementById('confirmationDialog').style.display = 'block';
@@ -2030,46 +2030,236 @@
 
     function endSession() {
       clearInterval(timerInterval);
-      player.stopVideo();
+      player.destroy();
+      document.getElementById('inputForm').style.display = 'block';
       document.getElementById('player').style.display = 'none';
       document.getElementById('timerDisplay').style.display = 'none';
       document.getElementById('pointsDisplay').style.display = 'none';
       document.getElementById('clockDisplay').style.display = 'none';
       document.getElementById('restartBtn').style.display = 'none';
       document.getElementById('sitesBox').style.display = 'none';
-      document.getElementById('videoSidebar').style.right = '-320px';
       document.getElementById('pdfToggle').style.display = 'none';
       document.getElementById('lofiPlayer').style.display = 'none';
       audioPlayer.pause();
-      document.getElementById('inputForm').style.display = 'block';
-      updateStats();
-      if (focusTime >= 25 * 60) {
-        streak++;
-        localStorage.setItem('streak', streak);
-        updateStreakDisplay();
-        checkMysteryBox();
-      }
+      document.getElementById('videoSidebar').style.display = 'none';
+      document.getElementById('progressBar').style.display = 'none';
+      saveStats();
     }
 
-    function updateStats() {
-      document.getElementById('totalFocusTime').textContent = Math.floor(focusTime / 60);
+    function saveStats() {
+      const totalFocusTime = Math.floor(focusTime / 60);
+      localStorage.setItem('totalFocusTime', totalFocusTime);
+      localStorage.setItem('totalDistractions', distractions);
+      localStorage.setItem('totalVideosWatched', videosWatched);
+      document.getElementById('totalFocusTime').textContent = totalFocusTime;
       document.getElementById('totalDistractions').textContent = distractions;
       document.getElementById('totalVideosWatched').textContent = videosWatched;
+    }
+
+    document.getElementById('sitesBox').addEventListener('click', () => {
+      document.getElementById('sitesPopup').style.display = 'block';
+    });
+
+    document.getElementById('closeSitesPopup').addEventListener('click', () => {
+      document.getElementById('sitesPopup').style.display = 'none';
+    });
+
+    document.getElementById('statsBtn').addEventListener('click', () => {
+      document.getElementById('analytics').style.display = 'block';
+    });
+
+    document.getElementById('todoBtn').addEventListener('click', () => {
+      const todoList = document.getElementById('todoList');
+      if (todoList.classList.contains('expanded')) {
+        todoList.classList.remove('expanded');
+      } else {
+        todoList.classList.add('expanded');
+      }
+    });
+
+    document.getElementById('pyqBtn').addEventListener('click', () => {
+      window.open('https://focuswithpomodoro.netlify.app/', '_blank');
+    });
+
+    document.getElementById('pdfToggle').addEventListener('click', togglePDFViewer);
+
+    function togglePDFViewer() {
+      const pdfViewer = document.getElementById('pdfViewer');
+      pdfViewer.style.display = pdfViewer.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.getElementById('pdfInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        document.getElementById('pdfFrame').src = fileURL;
+      }
+    });
+
+    document.getElementById('fireBox').addEventListener('click', () => {
+      document.getElementById('aiPopup').style.display = 'block';
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.clear();
+      document.getElementById('inputForm').style.display = 'none';
+      document.getElementById('landingPage').style.display = 'block';
+      alert('Logged out successfully!');
+    });
+
+    document.getElementById('streakShieldBtn').addEventListener('click', () => {
+      if (totalXP >= 800) {
+        document.getElementById('streakShieldDialog').style.display = 'block';
+      } else {
+        alert('You need 800 XP to purchase Streak Shield!');
+      }
+    });
+
+    document.getElementById('streakShieldConfirmBtn').addEventListener('click', () => {
+      totalXP -= 800;
+      localStorage.setItem('totalXP', totalXP);
+      streakShieldActive = true;
+      localStorage.setItem('streakShieldActive', 'true');
+      const shieldEndTime = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      localStorage.setItem('streakShieldEndTime', shieldEndTime);
+      document.getElementById('streakShieldDialog').style.display = 'none';
+      updatePointsDisplay();
+      alert('Streak Shield activated for 7 days!');
+    });
+
+    document.getElementById('streakShieldCancelBtn').addEventListener('click', () => {
+      document.getElementById('streakShieldDialog').style.display = 'none';
+    });
+
+    document.getElementById('doublePointsBtn').addEventListener('click', () => {
+      if (totalXP >= 800) {
+        document.getElementById('doublePointsDialog').style.display = 'block';
+      } else {
+        alert('You need 800 XP to purchase Double Points Power-Up!');
+      }
+    });
+
+    document.getElementById('doublePointsConfirmBtn').addEventListener('click', () => {
+      totalXP -= 800;
+      localStorage.setItem('totalXP', totalXP);
+      doublePointsActive = true;
+      localStorage.setItem('doublePointsActive', 'true');
+      const endTime = new Date().getTime() + 24 * 60 * 60 * 1000;
+      localStorage.setItem('doublePointsEndTime', endTime);
+      document.getElementById('doublePointsDialog').style.display = 'none';
+      updatePointsDisplay();
+      alert('Double Points Power-Up activated for 24 hours!');
+    });
+
+    document.getElementById('doublePointsCancelBtn').addEventListener('click', () => {
+      document.getElementById('doublePointsDialog').style.display = 'none';
+    });
+
+    document.getElementById('audioStoreBtn').addEventListener('click', () => {
+      document.getElementById('audioTracksStore').style.display = 'block';
+      loadAudioTracks();
+    });
+
+    document.getElementById('closeAudioStore').addEventListener('click', () => {
+      document.getElementById('audioTracksStore').style.display = 'none';
+    });
+
+    function loadAudioTracks() {
+      const tracksList = document.getElementById('audioTracksList');
+      tracksList.innerHTML = '';
+      audioTracks.forEach((track, index) => {
+        const trackDiv = document.createElement('div');
+        trackDiv.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`;
+        trackDiv.innerHTML = `
+          <span class="track-name">${track.name}</span>
+          <button class="unlock-track-btn" data-index="${index}" ${track.unlocked || totalXP < track.cost ? 'disabled' : ''}>
+            ${track.unlocked ? 'Unlocked' : `Unlock (${track.cost} XP)`}
+          </button>
+        `;
+        tracksList.appendChild(trackDiv);
+      });
+      document.querySelectorAll('.unlock-track-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+          const index = e.target.getAttribute('data-index');
+          if (totalXP >= audioTracks[index].cost) {
+            totalXP -= audioTracks[index].cost;
+            localStorage.setItem('totalXP', totalXP);
+            audioTracks[index].unlocked = true;
+            localStorage.setItem('audioTracks', JSON.stringify(audioTracks));
+            loadAudioTracks();
+            updatePointsDisplay();
+            alert(`${audioTracks[index].name} unlocked!`);
+          }
+        });
+      });
+    }
+
+    document.getElementById('quietPomodoroBtn').addEventListener('click', () => {
+      document.getElementById('pomodoroOverlay').style.display = 'flex';
+      updatePomodoroTimer();
+    });
+
+    document.getElementById('pomodoroStartBtn').addEventListener('click', () => {
+      if (!pomodoroRunning) {
+        pomodoroRunning = true;
+        document.getElementById('pomodoroStatus').textContent = 'Focus Time!';
+        pomodoroInterval = setInterval(updatePomodoroTimer, 1000);
+      }
+    });
+
+    document.getElementById('pomodoroPauseBtn').addEventListener('click', () => {
+      if (pomodoroRunning) {
+        pomodoroRunning = false;
+        clearInterval(pomodoroInterval);
+        document.getElementById('pomodoroStatus').textContent = 'Paused';
+      }
+    });
+
+    document.getElementById('pomodoroResetBtn').addEventListener('click', () => {
+      pomodoroRunning = false;
+      clearInterval(pomodoroInterval);
+      pomodoroTime = 60 * 60;
+      updatePomodoroTimer();
+      document.getElementById('pomodoroStatus').textContent = 'Ready to begin';
+    });
+
+    document.getElementById('pomodoroCloseBtn').addEventListener('click', () => {
+      pomodoroRunning = false;
+      clearInterval(pomodoroInterval);
+      document.getElementById('pomodoroOverlay').style.display = 'none';
+    });
+
+    function updatePomodoroTimer() {
+      if (pomodoroRunning && pomodoroTime > 0) {
+        pomodoroTime--;
+        const minutes = Math.floor(pomodoroTime / 60);
+        const seconds = pomodoroTime % 60;
+        document.getElementById('pomodoroTimer').textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        totalXP++;
+        localStorage.setItem('totalXP', totalXP);
+        updatePointsDisplay();
+      } else if (pomodoroTime <= 0) {
+        pomodoroRunning = false;
+        clearInterval(pomodoroInterval);
+        document.getElementById('pomodoroStatus').textContent = 'Session Complete! +100 XP';
+        totalXP += 100;
+        localStorage.setItem('totalXP', totalXP);
+        updatePointsDisplay();
+      }
     }
 
     function loadVideoSidebar() {
       const sidebar = document.getElementById('videoSidebar');
       sidebar.innerHTML = '<button id="minimizeBtn">X</button>';
       videoIds.forEach((id, index) => {
-        const img = document.createElement('img');
-        img.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
-        img.className = 'thumbnail';
-        img.alt = `Video ${index + 1}`;
-        img.addEventListener('click', () => {
+        const thumbnail = document.createElement('img');
+        thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+        thumbnail.className = 'thumbnail';
+        thumbnail.addEventListener('click', () => {
           currentVideoIndex = index;
           player.loadVideoById(videoIds[currentVideoIndex]);
         });
-        sidebar.appendChild(img);
+        sidebar.appendChild(thumbnail);
       });
       sidebar.style.right = '0';
       document.getElementById('minimizeBtn').addEventListener('click', () => {
@@ -2077,170 +2267,15 @@
       });
     }
 
-    document.getElementById('statsBtn').addEventListener('click', () => {
-      const analytics = document.getElementById('analytics');
-      analytics.style.display = analytics.style.display === 'block' ? 'none' : 'block';
-      updateStats();
-    });
-
-    document.getElementById('todoBtn').addEventListener('click', () => {
-      const todoList = document.getElementById('todoList');
-      todoList.classList.toggle('expanded');
-      todoList.style.display = todoList.style.display === 'block' ? 'none' : 'block';
-    });
-
-    document.addEventListener('click', (e) => {
-      const todoList = document.getElementById('todoList');
-      const todoBtn = document.getElementById('todoBtn');
-      if (todoList.classList.contains('expanded') && !todoList.contains(e.target) && e.target !== todoBtn) {
-        todoList.classList.remove('expanded');
-        todoList.style.display = 'none';
-      }
-    });
-
-    document.getElementById('pyqBtn').addEventListener('click', () => {
-      window.open('https://the-chosen-one-o5.github.io/PYQs-for-DSA/', '_blank');
-    });
-
-    function loadTasks() {
-      const tasksDiv = document.getElementById('tasks');
-      tasksDiv.innerHTML = '';
-      tasks.forEach((task, index) => {
-        addTaskElement(task.text, task.completed, task.deadline, task.points, index);
-      });
-      if (tasks.length === 0) {
-        addTaskElement();
-      }
-    }
-
-    function addTaskElement(text = '', completed = false, deadline = null, points = 0, index = tasks.length) {
-      const tasksDiv = document.getElementById('tasks');
-      const taskLine = document.createElement('div');
-      taskLine.className = 'task-line';
-      taskLine.innerHTML = `
-        <label class="neon-checkbox">
-          <input type="checkbox" class="task-check" ${completed ? 'checked' : ''} />
-          <div class="neon-checkbox__frame">
-            <div class="neon-checkbox__box">
-              <div class="neon-checkbox__check-container">
-                <svg viewBox="0 0 24 24" class="neon-checkbox__check">
-                  <path d="M3,12.5l7,7L21,5"></path>
-                </svg>
-              </div>
-              <div class="neon-checkbox__glow"></div>
-              <div class="neon-checkbox__borders">
-                <span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-            <div class="neon-checkbox__effects">
-              <div class="neon-checkbox__particles">
-                <span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span>
-              </div>
-              <div class="neon-checkbox__rings">
-                <div class="ring"></div>
-                <div class="ring"></div>
-                <div class="ring"></div>
-              </div>
-              <div class="neon-checkbox__sparks">
-                <span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-        </label>
-        <input type="text" class="task-text" value="${text}" placeholder="Add a quest..." />
-        <button class="set-deadline">⏰</button>
-        <span class="remove-task">x</span>
-        ${deadline ? `<span class="deadline-info">Due: ${new Date(deadline).toLocaleString()}</span>` : ''}
-        ${points ? `<span class="points-info">+${points} XP</span>` : ''}
-      `;
-      tasksDiv.appendChild(taskLine);
-
-      const checkbox = taskLine.querySelector('.task-check');
-      checkbox.addEventListener('change', () => {
-        tasks[index].completed = checkbox.checked;
-        if (checkbox.checked && tasks[index].deadline && new Date() <= new Date(tasks[index].deadline)) {
-          points += tasks[index].points;
-          totalXP += tasks[index].points;
-          localStorage.setItem('totalXP', totalXP);
-          updatePointsDisplay();
-          updateLevel();
-          showAchievement(`Task Completed! +${tasks[index].points} XP`);
-        }
-        saveTasks();
-      });
-
-      const removeBtn = taskLine.querySelector('.remove-task');
-      removeBtn.addEventListener('click', () => {
-        tasks.splice(index, 1);
-        loadTasks();
-        saveTasks();
-      });
-
-      const deadlineBtn = taskLine.querySelector('.set-deadline');
-      deadlineBtn.addEventListener('click', () => {
-        currentTaskIndex = index;
-        document.getElementById('deadlineDialog').style.display = 'block';
-      });
-    }
-
-    function saveTasks() {
-      const taskInputs = document.querySelectorAll('.task-text');
-      const checkboxes = document.querySelectorAll('.task-check');
-      tasks = Array.from(taskInputs).map((input, i) => ({
-        text: input.value,
-        completed: checkboxes[i].checked,
-        deadline: tasks[i] ? tasks[i].deadline : null,
-        points: tasks[i] ? tasks[i].points : 0
-      })).filter(task => task.text);
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
-
-    document.getElementById('deadlineConfirmBtn').addEventListener('click', () => {
-      const date = document.getElementById('deadlineDate').value;
-      const time = document.getElementById('deadlineTime').value;
-      const points = parseInt(document.getElementById('taskDifficulty').value);
-      if (date && time && currentTaskIndex !== null) {
-        const deadline = new Date(`${date}T${time}`).toISOString();
-        tasks[currentTaskIndex].deadline = deadline;
-        tasks[currentTaskIndex].points = points;
-        loadTasks();
-        saveTasks();
-      }
-      document.getElementById('deadlineDialog').style.display = 'none';
-    });
-
-    document.getElementById('deadlineCancelBtn').addEventListener('click', () => {
-      document.getElementById('deadlineDialog').style.display = 'none';
-    });
-
     function loadPlaylists() {
       const select = document.getElementById('playlistSelect');
       select.innerHTML = '<option value="">Select a Playlist</option>';
-      Object.keys(playlists).forEach(name => {
+      for (let name in playlists) {
         const option = document.createElement('option');
         option.value = name;
         option.textContent = name;
         select.appendChild(option);
-      });
-      select.addEventListener('change', () => {
-        const selected = select.value;
-        if (selected) {
-          const urls = playlists[selected];
-          const urlInputs = document.getElementById('urlInputs');
-          urlInputs.innerHTML = '';
-          urls.forEach(url => {
-            const div = document.createElement('div');
-            div.className = 'url-container';
-            div.innerHTML = `
-              <input type="text" class="youtube-url" value="${url}" required />
-              <button onclick="this.parentElement.remove()">REMOVE</button>
-            `;
-            urlInputs.appendChild(div);
-          });
-        }
-      });
+      }
     }
 
     function savePlaylist() {
@@ -2249,156 +2284,156 @@
       if (name && urls.length > 0) {
         playlists[name] = urls;
         localStorage.setItem('playlists', JSON.stringify(playlists));
-        loadPlaylists();
         document.getElementById('playlistName').value = '';
+        loadPlaylists();
         alert('Playlist saved!');
       } else {
-        alert('Please enter a name and at least one URL!');
+        alert('Please enter a playlist name and at least one URL!');
       }
     }
 
     function removePlaylist() {
-      const selected = document.getElementById('playlistSelect').value;
-      if (selected && confirm(`Delete playlist "${selected}"?`)) {
-        delete playlists[selected];
+      const name = document.getElementById('playlistSelect').value;
+      if (name) {
+        delete playlists[name];
         localStorage.setItem('playlists', JSON.stringify(playlists));
         loadPlaylists();
-        document.getElementById('urlInputs').innerHTML = `
-          <div class="url-container">
-            <input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required />
-          </div>
+        alert('Playlist deleted!');
+      }
+    }
+
+    document.getElementById('playlistSelect').addEventListener('change', (e) => {
+      const name = e.target.value;
+      if (name) {
+        const urls = playlists[name];
+        document.getElementById('urlInputs').innerHTML = '';
+        urls.forEach(url => addUrlInput().querySelector('.youtube-url').value = url);
+      }
+    });
+
+    function loadTasks() {
+      const tasksContainer = document.getElementById('tasks');
+      tasksContainer.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const taskLine = document.createElement('div');
+        taskLine.className = 'task-line';
+        taskLine.innerHTML = `
+          <label class="neon-checkbox">
+            <input type="checkbox" class="task-check" ${task.completed ? 'checked' : ''} data-index="${index}" />
+            <div class="neon-checkbox__frame">
+              <div class="neon-checkbox__box">
+                <div class="neon-checkbox__check-container">
+                  <svg viewBox="0 0 24 24" class="neon-checkbox__check">
+                    <path d="M3,12.5l7,7L21,5"></path>
+                  </svg>
+                </div>
+                <div class="neon-checkbox__glow"></div>
+                <div class="neon-checkbox__borders">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+              <div class="neon-checkbox__effects">
+                <div class="neon-checkbox__particles">
+                  <span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="neon-checkbox__rings">
+                  <div class="ring"></div>
+                  <div class="ring"></div>
+                  <div class="ring"></div>
+                </div>
+                <div class="neon-checkbox__sparks">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+          </label>
+          <input type="text" class="task-text" value="${task.text}" data-index="${index}" placeholder="Add a quest..." />
+          <button class="set-deadline" data-index="${index}">⏰</button>
+          <span class="remove-task" data-index="${index}">x</span>
+          ${task.deadline ? `<span class="deadline-info">Deadline: ${new Date(task.deadline).toLocaleString()}</span>` : ''}
+          ${task.points ? `<span class="points-info">Points: ${task.points}</span>` : ''}
         `;
-      }
-    }
-
-    document.getElementById('pdfToggle').addEventListener('click', togglePDFViewer);
-
-    function togglePDFViewer() {
-      const pdfViewer = document.getElementById('pdfViewer');
-      pdfViewer.style.display = pdfViewer.style.display === 'block' ? 'none' : 'block';
-      if (pdfViewer.style.display === 'block') {
-        document.getElementById('pdfInput').addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (file && file.type === 'application/pdf') {
-            const url = URL.createObjectURL(file);
-            document.getElementById('pdfFrame').src = url;
+        tasksContainer.appendChild(taskLine);
+      });
+      document.querySelectorAll('.task-check').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+          const index = e.target.getAttribute('data-index');
+          tasks[index].completed = e.target.checked;
+          if (e.target.checked) {
+            totalXP += tasks[index].points || 50;
+            localStorage.setItem('totalXP', totalXP);
+            updatePointsDisplay();
+            updateLevel();
           }
-        }, { once: true });
-      }
+          localStorage.setItem('tasks', JSON.stringify(tasks));
+        });
+      });
+      document.querySelectorAll('.task-text').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const index = e.target.getAttribute('data-index');
+          tasks[index].text = e.target.value;
+          localStorage.setItem('tasks', JSON.stringify(tasks));
+        });
+      });
+      document.querySelectorAll('.remove-task').forEach(button => {
+        button.addEventListener('click', (e) => {
+          const index = e.target.getAttribute('data-index');
+          tasks.splice(index, 1);
+          localStorage.setItem('tasks', JSON.stringify(tasks));
+          loadTasks();
+        });
+      });
+      document.querySelectorAll('.set-deadline').forEach(button => {
+        button.addEventListener('click', (e) => {
+          currentTaskIndex = e.target.getAttribute('data-index');
+          document.getElementById('deadlineDialog').style.display = 'block';
+        });
+      });
     }
 
-    document.getElementById('fireBox').addEventListener('click', () => {
-      const aiPopup = document.getElementById('aiPopup');
-      aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
-    });
-
-    function checkMysteryBox() {
-      if (streak > 0 && streak % 3 === 0) {
-        document.getElementById('mysteryBoxPopup').style.display = 'block';
+    document.getElementById('deadlineConfirmBtn').addEventListener('click', () => {
+      const date = document.getElementById('deadlineDate').value;
+      const time = document.getElementById('deadlineTime').value;
+      const difficulty = document.getElementById('taskDifficulty').value;
+      if (date && time && currentTaskIndex !== null) {
+        const deadline = new Date(date + ' ' + time).getTime();
+        tasks[currentTaskIndex].deadline = deadline;
+        tasks[currentTaskIndex].points = parseInt(difficulty);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        loadTasks();
       }
-    }
-
-    document.getElementById('openMysteryBox').addEventListener('click', () => {
-      const rewards = [
-        { type: 'points', value: 200, text: '200 XP' },
-        { type: 'streakShield', value: 1, text: 'Streak Shield (1 week)' },
-        { type: 'doublePoints', value: 1, text: 'Double Points (24 hours)' }
-      ];
-      const reward = rewards[Math.floor(Math.random() * rewards.length)];
-      document.getElementById('mysteryRewardText').textContent = `You won ${reward.text}!`;
-      document.getElementById('openMysteryBox').style.display = 'none';
-      setTimeout(() => {
-        document.getElementById('mysteryBoxPopup').style.display = 'none';
-        document.getElementById('openMysteryBox').style.display = 'block';
-        document.getElementById('mysteryRewardText').textContent = 'Click to reveal your reward!';
-      }, 2000);
-
-      if (reward.type === 'points') {
-        points += reward.value;
-        totalXP += reward.value;
-        localStorage.setItem('totalXP', totalXP);
-        updatePointsDisplay();
-        updateLevel();
-      } else if (reward.type === 'streakShield') {
-        activateStreakShield();
-      } else if (reward.type === 'doublePoints') {
-        activateDoublePoints();
-      }
+      document.getElementById('deadlineDialog').style.display = 'none';
     });
 
-    document.getElementById('streakShieldBtn').addEventListener('click', () => {
-      document.getElementById('streakShieldDialog').style.display = 'block';
+    document.getElementById('deadlineCancelBtn').addEventListener('click', () => {
+      document.getElementById('deadlineDialog').style.display = 'none';
     });
 
-    document.getElementById('streakShieldConfirmBtn').addEventListener('click', () => {
-      if (totalXP >= 800) {
-        totalXP -= 800;
-        localStorage.setItem('totalXP', totalXP);
-        activateStreakShield();
-        document.getElementById('streakShieldDialog').style.display = 'none';
-        updatePointsDisplay();
-        updateLevel();
-      } else {
-        alert('Not enough XP!');
-      }
+    document.getElementById('addTaskBtn').addEventListener('click', () => {
+      const tasksContainer = document.getElementById('tasks');
+      const newTask = { text: '', completed: false, deadline: null, points: 0 };
+      tasks.push(newTask);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      loadTasks();
     });
 
-    document.getElementById('streakShieldCancelBtn').addEventListener('click', () => {
-      document.getElementById('streakShieldDialog').style.display = 'none';
+    document.getElementById('saveTasks').addEventListener('click', () => {
+      saveTasks();
+      alert('Tasks saved!');
     });
 
-    function activateStreakShield() {
-      streakShieldActive = true;
-      localStorage.setItem('streakShieldActive', 'true');
-      setTimeout(() => {
-        streakShieldActive = false;
-        localStorage.setItem('streakShieldActive', 'false');
-      }, 7 * 24 * 60 * 60 * 1000); // 1 week
-      showAchievement('Streak Shield Activated!');
-    }
-
-    document.getElementById('doublePointsBtn').addEventListener('click', () => {
-      document.getElementById('doublePointsDialog').style.display = 'block';
-    });
-
-    document.getElementById('doublePointsConfirmBtn').addEventListener('click', () => {
-      if (totalXP >= 800) {
-        totalXP -= 800;
-        localStorage.setItem('totalXP', totalXP);
-        activateDoublePoints();
-        document.getElementById('doublePointsDialog').style.display = 'none';
-        updatePointsDisplay();
-        updateLevel();
-      } else {
-        alert('Not enough XP!');
-      }
-    });
-
-    document.getElementById('doublePointsCancelBtn').addEventListener('click', () => {
-      document.getElementById('doublePointsDialog').style.display = 'none';
-    });
-
-    function activateDoublePoints() {
-      doublePointsActive = true;
-      const endTime = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours
-      localStorage.setItem('doublePointsActive', 'true');
-      localStorage.setItem('doublePointsEndTime', endTime);
-      setTimeout(() => {
-        doublePointsActive = false;
-        localStorage.setItem('doublePointsActive', 'false');
-        localStorage.removeItem('doublePointsEndTime');
-      }, 24 * 60 * 60 * 1000);
-      showAchievement('Double Points Activated!');
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
     }
 
     document.getElementById('sessionContinueBtn').addEventListener('click', () => {
       document.getElementById('sessionCompleteDialog').style.display = 'none';
-      points += 100;
+      startTimer();
       totalXP += 100;
       localStorage.setItem('totalXP', totalXP);
       updatePointsDisplay();
-      updateLevel();
-      startTimer();
     });
 
     document.getElementById('sessionEndBtn').addEventListener('click', () => {
@@ -2408,73 +2443,44 @@
 
     function showSessionCompleteDialog() {
       document.getElementById('sessionCompleteDialog').style.display = 'block';
+      streak++;
+      localStorage.setItem('streak', streak);
+      updateStreakDisplay();
     }
 
-    document.getElementById('audioStoreBtn').addEventListener('click', () => {
-      loadAudioStore();
-      document.getElementById('audioTracksStore').style.display = 'block';
+    document.getElementById('openMysteryBox').addEventListener('click', () => {
+      const rewards = ['+200 XP', '+1 Day Streak', 'Double Points (1 Hour)'];
+      const reward = rewards[Math.floor(Math.random() * rewards.length)];
+      document.getElementById('mysteryRewardText').textContent = `You got: ${reward}!`;
+      if (reward === '+200 XP') {
+        totalXP += 200;
+        localStorage.setItem('totalXP', totalXP);
+        updatePointsDisplay();
+      } else if (reward === '+1 Day Streak') {
+        streak++;
+        localStorage.setItem('streak', streak);
+        updateStreakDisplay();
+      } else if (reward === 'Double Points (1 Hour)') {
+        doublePointsActive = true;
+        localStorage.setItem('doublePointsActive', 'true');
+        const endTime = new Date().getTime() + 60 * 60 * 1000;
+        localStorage.setItem('doublePointsEndTime', endTime);
+      }
+      setTimeout(() => {
+        document.getElementById('mysteryBoxPopup').style.display = 'none';
+      }, 3000);
     });
 
-    document.getElementById('closeAudioStore').addEventListener('click', () => {
-      document.getElementById('audioTracksStore').style.display = 'none';
+    document.getElementById('fireBox').addEventListener('click', () => {
+      document.getElementById('mysteryBoxPopup').style.display = 'block';
     });
-
-    function loadAudioStore() {
-      const audioList = document.getElementById('audioTracksList');
-      audioList.innerHTML = '';
-      audioTracks.forEach((track, index) => {
-        const savedTrack = JSON.parse(localStorage.getItem(`audioTrack_${index}`));
-        if (savedTrack && savedTrack.unlocked) {
-          track.unlocked = true;
-        }
-        const trackItem = document.createElement('div');
-        trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`;
-        trackItem.innerHTML = `
-          <span class="track-name">${track.name} ${track.unlocked ? '' : `(${track.cost} XP)`}</span>
-          <button class="unlock-track-btn" data-index="${index}" ${track.unlocked ? 'disabled' : ''}>
-            ${track.unlocked ? 'UNLOCKED' : 'UNLOCK'}
-          </button>
-        `;
-        audioList.appendChild(trackItem);
-      });
-
-      document.querySelectorAll('.unlock-tracker-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const index = parseInt(btn.getAttribute('data-index'));
-          const track = audioTracks[index];
-          if (!track.unlocked && totalXP >= track.cost) {
-            totalXP -= track.cost;
-            track.unlocked = true;
-            localStorage.setItem(`audioTrack_${index}`, JSON.stringify(track));
-            localStorage.setItem('totalXP', totalXP);
-            updatePointsDisplay();
-            updateLevel();
-            btn.textContent = 'UNLOCKED';
-            btn.disabled = true;
-            trackItem.classList.remove('locked');
-            trackItem.classList.add('unlocked');
-            showAchievement(`${track.name} Unlocked!`);
-            playAudioTrack();
-          } else if (!track.unlocked) {
-            alert('Not enough XP!');
-          }
-        });
-      });
-    }
 
     function playAudioTrack() {
       const unlockedTracks = audioTracks.filter(track => track.unlocked);
       if (unlockedTracks.length > 0) {
-        const track = unlockedTracks[currentTrackIndex % unlockedTracks.length];
-        audioPlayer.src = track.src;
+        audioPlayer.src = unlockedTracks[currentTrackIndex].src;
         audioPlayer.play();
-        updateLofiPlayer(track.name);
       }
-    }
-
-    function updateLofiPlayer(trackName) {
-      document.querySelector('.title-1').textContent = trackName.split(' - ')[0] || trackName;
-      document.querySelector('.title-2').textContent = trackName.split(' - ')[1] || 'Unknown Artist';
     }
 
     document.getElementById('lofiPrev').addEventListener('click', () => {
@@ -2493,18 +2499,18 @@
       }
     });
 
-    document.getElementById('lofiPause').addEventListener('click', () => {
+    document.getElementById('lofiPlay').addEventListener('click', () => {
       if (audioPlayer.paused) {
         audioPlayer.play();
-        document.getElementById('lofiPause').innerHTML = `
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path fill-rule="evenodd" d="M21.6 12a9.6 9.6 0 1 1-19.2 0 9.6 9.6 0 0 1 19.2 0ZM8.4 9.6a1.2 1.2 0 1 1 2.4 0v4.8a1.2 1.2 0 1 1-2.4 0V9.6Zm6-1.2a1.2 1.2 0 0 0-1.2 1.2v4.8a1.2 1.2 0 1 0 2.4 0V9.6a1.2 1.2 0 0 0-1.2-1.2Z" clip-rule="evenodd"></path>
+        document.getElementById('lofiPlay').innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M12 21.6a9.6 9.6 0 1 0 0-19.2 9.6 9.6 0 0 0 0 19.2ZM8.4 7.2h2.4v9.6H8.4V7.2Zm4.8 0h2.4v9.6h-2.4V7.2Z" clip-rule="evenodd"></path>
           </svg>
         `;
       } else {
         audioPlayer.pause();
-        document.getElementById('lofiPause').innerHTML = `
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        document.getElementById('lofiPlay').innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path fill-rule="evenodd" d="M12 21.6a9.6 9.6 0 1 0 0-19.2 9.6 9.6 0 0 0 0 19.2ZM9.6 7.2a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Zm4.8 0a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Z" clip-rule="evenodd"></path>
           </svg>
         `;
@@ -2513,85 +2519,22 @@
 
     document.getElementById('volumeButton').addEventListener('click', () => {
       audioPlayer.volume = audioPlayer.volume === 0 ? 1 : 0;
+      const volumeIcon = audioPlayer.volume === 0 
+        ? '<path d="M11 5L6 9H2v6h4l5 4V5zM14.434 7.434l-1.414 1.414a3.987 3.987 0 0 1 0 5.656l1.414 1.414a5.981 5.981 0 0 0 0-8.484z"></path>'
+        : '<path d="M11 5L6 9H2v6h4l5 4V5zM14.434 7.434l-1.414 1.414a3.987 3.987 0 0 1 0 5.656l1.414 1.414a5.981 5.981 0 0 0 0-8.484zM16.485 9.485l-1.415 1.414a1.994 1.994 0 0 1 0 2.828l1.415 1.414a3.987 3.987 0 0 0 0-5.656z"></path>';
+      document.getElementById('volumeButton').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">${volumeIcon}</svg>`;
     });
 
-    document.getElementById('quietPomodoroBtn').addEventListener('click', () => {
-      document.getElementById('pomodoroOverlay').style.display = 'flex';
-    });
-
-    document.getElementById('pomodoroStartBtn').addEventListener('click', () => {
-      if (!pomodoroRunning) {
-        pomodoroRunning = true;
-        pomodoroInterval = setInterval(() => {
-          pomodoroTime--;
-          const minutes = Math.floor(pomodoroTime / 60);
-          const seconds = pomodoroTime % 60;
-          document.getElementById('pomodoroTimer').textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-          points += doublePointsActive ? 2 : 1;
-          totalXP += doublePointsActive ? 2 : 1;
-          localStorage.setItem('totalXP', totalXP);
-          updatePointsDisplay();
-          updateLevel();
-          document.getElementById('pomodoroStatus').textContent = 'Focusing...';
-          if (pomodoroTime <= 0) {
-            clearInterval(pomodoroInterval);
-            pomodoroRunning = false;
-            document.getElementById('pomodoroStatus').textContent = 'Session Complete!';
-            showAchievement('Pomodoro Session Completed! +50 XP');
-            points += 50;
-            totalXP += 50;
-            localStorage.setItem('totalXP', totalXP);
-            updatePointsDisplay();
-            updateLevel();
-          }
-        }, 1000);
-      }
-    });
-
-    document.getElementById('pomodoroPauseBtn').addEventListener('click', () => {
-      if (pomodoroRunning) {
-        clearInterval(pomodoroInterval);
-        pomodoroRunning = false;
-        document.getElementById('pomodoroStatus').textContent = 'Paused';
-      }
-    });
-
-    document.getElementById('pomodoroResetBtn').addEventListener('click', () => {
-      clearInterval(pomodoroInterval);
-      pomodoroRunning = false;
-      pomodoroTime = 60 * 60;
-      document.getElementById('pomodoroTimer').textContent = '60:00';
-      document.getElementById('pomodoroStatus').textContent = 'Ready to begin';
-    });
-
-    document.getElementById('pomodoroCloseBtn').addEventListener('click', () => {
-      clearInterval(pomodoroInterval);
-      pomodoroRunning = false;
-      pomodoroTime = 60 * 60;
-      document.getElementById('pomodoroTimer').textContent = '60:00';
-      document.getElementById('pomodoroStatus').textContent = 'Ready to begin';
-      document.getElementById('pomodoroOverlay').style.display = 'none';
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('username');
-        localStorage.removeItem('password');
-        location.reload();
-      }
-    });
-
-    audioPlayer.addEventListener('ended', () => {
-      currentTrackIndex++;
-      playAudioTrack();
-    });
-
-    window.addEventListener('beforeunload', (e) => {
-      if (document.getElementById('player').style.display === 'block') {
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? Your focus session will end.';
-      }
-    });
+    // Initial load
+    if (localStorage.getItem('username')) {
+      document.getElementById('landingPage').style.display = 'none';
+      document.getElementById('inputForm').style.display = 'block';
+      document.getElementById('sidebarUsername').textContent = localStorage.getItem('username');
+      updateLevelDisplay();
+      updateStreakDisplay();
+      loadTasks();
+      loadPlaylists();
+    }
   </script>
 </body>
 </html>
