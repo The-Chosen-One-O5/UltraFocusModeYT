@@ -485,25 +485,42 @@
 
     #analytics,
     #todoList {
-      position: absolute;
-      left: 10px;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
       background: var(--bg-medium);
-      padding: 15px;
+      padding: 20px;
       border: 2px solid var(--secondary);
       display: none;
       z-index: 100;
       box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
       pointer-events: auto;
+      transition: all 0.3s ease;
     }
 
     #analytics {
       top: 90px;
+      width: 300px;
     }
 
     #todoList {
       top: 50px;
       width: 300px;
       max-height: 400px;
+    }
+
+    #todoList.expanded {
+      width: 80vw;
+      max-width: 1000px;
+      height: 80vh;
+      max-height: 800px;
+      top: 10vh;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(26, 26, 46, 0.95);
+      border: 4px solid var(--secondary);
+      box-shadow: 0 0 30px rgba(142, 45, 226, 0.5);
+      z-index: 150;
     }
 
     #tasks {
@@ -513,20 +530,24 @@
       background: none;
     }
 
+    #todoList.expanded #tasks {
+      max-height: 70vh;
+      padding: 10px;
+    }
+
     #analytics h3,
     #todoList h3 {
       font-size: 20px;
       margin-bottom: 10px;
       color: var(--secondary);
       font-family: monospace;
-      font-size: 16px;
       text-align: center;
     }
 
     #analytics p {
       font-size: 16px;
       margin: 5px 0;
-      border-bottom: 1px solid var(--bg-light);
+      border-bottom: 1px solid var(--text-dim);
       padding-bottom: 5px;
     }
 
@@ -540,29 +561,10 @@
       pointer-events: auto;
     }
 
-    .task-line input[type="checkbox"] {
-      margin-right: 10px;
-      width: 16px;
-      height: 16px;
-      appearance: none;
-      border: 2px solid var(--primary);
-      background: var(--bg-medium);
-      position: relative;
-      pointer-events: auto;
-      z-index: 11;
-    }
-
-    .task-line input[type="checkbox"]:checked {
-      background: var(--secondary);
-    }
-
-    .task-line input[type="checkbox"]:checked::after {
-      content: "✓";
-      position: absolute;
-      color: var(--text);
-      font-size: 12px;
-      top: -2px;
-      left: 2px;
+    #todoList.expanded .task-line {
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 4px;
     }
 
     .task-line input[type="text"] {
@@ -579,6 +581,11 @@
       margin: 0;
       pointer-events: auto;
       z-index: 11;
+    }
+
+    #todoList.expanded .task-line input[type="text"] {
+      font-size: 18px;
+      padding: 5px 0;
     }
 
     .task-line input[type="text"]:focus {
@@ -623,37 +630,261 @@
       color: var(--accent-alt);
     }
 
+    #todoList.expanded .task-line .deadline-info {
+      font-size: 14px;
+    }
+
     .task-line .points-info {
       margin-left: 5px;
       font-size: 12px;
       color: var(--secondary);
     }
 
-    #lofiPlayer {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      z-index: 101;
-      display: none;
-      background: var(--bg-medium);
-      padding: 10px;
-      border: 2px solid var(--primary);
-      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
-      pointer-events: auto;
+    #todoList.expanded .task-line .points-info {
+      font-size: 14px;
     }
 
-    #lofiPlayer button {
-      background: var(--secondary);
-      border: none;
-      color: var(--text);
-      padding: 5px 10px;
-      margin: 0 2px;
+    /* Neon Checkbox Styles */
+    .neon-checkbox {
+      --primary: #00ffaa;
+      --primary-dark: #00cc88;
+      --primary-light: #88ffdd;
+      --size: 30px;
+      position: relative;
+      width: var(--size);
+      height: var(--size);
       cursor: pointer;
-      font-size: 12px;
-      box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
-      font-family: monospace;
-      z-index: 102;
+      -webkit-tap-highlight-color: transparent;
     }
+
+    #todoList.expanded .neon-checkbox {
+      --size: 40px;
+    }
+
+    .neon-checkbox input {
+      display: none;
+    }
+
+    .neon-checkbox__frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .neon-checkbox__box {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 4px;
+      border: 2px solid var(--primary-dark);
+      transition: all 0.4s ease;
+    }
+
+    .neon-checkbox__check-container {
+      position: absolute;
+      inset: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .neon-checkbox__check {
+      width: 80%;
+      height: 80%;
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 40;
+      stroke-dashoffset: 40;
+      transform-origin: center;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .neon-checkbox__glow {
+      position: absolute;
+      inset: -2px;
+      border-radius: 6px;
+      background: var(--primary);
+      opacity: 0;
+      filter: blur(8px);
+      transform: scale(1.2);
+      transition: all 0.4s ease;
+    }
+
+    .neon-checkbox__borders {
+      position: absolute;
+      inset: 0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .neon-checkbox__borders span {
+      position: absolute;
+      width: 40px;
+      height: 1px;
+      background: var(--primary);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .neon-checkbox__borders span:nth-child(1) {
+      top: 0;
+      left: -100%;
+      animation: borderFlow1 2s linear infinite;
+    }
+
+    .neon-checkbox__borders span:nth-child(2) {
+      top: -100%;
+      right: 0;
+      width: 1px;
+      height: 40px;
+      animation: borderFlow2 2s linear infinite;
+    }
+
+    .neon-checkbox__borders span:nth-child(3) {
+      bottom: 0;
+      right: -100%;
+      animation: borderFlow3 2s linear infinite;
+    }
+
+    .neon-checkbox__borders span:nth-child(4) {
+      bottom: -100%;
+      left: 0;
+      width: 1px;
+      height: 40px;
+      animation: borderFlow4 2s linear infinite;
+    }
+
+    .neon-checkbox__particles span {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      top: 50%;
+      left: 50%;
+      box-shadow: 0 0 6px var(--primary);
+    }
+
+    .neon-checkbox__rings {
+      position: absolute;
+      inset: -20px;
+      pointer-events: none;
+    }
+
+    .neon-checkbox__rings .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid var(--primary);
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    .neon-checkbox__sparks span {
+      position: absolute;
+      width: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--primary), transparent);
+      opacity: 0;
+    }
+
+    .neon-checkbox:hover .neon-checkbox__box {
+      border-color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__box {
+      border-color: var(--primary);
+      background: rgba(0, 255, 170, 0.1);
+    }
+
+    .neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__check {
+      stroke-dashoffset: 0;
+      transform: scale(1.1);
+    }
+
+    .neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__glow {
+      opacity: 0.2;
+    }
+
+    .neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__borders span {
+      opacity: 1;
+    }
+
+    .neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__particles span {
+      animation: particleExplosion 0.6s ease-out forwards;
+    }
+
+    .neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__rings .ring {
+      animation: ringPulse 0.6s ease-out forwards;
+    }
+
+    .neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__sparks span {
+      animation: sparkFlash 0.6s ease-out forwards;
+    }
+
+    @keyframes borderFlow1 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(200%); }
+    }
+
+    @keyframes borderFlow2 {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(200%); }
+    }
+
+    @keyframes borderFlow3 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-200%); }
+    }
+
+    @keyframes borderFlow4 {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-200%); }
+    }
+
+    @keyframes particleExplosion {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--x, 20px)), calc(-50% + var(--y, 20px))) scale(0); opacity: 0; }
+    }
+
+    @keyframes ringPulse {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+
+    @keyframes sparkFlash {
+      0% { transform: rotate(var(--r, 0deg)) translateX(0) scale(1); opacity: 1; }
+      100% { transform: rotate(var(--r, 0deg)) translateX(30px) scale(0); opacity: 0; }
+    }
+
+    .neon-checkbox__particles span:nth-child(1) { --x: 25px; --y: -25px; }
+    .neon-checkbox__particles span:nth-child(2) { --x: -25px; --y: -25px; }
+    .neon-checkbox__particles span:nth-child(3) { --x: 25px; --y: 25px; }
+    .neon-checkbox__particles span:nth-child(4) { --x: -25px; --y: 25px; }
+    .neon-checkbox__particles span:nth-child(5) { --x: 35px; --y: 0px; }
+    .neon-checkbox__particles span:nth-child(6) { --x: -35px; --y: 0px; }
+    .neon-checkbox__particles span:nth-child(7) { --x: 0px; --y: 35px; }
+    .neon-checkbox__particles span:nth-child(8) { --x: 0px; --y: -35px; }
+    .neon-checkbox__particles span:nth-child(9) { --x: 20px; --y: -30px; }
+    .neon-checkbox__particles span:nth-child(10) { --x: -20px; --y: 30px; }
+    .neon-checkbox__particles span:nth-child(11) { --x: 30px; --y: 20px; }
+    .neon-checkbox__particles span:nth-child(12) { --x: -30px; --y: -20px; }
+
+    .neon-checkbox__sparks span:nth-child(1) { --r: 0deg; top: 50%; left: 50%; }
+    .neon-checkbox__sparks span:nth-child(2) { --r: 90deg; top: 50%; left: 50%; }
+    .neon-checkbox__sparks span:nth-child(3) { --r: 180deg; top: 50%; left: 50%; }
+    .neon-checkbox__sparks span:nth-child(4) { --r: 270deg; top: 50%; left: 50%; }
+
+    .neon-checkbox__rings .ring:nth-child(1) { animation-delay: 0s; }
+    .neon-checkbox__rings .ring:nth-child(2) { animation-delay: 0.1s; }
+    .neon-checkbox__rings .ring:nth-child(3) { animation-delay: 0.2s; }
 
     #achievementOverlay {
       position: fixed;
@@ -1021,7 +1252,6 @@
       pointer-events: auto;
     }
 
-    /* Audio tracks store styles */
     #audioTracksStore {
       position: fixed;
       top: 50%;
@@ -1078,7 +1308,6 @@
       cursor: not-allowed;
     }
 
-    /* Quiet Pomodoro styles */
     #pomodoroOverlay {
       position: fixed;
       top: 0;
@@ -1138,7 +1367,6 @@
       #timerDisplay, #pointsDisplay, #clockDisplay, #sitesBox { font-size: 14px; padding: 5px 8px; }
       #achievementLevel, #streakDisplay { font-size: 14px; padding: 5px 8px; }
       #videoSidebar { width: 250px; }
-      #lofiPlayer button { padding: 3px 6px; font-size: 10px; }
       #confirmationDialog, #streakShieldDialog, #doublePointsDialog { width: 90%; max-width: 300px; }
       #confirmationDialog p, #streakShieldDialog p, #doublePointsDialog p { font-size: 14px; }
       #pdfViewer { width: 90%; height: 80%; max-height: 500px; }
@@ -1147,6 +1375,7 @@
       #audioTracksStore { width: 90%; max-width: 350px; }
       #pomodoroContainer { width: 90%; max-width: 350px; padding: 20px; }
       #pomodoroTimer { font-size: 60px; }
+      #todoList.expanded { width: 90vw; height: 90vh; top: 5vh; }
     }
   </style>
 </head>
@@ -1221,7 +1450,37 @@
         <h3>TO-DO</h3>
         <div id="tasks">
           <div class="task-line">
-            <input type="checkbox" class="task-check" />
+            <label class="neon-checkbox">
+              <input type="checkbox" class="task-check" />
+              <div class="neon-checkbox__frame">
+                <div class="neon-checkbox__box">
+                  <div class="neon-checkbox__check-container">
+                    <svg viewBox="0 0 24 24" class="neon-checkbox__check">
+                      <path d="M3,12.5l7,7L21,5"></path>
+                    </svg>
+                  </div>
+                  <div class="neon-checkbox__glow"></div>
+                  <div class="neon-checkbox__borders">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
+                <div class="neon-checkbox__effects">
+                  <div class="neon-checkbox__particles">
+                    <span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="neon-checkbox__rings">
+                    <div class="ring"></div>
+                    <div class="ring"></div>
+                    <div class="ring"></div>
+                  </div>
+                  <div class="neon-checkbox__sparks">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
+              </div>
+            </label>
             <input type="text" class="task-text" placeholder="Add a quest..." />
             <button class="set-deadline">⏰</button>
             <span class="remove-task">x</span>
@@ -1279,14 +1538,6 @@
     <button id="restartBtn" style="display: none;">EXIT</button>
 
     <div id="videoSidebar"></div>
-
-    <div id="lofiPlayer">
-      <div style="text-align: center; margin-bottom: 5px;">LOFI MUSIC ♬</div>
-      <button id="lofiPrev">◄</button>
-      <button id="lofiPlay">▶</button>
-      <button id="lofiPause">❚❚</button>
-      <button id="lofiNext">►</button>
-    </div>
 
     <div id="achievementOverlay"></div>
 
@@ -1365,1765 +1616,840 @@
         <div id="pomodoroStatus">Ready to begin</div>
         <div id="pomodoroControls">
           <button id="pomodoroStartBtn">START</button>
+          <button id="pomodoroPauseBtn">PAUSE</button>
           <button id="pomodoroResetBtn">RESET</button>
-          <button id="pomodoroCloseBtn">CLOSE</button>
+          <button id="pomodoroCloseBtn" style="background: #ff4444;">CLOSE</button>
         </div>
       </div>
     </div>
-
-    <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
-    <audio id="lofiAudio" preload="none" loop></audio>
-    <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
   </div>
 
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    ;(() => {
-      let currentVideoIndex = 0
-      let player
-      let videoIds = []
-      let isFocusModeActive = false
-      let countdownInterval
-      let distractionCount = 0
-      let points = 0
-      let isSignedIn = false
-      let currentUser = null
-      const focusDuration = 50 * 60 * 1000
-      const firstBreakDuration = 15 * 60 * 1000
-      const secondBreakDuration = 10 * 60 * 1000
-      let timerMode = "Focus Time"
-      let timerRemaining = focusDuration / 1000
-      let completedVideos = new Set()
-      let allVideosCompleted = false
-      let totalFocusTime = 0
-      let totalDistractions = 0
-      let totalVideosWatched = 0
-      let playlists = JSON.parse(localStorage.getItem("playlists") || "[]")
-      let tasks = JSON.parse(localStorage.getItem("tasks") || "[]")
-      let previousPoints = 0
-      let streakDays = 0
-      let lastFocusDate = null
-      let isYouTubeAPILoaded = false
-      let lofiAudio
-      const lofiSongs = [
-        "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1",
-        "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1",
-        "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1",
-        "https://www.dropbox.com/scl/fi/lb5f47widcz8mwhg79jiz/Kate-Grove-SKYRIM-THEME-skyrim-elderscrolls-ocarina.mp3?rlkey=f8kpm1ipyowc1wv998myu06us&st=bm9qmodf&dl=1",
-        "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1",
-        "https://www.dropbox.com/scl/fi/7xoemzmrgq0wzbxc9i9tp/Jumping-_brick-Sidewalks-and-skeletons-goth-slowed-reverb-best-part-loop.mp3?rlkey=d4dt6rv6sdzteextqek29geug&st=4umnyp0c&dl=1",
-        "https://www.dropbox.com/scl/fi/macw47c2kvur0yfi4r9up/St3phen-If-Youre-A-Gamer-This-Song-FOUND-You.mp3?rlkey=qudky54311tppavhvnpra89ff&st=7dgshk5k&dl=1",
-        "https://www.dropbox.com/scl/fi/c1iy5yjmf3d57jrb1aokc/KestrelTapes-what-nostalgia-sounds-like...mp3?rlkey=qcdj1vpdnzwdb03fxp0vk0661&st=fyqrl6ge&dl=1",
-        "https://www.dropbox.com/scl/fi/p303xk68pvu8sfrmtwzj2/rhawn-there-is-hopecore.mp3?rlkey=m6tva7g4dsva39ii1l0e8tnu0&st=6z218pii&dl=1",
-        "https://www.dropbox.com/scl/fi/bw4n0ne8nli4dkp7p26po/Jaob-not-just-another-hopecore-playlist.mp3?rlkey=jy0umwkadkxj9cju1yf2wz7hw&st=yjxhzw0s&dl=1",
-        "https://www.dropbox.com/scl/fi/evhrjdri6a9n9bk05qhcu/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=lauo50rz3indg5n3to5gfks1y&st=gcqmonsf&dl=1",
-      ]
-      
-      // Premium audio tracks that can be unlocked
-      const premiumLofiTracks = [
-        { id: "track1", name: "Celestial Dreams", url: "https://www.dropbox.com/scl/fi/3xkks3j4tcmnloz46o03m/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=6w97eurecqph68b8f2r7zn5pf&st=epeucz72&dl=1", unlocked: false, cost: 100 },
-        { id: "track2", name: "Midnight Study", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=ui3kdsq5&dl=1", unlocked: false, cost: 100 },
-        { id: "track3", name: "Rainy Day Focus", url: "https://www.dropbox.com/scl/fi/iaouozc1osse7h5ea9lon/thunder-chosic.com.mp3?rlkey=o7u0rarnh4kk657qhmcgyiolz&st=2r9f625j&dl=1", unlocked: false, cost: 100 },
-        { id: "track4", name: "Epic Concentration", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=cq8j3dij&dl=1", unlocked: false, cost: 100 },
-        { id: "track5", name: "Zen Garden", url: "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1", unlocked: false, cost: 100 },
-      ]
-      
-      let currentLofiIndex = 0
-      let currentTaskForDeadline = null
+    let player;
+    let timerInterval;
+    let focusTime = 0;
+    let points = 0;
+    let distractions = 0;
+    let videosWatched = 0;
+    let currentVideoIndex = 0;
+    let videoIds = [];
+    let isDragging = false;
+    let offsetX, offsetY;
+    let playlists = JSON.parse(localStorage.getItem('playlists')) || {};
+    let streak = parseInt(localStorage.getItem('streak')) || 0;
+    let lastDate = localStorage.getItem('lastDate');
+    let level = localStorage.getItem('level') || 'Mortal';
+    let totalXP = parseInt(localStorage.getItem('totalXP')) || 0;
+    let streakShieldActive = localStorage.getItem('streakShieldActive') === 'true';
+    let doublePointsActive = localStorage.getItem('doublePointsActive') === 'true';
+    let doublePointsEndTime = localStorage.getItem('doublePointsEndTime');
+    let pomodoroInterval;
+    let pomodoroTime = 60 * 60; // 60 minutes in seconds
+    let pomodoroRunning = false;
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let currentTaskIndex = null;
+    let audioPlayer = new Audio();
+    let currentTrackIndex = 0;
+    let audioTracks = [
+      { name: 'Lo-Fi Chill', src: 'https://www.youtube.com/watch?v=5qap5aO4i9A', cost: 0, unlocked: true },
+      { name: 'Cyberpunk Vibes', src: 'https://www.youtube.com/watch?v=8GW6sLrK40k', cost: 500, unlocked: false },
+      { name: 'Forest Ambience', src: 'https://www.youtube.com/watch?v=3mJ8GOq3evs', cost: 500, unlocked: false }
+    ];
 
-      // Pomodoro variables
-      let pomodoroInterval
-      let pomodoroTimeRemaining = 60 * 60 // 60 minutes in seconds
-      let isPomodoroActive = false
-      let pomodoroStartTime = null
-      let pomodoroPoints = 0
-
-      // Reminder feature variables
-      let reminderInterval
-      let timeOnInputForm = 0
-      const reminderIntervalTime = 20 * 60 * 1000 // 20 minutes in milliseconds
-      const reminderThreshold = 20 * 60 * 1000 // 20 minutes threshold
-
-      // Mystery Box and Power-Up feature variables
-      let mysteryBoxCount = 0
-      let activePowerUps = {
-        doublePoints: { active: false, expiry: null },
-        streakShield: { active: false, used: false, expiry: null },
+    const today = new Date().toDateString();
+    if (lastDate !== today) {
+      if (!streakShieldActive && lastDate && new Date(lastDate).getDate() !== new Date(today).getDate() - 1) {
+        streak = 0;
       }
-      const STREAK_SHIELD_COST = 800
-      const STREAK_SHIELD_DURATION = 7 * 24 * 60 * 60 * 1000 // 1 week in milliseconds
-      const DOUBLE_POINTS_COST = 800
-      const DOUBLE_POINTS_DURATION = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
-      const MYSTERY_BOX_STREAK_INTERVAL = 14
-      const mysteryBoxRewards = [
-        { type: "points", value: () => Math.floor(Math.random() * 451) + 50, message: (val) => `+${val} XP` },
-        { type: "doublePoints", value: DOUBLE_POINTS_DURATION, message: () => "Double Points for 24 Hours" },
-        { type: "streakShield", value: 1, message: () => "1-Day Streak Shield" },
-      ]
+      localStorage.setItem('lastDate', today);
+      localStorage.setItem('streak', streak);
+    }
 
-      const achievementLevels = [
-        { points: 0, level: "Mortal", color: "white" },
-        { points: 1000, level: "Soldier", color: "#4169E1" },
-        { points: 2000, level: "Knight", color: "white", glow: true },
-        { points: 3000, level: "KING", color: "#FF8C00", glow: true },
-        { points: 4000, level: "GIGACHAD", color: "#FF4500", glow: true },
-        { points: 5000, level: "Demigod", color: "gold", glow: true },
-        { points: 6000, level: "Titan", color: "gold", glow: true, box: true },
-        { points: 7000, level: "Immortal", color: "gold", glow: true, box: true, boxGlow: true },
-        { points: 8000, level: "Celestial", color: "gold", glow: true, box: true, boxGlow: true },
-        { points: 9000, level: "Divine", color: "rainbow" },
-        { points: 10000, level: "Omnipotent", color: "rainbow", glow: true },
-      ]
+    if (doublePointsEndTime && new Date().getTime() > doublePointsEndTime) {
+      doublePointsActive = false;
+      localStorage.setItem('doublePointsActive', 'false');
+      localStorage.removeItem('doublePointsEndTime');
+    }
 
-      function initAudio() {
-        lofiAudio = document.getElementById("lofiAudio")
-        if (lofiAudio) lofiAudio.src = lofiSongs[currentLofiIndex]
+    document.querySelectorAll('button[data-action]').forEach(button => {
+      button.addEventListener('click', handleButtonClick);
+    });
+
+    function handleButtonClick(e) {
+      const action = e.target.getAttribute('data-action');
+      switch (action) {
+        case 'start-game':
+          document.getElementById('landingPage').style.display = 'none';
+          document.getElementById('signinForm').style.display = 'block';
+          break;
+        case 'github':
+          window.open('https://github.com/The-Chosen-One-o5/Focus-Mode-YouTube-Player', '_blank');
+          break;
+        case 'sign-in':
+          signIn();
+          break;
+        case 'create-account':
+          document.getElementById('signinForm').querySelector('.subtitle').textContent = 'Create your adventurer profile';
+          signIn(true);
+          break;
+        case 'add-url':
+          addUrlInput();
+          break;
+        case 'start-playback':
+          startPlayback();
+          break;
+        case 'save-playlist':
+          savePlaylist();
+          break;
+        case 'remove-playlist':
+          removePlaylist();
+          break;
+        case 'save-tasks':
+          saveTasks();
+          break;
       }
+    }
 
-      function getAchievementLevel(points) {
-        let currentLevel = achievementLevels[0]
-        for (const level of achievementLevels) {
-          if (points >= level.points) currentLevel = level
-          else break
-        }
-        return currentLevel
-      }
-
-      function updateAchievementLevel() {
-        const achievementDiv = document.getElementById("achievementLevel")
-        if (!achievementDiv) return
-
-        const level = getAchievementLevel(points)
-        let style = `color: ${level.color}; font-weight: bold;`
-        if (level.glow) style += " text-shadow: 0 0 10px;"
-        if (level.box) style += " border: 2px solid gold; padding: 5px;"
-        if (level.boxGlow) style += " box-shadow: 0 0 10px gold;"
-        if (level.color === "rainbow") achievementDiv.classList.add("rainbow")
-        else achievementDiv.classList.remove("rainbow")
-        achievementDiv.innerHTML = level.level
-        achievementDiv.style = style
-        updateSidebarDashboard()
-      }
-
-      function showAchievementOverlay(level) {
-        const overlay = document.getElementById("achievementOverlay")
-        if (!overlay) return
-
-        overlay.textContent = `LEVEL UP! ${level.toUpperCase()} UNLOCKED!`
-        overlay.style.display = "flex"
-        setTimeout(() => overlay.style.display = "none", 5000)
-      }
-
-      function updateClock() {
-        const clockDisplay = document.getElementById("clockDisplay")
-        if (!clockDisplay) return
-
-        const now = new Date()
-        let hours = now.getHours()
-        const minutes = now.getMinutes().toString().padStart(2, "0")
-        const seconds = now.getSeconds().toString().padStart(2, "0")
-        const period = hours >= 12 ? "PM" : "AM"
-        hours = hours % 12 || 12
-        hours = hours.toString().padStart(2, "0")
-        clockDisplay.innerHTML = `<span class="time">${hours}:${minutes}:${seconds}</span> <span class="period">${period}</span>`
-      }
-
-      function playLofi() {
-        if (!lofiAudio) return
-        lofiAudio.play().catch((err) => console.error("Lofi play error:", err))
-      }
-
-      function pauseLofi() {
-        if (!lofiAudio) return
-        lofiAudio.pause()
-      }
-
-      function prevLofi() {
-        if (!lofiAudio) return
-        currentLofiIndex = (currentLofiIndex - 1 + lofiSongs.length) % lofiSongs.length
-        lofiAudio.src = lofiSongs[currentLofiIndex]
-        playLofi()
-      }
-
-      function nextLofi() {
-        if (!lofiAudio) return
-        currentLofiIndex = (currentLofiIndex + 1) % lofiSongs.length
-        lofiAudio.src = lofiSongs[currentLofiIndex]
-        playLofi()
-      }
-
-      function toggleSitesPopup() {
-        const popup = document.getElementById("sitesPopup")
-        if (!popup) return
-        popup.style.display = popup.style.display === "block" ? "none" : "block"
-      }
-
-      function closeSitesPopup() {
-        const popup = document.getElementById("sitesPopup")
-        if (!popup) return
-        popup.style.display = "none"
-      }
-
-      function updateStreak() {
-        const streakDisplay = document.getElementById("streakDisplay")
-        if (!streakDisplay) return
-
-        const today = new Date().toDateString()
-        const lastDate = localStorage.getItem("lastFocusDate")
-
-        if (lastDate) {
-          const last = new Date(lastDate)
-          const diffTime = new Date(today) - last
-          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-          if (diffDays === 1) {
-            streakDays++
-            checkMysteryBoxMilestone()
-          } else if (diffDays > 1) {
-            if (activePowerUps.streakShield.active && Date.now() < activePowerUps.streakShield.expiry) {
-              streakDays++
-              alert("Streak Shield protected your streak!")
-            } else {
-              streakDays = 0 // Reset streak if no focus session and no active shield
-            }
-          }
+    function signIn(isNew = false) {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      if (username && password) {
+        if (isNew) {
+          localStorage.setItem('username', username);
+          localStorage.setItem('password', password);
+          alert('Account created! Welcome, ' + username + '!');
         } else {
-          streakDays = 1 // First focus session
+          const storedUsername = localStorage.getItem('username');
+          const storedPassword = localStorage.getItem('password');
+          if (storedUsername === username && storedPassword === password) {
+            alert('Welcome back, ' + username + '!');
+          } else {
+            alert('Invalid credentials!');
+            return;
+          }
         }
-
-        localStorage.setItem("lastFocusDate", today)
-        streakDisplay.innerHTML = `<span style="color: #8e2de2;">🔥</span> ${streakDays} day${streakDays === 1 ? "" : "s"} of focus`
-
-        if (isSignedIn && currentUser) {
-          const users = JSON.parse(localStorage.getItem("users") || "{}")
-          users[currentUser].streakDays = streakDays
-          users[currentUser].mysteryBoxCount = mysteryBoxCount
-          users[currentUser].activePowerUps = activePowerUps
-          localStorage.setItem("users", JSON.stringify(users))
-        }
-
-        const sidebarStreak = document.getElementById("sidebarStreak")
-        if (sidebarStreak) sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
+        document.getElementById('sidebarUsername').textContent = username;
+        document.getElementById('signinForm').style.display = 'none';
+        document.getElementById('inputForm').style.display = 'block';
+        loadPlaylists();
+        updateLevelDisplay();
+        updateStreakDisplay();
+        loadTasks();
+      } else {
+        alert('Please enter both a username and password!');
       }
+    }
 
-      function checkMysteryBoxMilestone() {
-        if (streakDays > 0 && streakDays % MYSTERY_BOX_STREAK_INTERVAL === 0) {
-          mysteryBoxCount++
-          showMysteryBoxPopup()
-          saveState()
+    function addUrlInput() {
+      const urlInputs = document.getElementById('urlInputs');
+      const newInput = document.createElement('div');
+      newInput.className = 'url-container';
+      newInput.innerHTML = `
+        <input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required />
+        <button onclick="this.parentElement.remove()">REMOVE</button>
+      `;
+      urlInputs.appendChild(newInput);
+    }
+
+    function startPlayback() {
+      const urls = Array.from(document.getElementsByClassName('youtube-url')).map(input => input.value).filter(url => url);
+      if (urls.length === 0) {
+        alert('Please enter at least one YouTube URL!');
+        return;
+      }
+      videoIds = urls.map(url => extractVideoId(url));
+      document.getElementById('inputForm').style.display = 'none';
+      document.getElementById('player').style.display = 'block';
+      document.getElementById('timerDisplay').style.display = 'block';
+      document.getElementById('pointsDisplay').style.display = 'block';
+      document.getElementById('clockDisplay').style.display = 'block';
+      document.getElementById('restartBtn').style.display = 'block';
+      document.getElementById('sitesBox').style.display = 'block';
+      document.getElementById('pdfToggle').style.display = 'block';
+      loadVideoSidebar();
+      initializePlayer();
+      startTimer();
+      startClock();
+    }
+
+    function extractVideoId(url) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : url;
+    }
+
+    function initializePlayer() {
+      player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        videoId: videoIds[currentVideoIndex],
+        playerVars: {
+          'autoplay': 1,
+          'controls': 1,
+          'rel': 0,
+          'fs': 1,
+          'modestbranding': 1
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.ENDED) {
+        videosWatched++;
+        currentVideoIndex++;
+        if (currentVideoIndex < videoIds.length) {
+          player.loadVideoById(videoIds[currentVideoIndex]);
+        } else {
+          endSession();
         }
       }
+    }
 
-      function showMysteryBoxPopup() {
-        const popup = document.getElementById("mysteryBoxPopup")
-        const rewardText = document.getElementById("mysteryRewardText")
-        if (!popup || !rewardText) return
-
-        rewardText.textContent = `You earned a Focus Mystery Box! (${mysteryBoxCount} available)`
-        popup.style.display = "block"
-      }
-
-      function openMysteryBox() {
-        if (mysteryBoxCount <= 0) return
-
-        const popup = document.getElementById("mysteryBoxPopup")
-        const rewardText = document.getElementById("mysteryRewardText")
-        if (!popup || !rewardText) return
-
-        const reward = mysteryBoxRewards[Math.floor(Math.random() * mysteryBoxRewards.length)]
-        let rewardValue = reward.value instanceof Function ? reward.value() : reward.value
-
-        switch (reward.type) {
-          case "points":
-            points += rewardValue
-            break
-          case "doublePoints":
-            activePowerUps.doublePoints.active = true
-            activePowerUps.doublePoints.expiry = Date.now() + rewardValue
-            setTimeout(() => {
-              activePowerUps.doublePoints.active = false
-              saveState()
-              alert("Double Points power-up has expired!")
-            }, rewardValue)
-            break
-          case "streakShield":
-            activePowerUps.streakShield.active = true
-            activePowerUps.streakShield.used = false
-            activePowerUps.streakShield.expiry = Date.now() + STREAK_SHIELD_DURATION
-            setTimeout(() => {
-              activePowerUps.streakShield.active = false
-              saveState()
-              alert("Streak Shield has expired!")
-            }, STREAK_SHIELD_DURATION)
-            break
+    function startTimer() {
+      let timeLeft = 25 * 60; // 25 minutes default
+      const progressFill = document.getElementById('progressFill');
+      document.getElementById('progressBar').style.display = 'block';
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('timerText').textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        focusTime++;
+        points += doublePointsActive ? 2 : 1;
+        totalXP += doublePointsActive ? 2 : 1;
+        localStorage.setItem('totalXP', totalXP);
+        updatePointsDisplay();
+        updateLevel();
+        const progress = ((25 * 60 - timeLeft) / (25 * 60)) * 100;
+        progressFill.style.width = `${progress}%`;
+        timeLeft--;
+        if (timeLeft < 0) {
+          clearInterval(timerInterval);
+          showSessionCompleteDialog();
         }
+      }, 1000);
+    }
 
-        rewardText.textContent = `Reward: ${reward.message(rewardValue)}`
-        mysteryBoxCount--
-        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-        saveState()
+    function updatePointsDisplay() {
+      document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+      document.getElementById('sidebarXP').textContent = totalXP;
+    }
 
+    function updateLevel() {
+      const levels = [
+        { name: 'Mortal', threshold: 0 },
+        { name: 'Apprentice', threshold: 1000 },
+        { name: 'Warrior', threshold: 2500 },
+        { name: 'Master', threshold: 5000 },
+        { name: 'Legend', threshold: 10000 }
+      ];
+      for (let i = levels.length - 1; i >= 0; i--) {
+        if (totalXP >= levels[i].threshold) {
+          if (level !== levels[i].name) {
+            level = levels[i].name;
+            localStorage.setItem('level', level);
+            showAchievement(`Leveled up to ${level}!`);
+          }
+          break;
+        }
+      }
+      updateLevelDisplay();
+    }
+
+    function updateLevelDisplay() {
+      document.getElementById('achievementLevel').textContent = `Level: ${level}`;
+      document.getElementById('sidebarLevel').textContent = level;
+    }
+
+    function updateStreakDisplay() {
+      document.getElementById('streakDisplay').textContent = `Streak: ${streak} days`;
+      document.getElementById('sidebarStreak').textContent = `${streak} days`;
+    }
+
+    function showAchievement(message) {
+      const overlay = document.getElementById('achievementOverlay');
+      overlay.textContent = message;
+      overlay.classList.add('glow', 'rainbow');
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        overlay.classList.remove('glow', 'rainbow');
+      }, 3000);
+    }
+
+    function startClock() {
+      setInterval(() => {
+        const now = new Date();
+        const hours = now.getHours() % 12 || 12;
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const period = now.getHours() >= 12 ? 'PM' : 'AM';
+        document.getElementById('clockDisplay').innerHTML = `<span class="time">${hours}:${minutes}:${seconds}</span> <span class="period">${period}</span>`;
+      }, 1000);
+    }
+
+    document.getElementById('timerDisplay').addEventListener('mousedown', (e) => {
+      isDragging = true;
+      offsetX = e.clientX - document.getElementById('timerDisplay').offsetLeft;
+      offsetY = e.clientY - document.getElementById('timerDisplay').offsetTop;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        document.getElementById('timerDisplay').style.left = `${e.clientX - offsetX}px`;
+        document.getElementById('timerDisplay').style.top = `${e.clientY - offsetY}px`;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    document.getElementById('sitesBox').addEventListener('click', () => {
+      document.getElementById('sitesPopup').style.display = 'block';
+    });
+
+    document.getElementById('closeSitesPopup').addEventListener('click', () => {
+      document.getElementById('sitesPopup').style.display = 'none';
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      document.getElementById('confirmationDialog').style.display = 'block';
+    });
+
+    document.getElementById('confirmBtn').addEventListener('click', () => {
+      endSession(true);
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      document.getElementById('confirmationDialog').style.display = 'none';
+    });
+
+    function endSession(manual = false) {
+      clearInterval(timerInterval);
+      player.destroy();
+      document.getElementById('player').style.display = 'none';
+      document.getElementById('inputForm').style.display = 'block';
+      document.getElementById('timerDisplay').style.display = 'none';
+      document.getElementById('pointsDisplay').style.display = 'none';
+      document.getElementById('clockDisplay').style.display = 'none';
+      document.getElementById('restartBtn').style.display = 'none';
+      document.getElementById('sitesBox').style.display = 'none';
+      document.getElementById('videoSidebar').style.right = '-320px';
+      document.getElementById('pdfToggle').style.display = 'none';
+      document.getElementById('confirmationDialog').style.display = 'none';
+      audioPlayer.pause();
+      if (!manual && currentVideoIndex >= videoIds.length) {
+        streak++;
+        localStorage.setItem('streak', streak);
+        updateStreakDisplay();
+        checkMysteryBox();
+      }
+    }
+
+    function loadVideoSidebar() {
+      const sidebar = document.getElementById('videoSidebar');
+      sidebar.innerHTML = '<button id="minimizeBtn">X</button>';
+      videoIds.forEach((id, index) => {
+        const img = document.createElement('img');
+        img.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+        img.className = 'thumbnail';
+        img.alt = `Video ${index + 1}`;
+        img.addEventListener('click', () => {
+          currentVideoIndex = index;
+          player.loadVideoById(videoIds[currentVideoIndex]);
+        });
+        sidebar.appendChild(img);
+      });
+      sidebar.style.right = '0';
+      document.getElementById('minimizeBtn').addEventListener('click', () => {
+        sidebar.style.right = '-320px';
+      });
+    }
+
+    document.getElementById('todoBtn').addEventListener('click', () => {
+      const todoList = document.getElementById('todoList');
+      if (todoList.style.display === 'block' && !todoList.classList.contains('expanded')) {
+        todoList.style.display = 'none';
+      } else {
+        todoList.style.display = 'block';
+        todoList.classList.add('expanded');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const todoList = document.getElementById('todoList');
+      if (todoList.classList.contains('expanded') && !todoList.contains(e.target) && e.target.id !== 'todoBtn') {
+        todoList.classList.remove('expanded');
         setTimeout(() => {
-          if (mysteryBoxCount > 0) showMysteryBoxPopup()
-          else popup.style.display = "none"
-        }, 2000)
+          todoList.style.display = 'none';
+        }, 300); // Match transition duration
       }
+    });
 
-      function applyPowerUps(pointsEarned) {
-        if (activePowerUps.doublePoints.active && Date.now() < activePowerUps.doublePoints.expiry) {
-          return pointsEarned * 2
+    document.getElementById('statsBtn').addEventListener('click', () => {
+      const analytics = document.getElementById('analytics');
+      analytics.style.display = analytics.style.display === 'block' ? 'none' : 'block';
+      updateAnalytics();
+    });
+
+    document.getElementById('pyqBtn').addEventListener('click', () => {
+      window.open('https://forestquest.vercel.app/', '_blank');
+    });
+
+    function updateAnalytics() {
+      document.getElementById('totalFocusTime').textContent = Math.floor(focusTime / 60);
+      document.getElementById('totalDistractions').textContent = distractions;
+      document.getElementById('totalVideosWatched').textContent = videosWatched;
+    }
+
+    function loadTasks() {
+      const tasksDiv = document.getElementById('tasks');
+      tasksDiv.innerHTML = '';
+      tasks.forEach((task, index) => {
+        addTaskElement(task.text, task.completed, task.deadline, task.points, index);
+      });
+      addTaskElement();
+    }
+function addTaskElement(text = '', completed = false, deadline = null, points = 0, index = tasks.length) {
+      const tasksDiv = document.getElementById('tasks');
+      const taskLine = document.createElement('div');
+      taskLine.className = 'task-line';
+      taskLine.innerHTML = `
+        <label class="neon-checkbox">
+          <input type="checkbox" class="task-check" ${completed ? 'checked' : ''} />
+          <div class="neon-checkbox__frame">
+            <div class="neon-checkbox__box">
+              <div class="neon-checkbox__check-container">
+                <svg viewBox="0 0 24 24" class="neon-checkbox__check">
+                  <path d="M3,12.5l7,7L21,5"></path>
+                </svg>
+              </div>
+              <div class="neon-checkbox__glow"></div>
+              <div class="neon-checkbox__borders">
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="neon-checkbox__effects">
+              <div class="neon-checkbox__particles">
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="neon-checkbox__rings">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+              </div>
+              <div class="neon-checkbox__sparks">
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        </label>
+        <input type="text" class="task-text" value="${text}" placeholder="Add a quest..." />
+        <button class="set-deadline">⏰</button>
+        <span class="remove-task">x</span>
+        ${deadline ? `<span class="deadline-info">Due: ${new Date(deadline).toLocaleString()}</span>` : ''}
+        ${points ? `<span class="points-info">+${points} XP</span>` : ''}
+      `;
+      tasksDiv.appendChild(taskLine);
+
+      const checkbox = taskLine.querySelector('.task-check');
+      checkbox.addEventListener('change', () => {
+        tasks[index].completed = checkbox.checked;
+        if (checkbox.checked && tasks[index].deadline && new Date() <= new Date(tasks[index].deadline)) {
+          points += tasks[index].points;
+          totalXP += tasks[index].points;
+          localStorage.setItem('totalXP', totalXP);
+          updatePointsDisplay();
+          updateLevel();
+          showAchievement(`Task Completed! +${tasks[index].points} XP`);
         }
-        return pointsEarned
-      }
+        saveTasks();
+      });
 
-      function showStreakShieldDialog() {
-        const dialog = document.getElementById("streakShieldDialog")
-        if (!dialog) return
-        if (points < STREAK_SHIELD_COST) {
-          alert("Not enough XP! You need 800 XP to buy a Streak Shield.")
-          return
+      const removeBtn = taskLine.querySelector('.remove-task');
+      removeBtn.addEventListener('click', () => {
+        tasks.splice(index, 1);
+        loadTasks();
+        saveTasks();
+      });
+
+      const deadlineBtn = taskLine.querySelector('.set-deadline');
+      deadlineBtn.addEventListener('click', () => {
+        currentTaskIndex = index;
+        document.getElementById('deadlineDialog').style.display = 'block';
+      });
+    }
+
+    function saveTasks() {
+      const taskInputs = document.querySelectorAll('.task-text');
+      const checkboxes = document.querySelectorAll('.task-check');
+      tasks = Array.from(taskInputs).map((input, i) => ({
+        text: input.value,
+        completed: checkboxes[i].checked,
+        deadline: tasks[i] ? tasks[i].deadline : null,
+        points: tasks[i] ? tasks[i].points : 0
+      })).filter(task => task.text);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    document.getElementById('deadlineConfirmBtn').addEventListener('click', () => {
+      const date = document.getElementById('deadlineDate').value;
+      const time = document.getElementById('deadlineTime').value;
+      const points = parseInt(document.getElementById('taskDifficulty').value);
+      if (date && time && currentTaskIndex !== null) {
+        const deadline = new Date(`${date}T${time}`).toISOString();
+        tasks[currentTaskIndex].deadline = deadline;
+        tasks[currentTaskIndex].points = points;
+        loadTasks();
+        saveTasks();
+      }
+      document.getElementById('deadlineDialog').style.display = 'none';
+    });
+
+    document.getElementById('deadlineCancelBtn').addEventListener('click', () => {
+      document.getElementById('deadlineDialog').style.display = 'none';
+    });
+
+    function loadPlaylists() {
+      const select = document.getElementById('playlistSelect');
+      select.innerHTML = '<option value="">Select a Playlist</option>';
+      Object.keys(playlists).forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+      select.addEventListener('change', () => {
+        const selected = select.value;
+        if (selected) {
+          const urls = playlists[selected];
+          const urlInputs = document.getElementById('urlInputs');
+          urlInputs.innerHTML = '';
+          urls.forEach(url => {
+            const div = document.createElement('div');
+            div.className = 'url-container';
+            div.innerHTML = `
+              <input type="text" class="youtube-url" value="${url}" required />
+              <button onclick="this.parentElement.remove()">REMOVE</button>
+            `;
+            urlInputs.appendChild(div);
+          });
         }
-        dialog.style.display = "block"
+      });
+    }
+
+    function savePlaylist() {
+      const name = document.getElementById('playlistName').value;
+      const urls = Array.from(document.getElementsByClassName('youtube-url')).map(input => input.value).filter(url => url);
+      if (name && urls.length > 0) {
+        playlists[name] = urls;
+        localStorage.setItem('playlists', JSON.stringify(playlists));
+        loadPlaylists();
+        document.getElementById('playlistName').value = '';
+        alert('Playlist saved!');
+      } else {
+        alert('Please enter a name and at least one URL!');
       }
+    }
 
-      function handleStreakShieldConfirmation(choice) {
-        const dialog = document.getElementById("streakShieldDialog")
-        if (!dialog) return
+    function removePlaylist() {
+      const selected = document.getElementById('playlistSelect').value;
+      if (selected && confirm(`Delete playlist "${selected}"?`)) {
+        delete playlists[selected];
+        localStorage.setItem('playlists', JSON.stringify(playlists));
+        loadPlaylists();
+        document.getElementById('urlInputs').innerHTML = `
+          <div class="url-container">
+            <input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required />
+          </div>
+        `;
+      }
+    }
 
-        dialog.style.display = "none"
-        if (choice === "yes") {
-          points -= STREAK_SHIELD_COST
-          activePowerUps.streakShield.active = true
-          activePowerUps.streakShield.used = false
-          activePowerUps.streakShield.expiry = Date.now() + STREAK_SHIELD_DURATION
-          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-          alert("Streak Shield activated for 1 week!")
-          saveState()
-          setTimeout(() => {
-            activePowerUps.streakShield.active = false
-            saveState()
-            alert("Your Streak Shield has expired!")
-          }, STREAK_SHIELD_DURATION)
+    document.getElementById('pdfToggle').addEventListener('click', togglePDFViewer);
+
+    function togglePDFViewer() {
+      const pdfViewer = document.getElementById('pdfViewer');
+      pdfViewer.style.display = pdfViewer.style.display === 'block' ? 'none' : 'block';
+      if (pdfViewer.style.display === 'block') {
+        document.getElementById('pdfInput').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file && file.type === 'application/pdf') {
+            const url = URL.createObjectURL(file);
+            document.getElementById('pdfFrame').src = url;
+          }
+        }, { once: true });
+      }
+    }
+
+    document.getElementById('fireBox').addEventListener('click', () => {
+      const aiPopup = document.getElementById('aiPopup');
+      aiPopup.style.display = aiPopup.style.display === 'block' ? 'none' : 'block';
+    });
+
+    function checkMysteryBox() {
+      if (streak > 0 && streak % 3 === 0) {
+        document.getElementById('mysteryBoxPopup').style.display = 'block';
+      }
+    }
+
+    document.getElementById('openMysteryBox').addEventListener('click', () => {
+      const rewards = [
+        { type: 'points', value: 200, text: '200 XP' },
+        { type: 'streakShield', value: 1, text: 'Streak Shield (1 week)' },
+        { type: 'doublePoints', value: 1, text: 'Double Points (24 hours)' }
+      ];
+      const reward = rewards[Math.floor(Math.random() * rewards.length)];
+      document.getElementById('mysteryRewardText').textContent = `You won ${reward.text}!`;
+      document.getElementById('openMysteryBox').style.display = 'none';
+      setTimeout(() => {
+        document.getElementById('mysteryBoxPopup').style.display = 'none';
+        document.getElementById('openMysteryBox').style.display = 'block';
+        document.getElementById('mysteryRewardText').textContent = 'Click to reveal your reward!';
+      }, 2000);
+
+      if (reward.type === 'points') {
+        points += reward.value;
+        totalXP += reward.value;
+        localStorage.setItem('totalXP', totalXP);
+        updatePointsDisplay();
+        updateLevel();
+      } else if (reward.type === 'streakShield') {
+        activateStreakShield();
+      } else if (reward.type === 'doublePoints') {
+        activateDoublePoints();
+      }
+    });
+
+    document.getElementById('streakShieldBtn').addEventListener('click', () => {
+      document.getElementById('streakShieldDialog').style.display = 'block';
+    });
+
+    document.getElementById('streakShieldConfirmBtn').addEventListener('click', () => {
+      if (totalXP >= 800) {
+        totalXP -= 800;
+        localStorage.setItem('totalXP', totalXP);
+        activateStreakShield();
+        document.getElementById('streakShieldDialog').style.display = 'none';
+        updatePointsDisplay();
+        updateLevel();
+      } else {
+        alert('Not enough XP!');
+      }
+    });
+
+    document.getElementById('streakShieldCancelBtn').addEventListener('click', () => {
+      document.getElementById('streakShieldDialog').style.display = 'none';
+    });
+
+    function activateStreakShield() {
+      streakShieldActive = true;
+      localStorage.setItem('streakShieldActive', 'true');
+      setTimeout(() => {
+        streakShieldActive = false;
+        localStorage.setItem('streakShieldActive', 'false');
+      }, 7 * 24 * 60 * 60 * 1000); // 1 week
+      showAchievement('Streak Shield Activated!');
+    }
+
+    document.getElementById('doublePointsBtn').addEventListener('click', () => {
+      document.getElementById('doublePointsDialog').style.display = 'block';
+    });
+
+    document.getElementById('doublePointsConfirmBtn').addEventListener('click', () => {
+      if (totalXP >= 800) {
+        totalXP -= 800;
+        localStorage.setItem('totalXP', totalXP);
+        activateDoublePoints();
+        document.getElementById('doublePointsDialog').style.display = 'none';
+        updatePointsDisplay();
+        updateLevel();
+      } else {
+        alert('Not enough XP!');
+      }
+    });
+
+    document.getElementById('doublePointsCancelBtn').addEventListener('click', () => {
+      document.getElementById('doublePointsDialog').style.display = 'none';
+    });
+
+    function activateDoublePoints() {
+      doublePointsActive = true;
+      const endTime = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours
+      localStorage.setItem('doublePointsActive', 'true');
+      localStorage.setItem('doublePointsEndTime', endTime);
+      setTimeout(() => {
+        doublePointsActive = false;
+        localStorage.setItem('doublePointsActive', 'false');
+        localStorage.removeItem('doublePointsEndTime');
+      }, 24 * 60 * 60 * 1000);
+      showAchievement('Double Points Activated!');
+    }
+
+    document.getElementById('sessionContinueBtn').addEventListener('click', () => {
+      document.getElementById('sessionCompleteDialog').style.display = 'none';
+      points += 100;
+      totalXP += 100;
+      localStorage.setItem('totalXP', totalXP);
+      updatePointsDisplay();
+      updateLevel();
+      startTimer();
+    });
+
+    document.getElementById('sessionEndBtn').addEventListener('click', () => {
+      document.getElementById('sessionCompleteDialog').style.display = 'none';
+      endSession();
+    });
+
+    function showSessionCompleteDialog() {
+      document.getElementById('sessionCompleteDialog').style.display = 'block';
+    }
+
+    document.getElementById('audioStoreBtn').addEventListener('click', () => {
+      loadAudioStore();
+      document.getElementById('audioTracksStore').style.display = 'block';
+    });
+
+    document.getElementById('closeAudioStore').addEventListener('click', () => {
+      document.getElementById('audioTracksStore').style.display = 'none';
+    });
+
+    function loadAudioStore() {
+      const audioList = document.getElementById('audioTracksList');
+      audioList.innerHTML = '';
+      audioTracks.forEach((track, index) => {
+        const savedTrack = JSON.parse(localStorage.getItem(`audioTrack_${index}`));
+        if (savedTrack && savedTrack.unlocked) {
+          track.unlocked = true;
         }
-      }
+        const trackItem = document.createElement('div');
+        trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`;
+        trackItem.innerHTML = `
+          <span class="track-name">${track.name} ${track.unlocked ? '' : `(${track.cost} XP)`}</span>
+          <button class="unlock-track-btn" data-index="${index}" ${track.unlocked ? 'disabled' : ''}>
+            ${track.unlocked ? 'UNLOCKED' : 'UNLOCK'}
+          </button>
+        `;
+        audioList.appendChild(trackItem);
+      });
 
-      function showDoublePointsDialog() {
-        const dialog = document.getElementById("doublePointsDialog")
-        if (!dialog) return
-        if (points < DOUBLE_POINTS_COST) {
-          alert("Not enough XP! You need 800 XP to buy Double Points Power-Up.")
-          return
-        }
-        dialog.style.display = "block"
-      }
+      document.querySelectorAll('.unlock-track-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = parseInt(btn.getAttribute('data-index'));
+          const track = audioTracks[index];
+          if (!track.unlocked && totalXP >= track.cost) {
+            totalXP -= track.cost;
+            track.unlocked = true;
+            localStorage.setItem(`audioTrack_${index}`, JSON.stringify(track));
+            localStorage.setItem('totalXP', totalXP);
+            updatePointsDisplay();
+            updateLevel();
+            btn.textContent = 'UNLOCKED';
+            btn.disabled = true;
+            trackItem.classList.remove('locked');
+            trackItem.classList.add('unlocked');
+            showAchievement(`${track.name} Unlocked!`);
+          } else if (!track.unlocked) {
+            alert('Not enough XP!');
+          }
+        });
+      });
+    }
 
-      function handleDoublePointsConfirmation(choice) {
-        const dialog = document.getElementById("doublePointsDialog")
-        if (!dialog) return
+    document.getElementById('quietPomodoroBtn').addEventListener('click', () => {
+      document.getElementById('pomodoroOverlay').style.display = 'flex';
+    });
 
-        dialog.style.display = "none"
-        if (choice === "yes") {
-          points -= DOUBLE_POINTS_COST
-          activePowerUps.doublePoints.active = true
-          activePowerUps.doublePoints.expiry = Date.now() + DOUBLE_POINTS_DURATION
-          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-          alert("Double Points Power-Up activated for 24 hours!")
-          saveState()
-          setTimeout(() => {
-            activePowerUps.doublePoints.active = false
-            saveState()
-            alert("Your Double Points Power-Up has expired!")
-          }, DOUBLE_POINTS_DURATION)
-        }
-      }
-
-      // Pomodoro functions
-      function showPomodoroOverlay() {
-        const overlay = document.getElementById("pomodoroOverlay")
-        if (!overlay) return
-        
-        // Reset pomodoro timer to 60 minutes
-        pomodoroTimeRemaining = 60 * 60
-        updatePomodoroDisplay()
-        
-        overlay.style.display = "flex"
-        document.getElementById("pomodoroStatus").textContent = "Ready to begin"
-      }
-
-      function startPomodoro() {
-        if (isPomodoroActive) return
-        
-        isPomodoroActive = true
-        pomodoroStartTime = Date.now()
-        document.getElementById("pomodoroStatus").textContent = "Focus in progress..."
-        
+    document.getElementById('pomodoroStartBtn').addEventListener('click', () => {
+      if (!pomodoroRunning) {
+        pomodoroRunning = true;
         pomodoroInterval = setInterval(() => {
-          pomodoroTimeRemaining--
-          updatePomodoroDisplay()
-          
-          if (pomodoroTimeRemaining <= 0) {
-            completePomodoroSession()
+          pomodoroTime--;
+          const minutes = Math.floor(pomodoroTime / 60);
+          const seconds = pomodoroTime % 60;
+          document.getElementById('pomodoroTimer').textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+          points += doublePointsActive ? 2 : 1;
+          totalXP += doublePointsActive ? 2 : 1;
+          localStorage.setItem('totalXP', totalXP);
+          updatePointsDisplay();
+          updateLevel();
+          document.getElementById('pomodoroStatus').textContent = 'Focusing...';
+          if (pomodoroTime <= 0) {
+            clearInterval(pomodoroInterval);
+            pomodoroRunning = false;
+            document.getElementById('pomodoroStatus').textContent = 'Session Complete!';
+            showAchievement('Pomodoro Session Completed! +50 XP');
+            points += 50;
+            totalXP += 50;
+            localStorage.setItem('totalXP', totalXP);
+            updatePointsDisplay();
+            updateLevel();
           }
-        }, 1000)
+        }, 1000);
       }
+    });
 
-      function resetPomodoro() {
-        clearInterval(pomodoroInterval)
-        isPomodoroActive = false
-        pomodoroTimeRemaining = 60 * 60
-        pomodoroStartTime = null
-        updatePomodoroDisplay()
-        document.getElementById("pomodoroStatus").textContent = "Timer reset"
+    document.getElementById('pomodoroPauseBtn').addEventListener('click', () => {
+      if (pomodoroRunning) {
+        clearInterval(pomodoroInterval);
+        pomodoroRunning = false;
+        document.getElementById('pomodoroStatus').textContent = 'Paused';
       }
+    });
 
-      function closePomodoroOverlay() {
-        const overlay = document.getElementById("pomodoroOverlay")
-        if (!overlay) return
-        
-        if (isPomodoroActive) {
-          if (confirm("Pomodoro session in progress. Are you sure you want to exit?")) {
-            clearInterval(pomodoroInterval)
-            isPomodoroActive = false
-            overlay.style.display = "none"
-            
-            // Ensure all menu buttons are clickable after closing
-            setTimeout(() => {
-              reattachEventListeners()
-            }, 100)
-          }
-        } else {
-          overlay.style.display = "none"
-          
-          // Ensure all menu buttons are clickable after closing
-          setTimeout(() => {
-            reattachEventListeners()
-          }, 100)
-        }
+    document.getElementById('pomodoroResetBtn').addEventListener('click', () => {
+      clearInterval(pomodoroInterval);
+      pomodoroRunning = false;
+      pomodoroTime = 60 * 60;
+      document.getElementById('pomodoroTimer').textContent = '60:00';
+      document.getElementById('pomodoroStatus').textContent = 'Ready to begin';
+    });
+
+    document.getElementById('pomodoroCloseBtn').addEventListener('click', () => {
+      clearInterval(pomodoroInterval);
+      pomodoroRunning = false;
+      pomodoroTime = 60 * 60;
+      document.getElementById('pomodoroTimer').textContent = '60:00';
+      document.getElementById('pomodoroStatus').textContent = 'Ready to begin';
+      document.getElementById('pomodoroOverlay').style.display = 'none';
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        location.reload();
       }
+    });
 
-      // Function to reattach event listeners after pomodoro closes
-      function reattachEventListeners() {
-        document.getElementById("streakShieldBtn").onclick = showStreakShieldDialog
-        document.getElementById("doublePointsBtn").onclick = showDoublePointsDialog
-        document.getElementById("audioStoreBtn").onclick = showAudioTracksStore
-        document.getElementById("quietPomodoroBtn").onclick = showPomodoroOverlay
-        document.getElementById("logoutBtn").onclick = logout
+    audioPlayer.addEventListener('ended', () => {
+      currentTrackIndex++;
+      const unlockedTracks = audioTracks.filter(track => track.unlocked);
+      if (unlockedTracks.length > 0) {
+        currentTrackIndex = currentTrackIndex % unlockedTracks.length;
+        audioPlayer.src = unlockedTracks[currentTrackIndex].src;
+        audioPlayer.play();
       }
+    });
 
-      function updatePomodoroDisplay() {
-        const timerElement = document.getElementById("pomodoroTimer")
-        if (!timerElement) return
-        
-        const minutes = Math.floor(pomodoroTimeRemaining / 60)
-        const seconds = pomodoroTimeRemaining % 60
-        
-        timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+    window.addEventListener('beforeunload', (e) => {
+      if (document.getElementById('player').style.display === 'block') {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Your focus session will end.';
       }
-
-      function completePomodoroSession() {
-        clearInterval(pomodoroInterval)
-        isPomodoroActive = false
-        
-        // Play completion sound
-        const audio = document.getElementById("pomodoroCompleteAudio")
-        if (audio) audio.play().catch(err => console.error("Pomodoro audio error:", err))
-        
-        // Calculate points (1 point per minute)
-        const minutesCompleted = 60 - Math.floor(pomodoroTimeRemaining / 60)
-        const pointsEarned = applyPowerUps(minutesCompleted)
-        points += pointsEarned
-        
-        document.getElementById("pomodoroStatus").textContent = `Completed! Earned ${pointsEarned} XP`
-        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-        
-        saveState()
-        checkLevelUp()
-      }
-
-      // Reminder feature functions
-      function startReminderTimer() {
-        const inputForm = document.getElementById("inputForm")
-        if (inputForm.style.display !== "block") {
-          stopReminderTimer()
-          timeOnInputForm = 0
-          return
-        }
-
-        reminderInterval = setInterval(() => {
-          timeOnInputForm += reminderIntervalTime
-          if (timeOnInputForm >= reminderThreshold) {
-            if ("Notification" in window && Notification.permission === "granted") {
-              new Notification("Check Your To-Do List!", {
-                body: "Hey hero, don't forget to review your quests!",
-                icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
-              })
-            } else if ("Notification" in window && Notification.permission !== "denied") {
-              Notification.requestPermission().then((permission) => {
-                if (permission === "granted") {
-                  new Notification("Check Your To-Do List!", {
-                    body: "Hey hero, don't forget to review your quests!",
-                    icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
-                  })
-                } else {
-                  alert("Reminder: Check your to-do list!")
-                }
-              })
-            } else {
-              alert("Reminder: Check your to-do list!")
-            }
-          }
-        }, reminderIntervalTime)
-      }
-
-      function stopReminderTimer() {
-        if (reminderInterval) {
-          clearInterval(reminderInterval)
-          reminderInterval = null
-        }
-      }
-
-      // Task deadline functions
-      function showDeadlineDialog(taskElement) {
-        const dialog = document.getElementById("deadlineDialog")
-        if (!dialog) return
-        
-        currentTaskForDeadline = taskElement
-        
-        // Set default date to tomorrow
-        const tomorrow = new Date()
-        tomorrow.setDate(tomorrow.getDate() + 1)
-        const dateInput = document.getElementById("deadlineDate")
-        dateInput.value = tomorrow.toISOString().split('T')[0]
-        
-        // Set default time to current time
-        const timeInput = document.getElementById("deadlineTime")
-        const now = new Date()
-        timeInput.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-        
-        dialog.style.display = "block"
-      }
-
-      function handleDeadlineConfirmation(choice) {
-        const dialog = document.getElementById("deadlineDialog")
-        if (!dialog || !currentTaskForDeadline) return
-
-        dialog.style.display = "none"
-        
-        if (choice === "yes") {
-          const dateInput = document.getElementById("deadlineDate").value
-          const timeInput = document.getElementById("deadlineTime").value
-          const difficultySelect = document.getElementById("taskDifficulty")
-          const points = difficultySelect.value
-          
-          const deadlineDate = new Date(`${dateInput}T${timeInput}`)
-          
-          // Add deadline info to the task
-          const deadlineInfo = document.createElement("span")
-          deadlineInfo.className = "deadline-info"
-          deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
-          
-          const pointsInfo = document.createElement("span")
-          pointsInfo.className = "points-info"
-          pointsInfo.textContent = `+${points}pts`
-          
-          // Remove existing deadline info if any
-          const existingDeadline = currentTaskForDeadline.querySelector(".deadline-info")
-          if (existingDeadline) existingDeadline.remove()
-          
-          const existingPoints = currentTaskForDeadline.querySelector(".points-info")
-          if (existingPoints) existingPoints.remove()
-          
-          currentTaskForDeadline.appendChild(deadlineInfo)
-          currentTaskForDeadline.appendChild(pointsInfo)
-          
-          // Store deadline in task data
-          const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(currentTaskForDeadline)
-          if (taskIndex !== -1 && tasks[taskIndex]) {
-            tasks[taskIndex].deadline = deadlineDate.getTime()
-            tasks[taskIndex].points = parseInt(points)
-            saveTasks()
-          }
-        }
-        
-        currentTaskForDeadline = null
-      }
-
-      function checkTaskDeadlines() {
-        const now = Date.now()
-        let tasksUpdated = false
-        
-        tasks.forEach((task, index) => {
-          // Skip tasks without deadlines or already completed
-          if (!task.deadline || task.deadlineChecked) return
-          
-          if (now > task.deadline) {
-            // Deadline passed
-            if (task.completed) {
-              // Task was completed on time
-              const earnedPoints = task.points || 50
-              points += applyPowerUps(earnedPoints)
-              alert(`Task "${task.text}" completed on time! +${earnedPoints} XP`)
-            } else {
-              // Task was not completed on time
-              const lostPoints = Math.floor((task.points || 50) / 2)
-              alert(`Task "${task.text}" deadline missed! -${lostPoints} XP`)
-              points = Math.max(0, points - lostPoints)
-            }
-            
-            // Mark as checked so we don't process it again
-            tasks[index].deadlineChecked = true
-            tasksUpdated = true
-            
-            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-          }
-        })
-        
-        if (tasksUpdated) {
-          saveTasks()
-          saveState()
-        }
-      }
-
-      // Audio tracks store functions
-      function showAudioTracksStore() {
-        const store = document.getElementById("audioTracksStore")
-        const tracksList = document.getElementById("audioTracksList")
-        if (!store || !tracksList) return
-        
-        tracksList.innerHTML = ""
-        
-        premiumLofiTracks.forEach(track => {
-          const trackItem = document.createElement("div")
-          trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`
-          
-          const trackName = document.createElement("div")
-          trackName.className = "track-name"
-          trackName.textContent = track.name
-          
-          const unlockBtn = document.createElement("button")
-          unlockBtn.className = "unlock-track-btn"
-          
-          if (track.unlocked) {
-            unlockBtn.textContent = "UNLOCKED"
-            unlockBtn.disabled = true
-          } else {
-            unlockBtn.textContent = `UNLOCK (${track.cost} XP)`
-            unlockBtn.disabled = points < track.cost
-            unlockBtn.onclick = () => unlockAudioTrack(track.id)
-          }
-          
-          trackItem.appendChild(trackName)
-          trackItem.appendChild(unlockBtn)
-          tracksList.appendChild(trackItem)
-        })
-        
-        store.style.display = "block"
-      }
-
-      function closeAudioTracksStore() {
-        const store = document.getElementById("audioTracksStore")
-        if (store) store.style.display = "none"
-      }
-
-      function unlockAudioTrack(trackId) {
-        const track = premiumLofiTracks.find(t => t.id === trackId)
-        if (!track || track.unlocked || points < track.cost) return
-        
-        // Deduct points and unlock the track
-        points -= track.cost
-        track.unlocked = true
-        
-        // Add to lofi songs if not already there
-        if (!lofiSongs.includes(track.url)) {
-          lofiSongs.push(track.url)
-        }
-        
-        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-        alert(`Successfully unlocked "${track.name}"!`)
-        
-        // Update the store display
-        showAudioTracksStore()
-        saveState()
-      }
-
-      // Session complete dialog
-      function showSessionCompleteDialog() {
-        const dialog = document.getElementById("sessionCompleteDialog")
-        if (!dialog) return
-        dialog.style.display = "block"
-      }
-
-      function handleSessionContinue(choice) {
-        const dialog = document.getElementById("sessionCompleteDialog")
-        if (!dialog) return
-        
-        dialog.style.display = "none"
-        
-        if (choice === "continue") {
-          // Award bonus points
-          points += applyPowerUps(100)
-          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-          
-          // Start a new focus session
-          startTimer(focusDuration, "Focus Time")
-        } else {
-          // End the session
-          endFocusSession()
-        }
-        
-        saveState()
-      }
-
-      function loadSavedState() {
-        try {
-          const savedState = localStorage.getItem("focusModeState")
-          if (savedState) {
-            const progressBar = document.getElementById("progressBar")
-            if (progressBar) progressBar.style.display = "none"
-
-            const state = JSON.parse(savedState)
-            videoIds = state.videoIds || []
-            currentVideoIndex = state.currentVideoIndex || 0
-            distractionCount = state.distractionCount || 0
-            points = state.points || 0
-            timerMode = state.timerMode || "Focus Time"
-            timerRemaining = state.timerRemaining || focusDuration / 1000
-            isFocusModeActive = state.isFocusModeActive || false
-            isSignedIn = state.isSignedIn || false
-            currentUser = state.currentUser || null
-            completedVideos = new Set(state.completedVideos || [])
-            allVideosCompleted = state.allVideosCompleted || false
-            totalFocusTime = state.totalFocusTime || 0
-            totalDistractions = state.totalDistractions || 0
-            totalVideosWatched = state.totalVideosWatched || 0
-            streakDays = state.streakDays || 0
-            lastFocusDate = state.lastFocusDate || null
-            mysteryBoxCount = state.mysteryBoxCount || 0
-            activePowerUps = state.activePowerUps || {
-              doublePoints: { active: false, expiry: null },
-              streakShield: { active: false, used: false, expiry: null },
-            }
-            
-            // Load premium tracks state
-            if (state.premiumLofiTracks) {
-              state.premiumLofiTracks.forEach(savedTrack => {
-                const track = premiumLofiTracks.find(t => t.id === savedTrack.id)
-                if (track) {
-                  track.unlocked = savedTrack.unlocked
-                  if (track.unlocked && !lofiSongs.includes(track.url)) {
-                    lofiSongs.push(track.url)
-                  }
-                }
-              })
-            }
-
-            updateAnalytics()
-            updateAchievementLevel()
-            updateStreak()
-            if (isSignedIn && currentUser) {
-              document.getElementById("landingPage").style.display = "none"
-              document.getElementById("signinForm").style.display = "none"
-              document.getElementById("inputForm").style.display = "block"
-              document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-              document.getElementById("clockDisplay").style.display = "block"
-              document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
-              document.getElementById("lofiPlayer").style.display = "block"
-              restoreUrlInputs()
-              populatePlaylistSelect()
-              restoreTasks()
-              startReminderTimer()
-              if (mysteryBoxCount > 0) showMysteryBoxPopup()
-            }
-            if (videoIds.length > 0) {
-              document.getElementById("inputForm").style.display = "none"
-              document.getElementById("player").style.display = "block"
-              document.getElementById("restartBtn").style.display = "block"
-              document.getElementById("pdfToggle").style.display = "block"
-              document.getElementById("clockDisplay").style.display = "none"
-              document.getElementById("sitesBox").style.display = "none"
-              document.getElementById("lofiPlayer").style.display = "none"
-              stopReminderTimer()
-              loadYouTubeAPI()
-                .then(() => {
-                  setupYouTubePlayer()
-                  if (isFocusModeActive) startTimer(timerRemaining * 1000, timerMode)
-                })
-                .catch((err) => console.error("YouTube API load failed:", err))
-            }
-          } else {
-            document.getElementById("landingPage").style.display = "block"
-            document.getElementById("signinForm").style.display = "none"
-            document.getElementById("inputForm").style.display = "none"
-            document.getElementById("clockDisplay").style.display = "none"
-            document.getElementById("sitesBox").style.display = "none"
-            document.getElementById("lofiPlayer").style.display = "none"
-            stopReminderTimer()
-            updateAnalytics()
-            updateAchievementLevel()
-            updateStreak()
-            restoreTasks()
-          }
-        } catch (err) {
-          console.error("Load saved state error:", err)
-        }
-      }
-
-      function redirectToPYQs() {
-        window.open("https://room.examgoal.com/", "_blank")
-      }
-
-      function showSignIn() {
-        document.getElementById("landingPage").style.display = "none"
-        document.getElementById("signinForm").style.display = "block"
-        document.getElementById("inputForm").style.display = "none"
-        document.getElementById("clockDisplay").style.display = "none"
-        document.getElementById("sitesBox").style.display = "none"
-        document.getElementById("lofiPlayer").style.display = "none"
-        stopReminderTimer()
-      }
-
-      function signIn() {
-        try {
-          const username = document.getElementById("username").value
-          const password = document.getElementById("password").value
-          const users = JSON.parse(localStorage.getItem("users") || "{}")
-          if (users[username] && users[username].password === password) {
-            isSignedIn = true
-            currentUser = username
-            points = users[username].points || 0
-            totalFocusTime = users[username].totalFocusTime || 0
-            totalDistractions = users[username].totalDistractions || 0
-            totalVideosWatched = users[username].totalVideosWatched || 0
-            tasks = users[username].tasks || []
-            streakDays = users[username].streakDays || 0
-            mysteryBoxCount = users[username].mysteryBoxCount || 0
-            activePowerUps = users[username].activePowerUps || {
-              doublePoints: { active: false, expiry: null },
-              streakShield: { active: false, used: false, expiry: null },
-            }
-            
-            // Load premium tracks
-            if (users[username].premiumLofiTracks) {
-              users[username].premiumLofiTracks.forEach(savedTrack => {
-                const track = premiumLofiTracks.find(t => t.id === savedTrack.id)
-                if (track) {
-                  track.unlocked = savedTrack.unlocked
-                  if (track.unlocked && !lofiSongs.includes(track.url)) {
-                    lofiSongs.push(track.url)
-                  }
-                }
-              })
-            }
-            
-            document.getElementById("landingPage").style.display = "none"
-            document.getElementById("signinForm").style.display = "none"
-            document.getElementById("inputForm").style.display = "block"
-            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-            document.getElementById("clockDisplay").style.display = "block"
-            document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
-            document.getElementById("lofiPlayer").style.display = "block"
-            updateAnalytics()
-            updateAchievementLevel()
-            updateStreak()
-            saveState()
-            populatePlaylistSelect()
-            restoreTasks()
-            startReminderTimer()
-            if (mysteryBoxCount > 0) showMysteryBoxPopup()
-            updateSidebarDashboard()
-          } else alert("Invalid username or password")
-        } catch (err) {
-          console.error("Sign-in error:", err)
-          alert("Error during sign-in. Please try again.")
-        }
-      }
-
-      function createAccount() {
-        try {
-          const username = document.getElementById("username").value
-          const password = document.getElementById("password").value
-          const users = JSON.parse(localStorage.getItem("users") || "{}")
-          if (users[username]) alert("Username already exists")
-          else if (username && password) {
-            users[username] = {
-              password,
-              points: 0,
-              totalFocusTime: 0,
-              totalDistractions: 0,
-              totalVideosWatched: 0,
-              tasks: [],
-              streakDays: 0,
-              mysteryBoxCount: 0,
-              activePowerUps: {
-                doublePoints: { active: false, expiry: null },
-                streakShield: { active: false, used: false, expiry: null },
-              },
-              premiumLofiTracks: premiumLofiTracks.map(track => ({
-                id: track.id,
-                unlocked: false
-              }))
-            }
-            localStorage.setItem("users", JSON.stringify(users))
-            isSignedIn = true
-            currentUser = username
-            points = 0
-            totalFocusTime = 0
-            totalDistractions = 0
-            totalVideosWatched = 0
-            tasks = []
-            streakDays = 0
-            mysteryBoxCount = 0
-            activePowerUps = {
-              doublePoints: { active: false, expiry: null },
-              streakShield: { active: false, used: false, expiry: null },
-            }
-            document.getElementById("landingPage").style.display = "none"
-            document.getElementById("signinForm").style.display = "none"
-            document.getElementById("inputForm").style.display = "block"
-            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-            document.getElementById("clockDisplay").style.display = "block"
-            document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
-            document.getElementById("lofiPlayer").style.display = "block"
-            updateAnalytics()
-            updateAchievementLevel()
-            updateStreak()
-            saveState()
-            populatePlaylistSelect()
-            restoreTasks()
-            startReminderTimer()
-            updateSidebarDashboard()
-          } else alert("Please enter a username and password")
-        } catch (err) {
-          console.error("Account creation error:", err)
-          alert("Error creating account. Please try again.")
-        }
-      }
-
-      function addUrlInput() {
-        const urlInputs = document.getElementById("urlInputs")
-        if (!urlInputs) return
-
-        const container = document.createElement("div")
-        container.className = "url-container"
-        const newInput = document.createElement("input")
-        newInput.type = "text"
-        newInput.className = "youtube-url"
-        newInput.placeholder = "YouTube URL (Videos or Live Streams)"
-        const removeBtn = document.createElement("button")
-        removeBtn.textContent = "X"
-        removeBtn.onclick = () => {
-          if (urlInputs.children.length > 1) urlInputs.removeChild(container)
-        }
-        container.appendChild(newInput)
-        container.appendChild(removeBtn)
-        urlInputs.appendChild(container)
-      }
-
-      function restoreUrlInputs() {
-        const urlInputs = document.getElementById("urlInputs")
-        if (!urlInputs) return
-
-        urlInputs.innerHTML = ""
-        videoIds.forEach((id, index) => {
-          const container = document.createElement("div")
-          container.className = "url-container"
-          const input = document.createElement("input")
-          input.type = "text"
-          input.className = "youtube-url"
-          input.placeholder = "YouTube URL (Videos or Live Streams)"
-          input.value = `https://www.youtube.com/watch?v=${id}`
-          container.appendChild(input)
-          if (index > 0) {
-            const removeBtn = document.createElement("button")
-            removeBtn.textContent = "X"
-            removeBtn.onclick = () => {
-              if (urlInputs.children.length > 1) urlInputs.removeChild(container)
-            }
-            container.appendChild(removeBtn)
-          }
-          urlInputs.appendChild(container)
-        })
-        if (videoIds.length === 0) {
-          const container = document.createElement("div")
-          container.className = "url-container"
-          const input = document.createElement("input")
-          input.type = "text"
-          input.className = "youtube-url"
-          input.placeholder = "YouTube URL (Videos or Live Streams)"
-          input.required = true
-          container.appendChild(input)
-          urlInputs.appendChild(container)
-        }
-      }
-
-      function addTaskLine() {
-        const tasksDiv = document.getElementById("tasks")
-        if (!tasksDiv) return null
-
-        const container = document.createElement("div")
-        container.className = "task-line"
-        const checkbox = document.createElement("input")
-        checkbox.type = "checkbox"
-        checkbox.className = "task-check"
-        checkbox.onchange = () => saveTasks()
-        const input = document.createElement("input")
-        input.type = "text"
-        input.className = "task-text"
-        input.placeholder = "Write a task..."
-        input.onkeydown = (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault()
-            const newInput = addTaskLine()
-            if (newInput) newInput.focus()
-          }
-        }
-        input.onchange = () => saveTasks()
-        
-        const deadlineBtn = document.createElement("button")
-        deadlineBtn.className = "set-deadline"
-        deadlineBtn.textContent = "⏰"
-        deadlineBtn.onclick = () => showDeadlineDialog(container)
-        
-        const removeBtn = document.createElement("span")
-        removeBtn.className = "remove-task"
-        removeBtn.textContent = "x"
-        removeBtn.onclick = () => removeTask(removeBtn)
-        
-        container.appendChild(checkbox)
-        container.appendChild(input)
-        container.appendChild(deadlineBtn)
-        container.appendChild(removeBtn)
-        tasksDiv.appendChild(container)
-        return input
-      }
-
-      function removeTask(element) {
-        const tasksDiv = document.getElementById("tasks")
-        if (!tasksDiv || !element || !element.parentElement) return
-
-        if (tasksDiv.children.length > 1) {
-          tasksDiv.removeChild(element.parentElement)
-          saveTasks()
-        }
-      }
-
-      function restoreTasks() {
-        const tasksDiv = document.getElementById("tasks")
-        if (!tasksDiv) return
-
-        tasksDiv.innerHTML = ""
-        if (tasks.length === 0) addTaskLine()
-        else {
-          tasks.forEach((task) => {
-            const container = document.createElement("div")
-            container.className = "task-line"
-            
-            const checkbox = document.createElement("input")
-            checkbox.type = "checkbox"
-            checkbox.className = "task-check"
-            checkbox.checked = task.completed
-            checkbox.onchange = () => saveTasks()
-            
-            const input = document.createElement("input")
-            input.type = "text"
-            input.className = "task-text"
-            input.value = task.text
-            input.placeholder = "Write a task..."
-            input.onchange = () => saveTasks()
-            
-            const deadlineBtn = document.createElement("button")
-            deadlineBtn.className = "set-deadline"
-            deadlineBtn.textContent = "⏰"
-            deadlineBtn.onclick = () => showDeadlineDialog(container)
-            
-            const removeBtn = document.createElement("span")
-            removeBtn.className = "remove-task"
-            removeBtn.textContent = "x"
-            removeBtn.onclick = () => removeTask(removeBtn)
-            
-            container.appendChild(checkbox)
-            container.appendChild(input)
-            container.appendChild(deadlineBtn)
-            container.appendChild(removeBtn)
-            
-            // Add deadline info if exists
-            if (task.deadline) {
-              const deadlineDate = new Date(task.deadline)
-              const deadlineInfo = document.createElement("span")
-              deadlineInfo.className = "deadline-info"
-              deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
-              container.appendChild(deadlineInfo)
-              
-              const pointsInfo = document.createElement("span")
-              pointsInfo.className = "points-info"
-              pointsInfo.textContent = `+${task.points || 50}pts`
-              container.appendChild(pointsInfo)
-            }
-            
-            tasksDiv.appendChild(container)
-          })
-        }
-        
-        // Check for any passed deadlines
-        checkTaskDeadlines()
-      }
-
-      function saveTasks() {
-        const taskLines = document.querySelectorAll(".task-line")
-        if (!taskLines.length) return
-
-        tasks = Array.from(taskLines)
-          .map((line) => {
-            const checkbox = line.querySelector(".task-check")
-            const input = line.querySelector(".task-text")
-            const deadlineInfo = line.querySelector(".deadline-info")
-            const pointsInfo = line.querySelector(".points-info")
-            
-            // Get existing task to preserve deadline if it exists
-            const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(line)
-            const existingTask = tasks[taskIndex] || {}
-            
-            return {
-              text: input ? input.value.trim() : "",
-              completed: checkbox ? checkbox.checked : false,
-              deadline: existingTask.deadline || null,
-              points: existingTask.points || null,
-              deadlineChecked: existingTask.deadlineChecked || false
-            }
-          })
-          .filter((task) => task.text !== "")
-        localStorage.setItem("tasks", JSON.stringify(tasks))
-        if (isSignedIn && currentUser) {
-          const users = JSON.parse(localStorage.getItem("users") || "{}")
-          users[currentUser].tasks = tasks
-          localStorage.setItem("users", JSON.stringify(users))
-        }
-      }
-
-      function toggleTodo() {
-        const todoList = document.getElementById("todoList")
-        if (!todoList) return
-        todoList.style.display = todoList.style.display === "block" ? "none" : "block"
-      }
-
-      function extractVideoId(url) {
-        try {
-          let videoId = null
-          const urlObj = new URL(url)
-          const hostname = urlObj.hostname.toLowerCase()
-          const pathname = urlObj.pathname
-
-          if (hostname.includes("youtube.com")) {
-            if (pathname.startsWith("/watch")) videoId = urlObj.searchParams.get("v")
-            else if (pathname.startsWith("/live")) videoId = pathname.split("/live/")[1]?.split("/")[0] || pathname.split("/live/")[1]
-          } else if (hostname.includes("youtu.be")) videoId = pathname.substring(1)
-
-          if (videoId && videoId.length === 11) return videoId
-          throw new Error("Invalid YouTube URL")
-        } catch (e) {
-          console.error("Invalid URL:", url, e)
-          return null
-        }
-      }
-
-      function startPlayback() {
-        try {
-          const urlInputs = document.querySelectorAll(".youtube-url")
-          if (!urlInputs.length) return
-
-          const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
-          if (!urls.length) {
-            alert("Please enter at least one YouTube URL.")
-            return
-          }
-
-          videoIds = urls.map((url) => extractVideoId(url)).filter((id) => id)
-          if (videoIds.length === 0) {
-            alert("No valid YouTube URLs provided.")
-            return
-          }
-
-          document.getElementById("inputForm").style.display = "none"
-          document.getElementById("player").style.display = "block"
-          document.getElementById("restartBtn").style.display = "block"
-          document.getElementById("pdfToggle").style.display = "block"
-          document.getElementById("clockDisplay").style.display = "none"
-          document.getElementById("sitesBox").style.display = "none"
-          document.getElementById("lofiPlayer").style.display = "none"
-          stopReminderTimer()
-
-          loadYouTubeAPI()
-            .then(() => {
-              setupYouTubePlayer()
-              startTimer(focusDuration, "Focus Time")
-              saveState()
-              // Go fullscreen when focus mode starts
-              requestFullscreen(document.documentElement)
-            })
-            .catch((err) => {
-              console.error("YouTube API load failed:", err)
-              alert("Failed to load YouTube player. Please try again.")
-            })
-        } catch (err) {
-          console.error("Start playback error:", err)
-          alert("An error occurred while starting playback.")
-        }
-      }
-
-      // Function to request fullscreen
-      function requestFullscreen(element) {
-        if (element.requestFullscreen) {
-          element.requestFullscreen().catch(err => {
-            console.log("Fullscreen request failed:", err)
-          })
-        } else if (element.mozRequestFullScreen) { // Firefox
-          element.mozRequestFullScreen()
-        } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
-          element.webkitRequestFullscreen()
-        } else if (element.msRequestFullscreen) { // IE/Edge
-          element.msRequestFullscreen()
-        }
-      }
-
-      // Function to exit fullscreen
-      function exitFullscreen() {
-        if (document.exitFullscreen) {
-          document.exitFullscreen()
-        } else if (document.mozCancelFullScreen) { // Firefox
-          document.mozCancelFullScreen()
-        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
-          document.webkitExitFullscreen()
-        } else if (document.msExitFullscreen) { // IE/Edge
-          document.msExitFullscreen()
-        }
-      }
-
-      function loadYouTubeAPI() {
-        return new Promise((resolve, reject) => {
-          if (isYouTubeAPILoaded) resolve()
-          else {
-            const tag = document.createElement("script")
-            tag.src = "https://www.youtube.com/iframe_api"
-            tag.onload = () => {
-              window.onYouTubeIframeAPIReady = () => {
-                isYouTubeAPILoaded = true
-                resolve()
-              }
-            }
-            tag.onerror = () => reject(new Error("Failed to load YouTube API"))
-            document.head.appendChild(tag)
-          }
-        })
-      }
-
-      function setupYouTubePlayer() {
-        if (!videoIds.length) return
-
-        const playerDiv = document.getElementById("player")
-        if (!playerDiv) return
-
-        player = new YT.Player("player", {
-          height: "100%",
-          width: "100%",
-          videoId: videoIds[currentVideoIndex],
-          playerVars: {
-            autoplay: 1,
-            controls: 1,
-            modestbranding: 1,
-            rel: 0,
-            showinfo: 0,
-          },
-          events: {
-            onReady: onPlayerReady,
-            onStateChange: onPlayerStateChange,
-          },
-        })
-
-        setupVideoSidebar()
-      }
-
-      function onPlayerReady(event) {
-        event.target.playVideo()
-      }
-
-      function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.ENDED) {
-          completedVideos.add(videoIds[currentVideoIndex])
-          totalVideosWatched++
-          points += applyPowerUps(50) // Base 50 points per video, doubled if power-up active
-          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-          checkLevelUp()
-          saveState()
-          updateAnalytics()
-
-          currentVideoIndex++
-          if (currentVideoIndex < videoIds.length) {
-            player.loadVideoById(videoIds[currentVideoIndex])
-          } else {
-            allVideosCompleted = true
-            endFocusSession()
-          }
-        }
-      }
-
-      function setupVideoSidebar() {
-        const sidebar = document.getElementById("videoSidebar")
-        if (!sidebar) return
-
-        sidebar.innerHTML = ''
-        videoIds.forEach((id, index) => {
-          const thumbnail = document.createElement("img")
-          thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`
-          thumbnail.className = "thumbnail"
-          thumbnail.onclick = () => {
-            currentVideoIndex = index
-            player.loadVideoById(videoIds[currentVideoIndex])
-          }
-          sidebar.appendChild(thumbnail)
-        })
-        sidebar.style.right = "-320px"
-      }
-
-      // Add keyboard shortcut for toggling sidebar
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 't' || e.key === 'T') {
-          toggleVideoSidebar()
-        }
-      })
-
-      function startTimer(duration, mode) {
-        const timerDisplay = document.getElementById("timerDisplay")
-        const progressFill = document.getElementById("progressFill")
-        const progressBar = document.getElementById("progressBar")
-        if (!timerDisplay || !progressFill || !progressBar) return
-
-        isFocusModeActive = true
-        timerMode = mode
-        let timeRemaining = duration / 1000
-        timerRemaining = timeRemaining
-        progressBar.style.display = "block"
-        const totalDuration = duration / 1000
-
-        updateStreak()
-
-        clearInterval(countdownInterval)
-        countdownInterval = setInterval(() => {
-          const minutes = Math.floor(timeRemaining / 60)
-          const seconds = Math.floor(timeRemaining % 60)
-          timerDisplay.querySelector("#timerText").textContent = `${timerMode}: ${minutes
-            .toString()
-            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-          const progress = ((totalDuration - timeRemaining) / totalDuration) * 100
-          progressFill.style.width = `${progress}%`
-
-          if (mode === "Focus Time") totalFocusTime += 1
-          timeRemaining--
-          timerRemaining = timeRemaining
-
-          if (timeRemaining < 0) {
-            clearInterval(countdownInterval)
-            progressBar.style.display = "none"
-            if (mode === "Focus Time") {
-              points += applyPowerUps(100) // Base 100 points per focus session, doubled if power-up active
-              document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
-              checkLevelUp()
-              
-              // Show session complete dialog instead of automatically starting break
-              showSessionCompleteDialog()
-              playFocusAudio()
-            } else if (mode === "Break Time") {
-              startTimer(secondBreakDuration, "Short Break")
-            } else {
-              startTimer(focusDuration, "Focus Time")
-            }
-            saveState()
-          }
-        }, 1000)
-      }
-
-      function checkLevelUp() {
-        const currentLevel = getAchievementLevel(previousPoints)
-        const newLevel = getAchievementLevel(points)
-        if (newLevel.points > currentLevel.points) showAchievementOverlay(newLevel.level)
-        previousPoints = points
-        updateAchievementLevel()
-      }
-
-      function playFocusAudio() {
-        const audio = document.getElementById("focusAudio")
-        if (audio) audio.play().catch((err) => console.error("Audio play error:", err))
-      }
-
-      function endFocusSession() {
-        clearInterval(countdownInterval)
-        isFocusModeActive = false
-        const timerDisplay = document.getElementById("timerDisplay")
-        const progressBar = document.getElementById("progressBar")
-        if (timerDisplay && progressBar) {
-          timerDisplay.querySelector("#timerText").textContent = "Focus Complete!"
-          progressBar.style.display = "none"
-        }
-        // Exit fullscreen when session ends
-        exitFullscreen()
-        saveState()
-      }
-
-      function restartSession() {
-        const dialog = document.getElementById("confirmationDialog")
-        if (!dialog) return
-        dialog.style.display = "block"
-      }
-
-      function handleRestartConfirmation(choice) {
-        const dialog = document.getElementById("confirmationDialog")
-        if (!dialog) return
-
-        dialog.style.display = "none"
-        if (choice === "yes") {
-          clearInterval(countdownInterval)
-          isFocusModeActive = false
-          videoIds = []
-          currentVideoIndex = 0
-          completedVideos.clear()
-          allVideosCompleted = false
-          if (player) player.destroy()
-          document.getElementById("player").style.display = "none"
-          document.getElementById("restartBtn").style.display = "none"
-          document.getElementById("pdfToggle").style.display = "none"
-          document.getElementById("videoSidebar").style.right = "-320px"
-          document.getElementById("inputForm").style.display = "block"
-          document.getElementById("clockDisplay").style.display = "block"
-          document.getElementById("sitesBox").style.display = "none"
-          document.getElementById("lofiPlayer").style.display = "block"
-          const progressBar = document.getElementById("progressBar")
-          if (progressBar) progressBar.style.display = "none"
-          // Exit fullscreen when restarting
-          exitFullscreen()
-          restoreUrlInputs()
-          saveState()
-          startReminderTimer()
-        }
-      }
-
-      function toggleVideoSidebar() {
-        const sidebar = document.getElementById("videoSidebar")
-        if (!sidebar) return
-        sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
-      }
-
-      function updateAnalytics() {
-        document.getElementById("totalFocusTime").textContent = Math.floor(totalFocusTime / 60)
-        document.getElementById("totalDistractions").textContent = totalDistractions
-        document.getElementById("totalVideosWatched").textContent = totalVideosWatched
-      }
-
-      function toggleAnalytics() {
-        const analytics = document.getElementById("analytics")
-        if (!analytics) return
-        analytics.style.display = analytics.style.display === "block" ? "none" : "block"
-      }
-
-      function savePlaylist() {
-        const playlistName = document.getElementById("playlistName").value.trim()
-        const urlInputs = document.querySelectorAll(".youtube-url")
-        if (!playlistName || !urlInputs.length) {
-          alert("Please enter a playlist name and at least one URL.")
-          return
-        }
-
-        const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
-        const videoIdsForPlaylist = urls.map((url) => extractVideoId(url)).filter((id) => id)
-        if (videoIdsForPlaylist.length === 0) {
-          alert("No valid YouTube URLs to save.")
-          return
-        }
-
-        playlists = playlists.filter((p) => p.name !== playlistName)
-        playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist })
-        localStorage.setItem("playlists", JSON.stringify(playlists))
-        populatePlaylistSelect()
-        document.getElementById("playlistName").value = ""
-      }
-
-      function removePlaylist() {
-        const playlistSelect = document.getElementById("playlistSelect")
-        const selectedName = playlistSelect.value
-        if (!selectedName) {
-          alert("Please select a playlist to remove.")
-          return
-        }
-
-        playlists = playlists.filter((p) => p.name !== selectedName)
-        localStorage.setItem("playlists", JSON.stringify(playlists))
-        populatePlaylistSelect()
-        restoreUrlInputs()
-      }
-
-      function populatePlaylistSelect() {
-        const playlistSelect = document.getElementById("playlistSelect")
-        if (!playlistSelect) return
-
-        playlistSelect.innerHTML = '<option value="">Select a Playlist</option>'
-        playlists.forEach((playlist) => {
-          const option = document.createElement("option")
-          option.value = playlist.name
-          option.textContent = playlist.name
-          playlistSelect.appendChild(option)
-        })
-
-        playlistSelect.onchange = () => {
-          const selectedName = playlistSelect.value
-          if (selectedName) {
-            const selectedPlaylist = playlists.find((p) => p.name === selectedName)
-            if (selectedPlaylist) {
-              videoIds = selectedPlaylist.videoIds
-              restoreUrlInputs()
-            }
-          }
-        }
-      }
-
-      function togglePDFViewer() {
-        const pdfViewer = document.getElementById("pdfViewer")
-        if (!pdfViewer) return
-        pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block"
-      }
-
-      function handlePDFUpload(event) {
-        const file = event.target.files[0]
-        if (!file || file.type !== "application/pdf") {
-          alert("Please upload a valid PDF file.")
-          return
-        }
-
-        const pdfFrame = document.getElementById("pdfFrame")
-        if (!pdfFrame) return
-
-        const url = URL.createObjectURL(file)
-        pdfFrame.src = url
-        document.getElementById("pdfViewer").style.display = "block"
-      }
-
-      function toggleAIPopup() {
-        const aiPopup = document.getElementById("aiPopup")
-        if (!aiPopup) return
-        aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block"
-      }
-
-      function saveState() {
-        const state = {
-          videoIds,
-          currentVideoIndex,
-          distractionCount,
-          points,
-          timerMode,
-          timerRemaining,
-          isFocusModeActive,
-          isSignedIn,
-          currentUser,
-          completedVideos: Array.from(completedVideos),
-          allVideosCompleted,
-          totalFocusTime,
-          totalDistractions,
-          totalVideosWatched,
-          streakDays,
-          lastFocusDate: localStorage.getItem("lastFocusDate"),
-          mysteryBoxCount,
-          activePowerUps,
-          premiumLofiTracks
-        }
-        localStorage.setItem("focusModeState", JSON.stringify(state))
-
-        if (isSignedIn && currentUser) {
-          const users = JSON.parse(localStorage.getItem("users") || "{}")
-          users[currentUser].points = points
-          users[currentUser].totalFocusTime = totalFocusTime
-          users[currentUser].totalDistractions = totalDistractions
-          users[currentUser].totalVideosWatched = totalVideosWatched
-          users[currentUser].tasks = tasks
-          users[currentUser].streakDays = streakDays
-          users[currentUser].mysteryBoxCount = mysteryBoxCount
-          users[currentUser].activePowerUps = activePowerUps
-          users[currentUser].premiumLofiTracks = premiumLofiTracks
-          localStorage.setItem("users", JSON.stringify(users))
-        }
-      }
-
-      function updateSidebarDashboard() {
-        const sidebarUsername = document.getElementById("sidebarUsername")
-        const sidebarLevel = document.getElementById("sidebarLevel")
-        const sidebarXP = document.getElementById("sidebarXP")
-        const sidebarStreak = document.getElementById("sidebarStreak")
-        if (!sidebarUsername || !sidebarLevel || !sidebarXP || !sidebarStreak) return
-
-        sidebarUsername.textContent = currentUser || "Guest"
-        const level = getAchievementLevel(points)
-        sidebarLevel.textContent = level.level
-        sidebarXP.textContent = points
-        sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
-      }
-
-      function logout() {
-        isSignedIn = false
-        currentUser = null
-        points = 0
-        totalFocusTime = 0
-        totalDistractions = 0
-        totalVideosWatched = 0
-        tasks = []
-        streakDays = 0
-        mysteryBoxCount = 0
-        activePowerUps = {
-          doublePoints: { active: false, expiry: null },
-          streakShield: { active: false, used: false, expiry: null },
-        }
-        videoIds = []
-        currentVideoIndex = 0
-        completedVideos.clear()
-        allVideosCompleted = false
-        clearInterval(countdownInterval)
-        isFocusModeActive = false
-        if (player) player.destroy()
-        document.getElementById("player").style.display = "none"
-        document.getElementById("restartBtn").style.display = "none"
-        document.getElementById("pdfToggle").style.display = "none"
-        document.getElementById("videoSidebar").style.right = "-320px"
-        document.getElementById("inputForm").style.display = "none"
-        document.getElementById("landingPage").style.display = "block"
-        document.getElementById("clockDisplay").style.display = "none"
-        document.getElementById("sitesBox").style.display = "none"
-        document.getElementById("lofiPlayer").style.display = "none"
-        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
-        const progressBar = document.getElementById("progressBar")
-        if (progressBar) progressBar.style.display = "none"
-        saveState()
-        stopReminderTimer()
-        updateAnalytics()
-        updateAchievementLevel()
-        updateSidebarDashboard()
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        initAudio()
-        loadSavedState()
-        setInterval(updateClock, 1000)
-
-        document.querySelectorAll("button[data-action]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const action = btn.getAttribute("data-action")
-            switch (action) {
-              case "start-game":
-                showSignIn()
-                break
-              case "github":
-                window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank")
-                break
-              case "sign-in":
-                signIn()
-                break
-              case "create-account":
-                createAccount()
-                break
-              case "add-url":
-                addUrlInput()
-                break
-              case "start-playback":
-                startPlayback()
-                break
-              case "save-playlist":
-                savePlaylist()
-                break
-              case "remove-playlist":
-                removePlaylist()
-                break
-              case "save-tasks":
-                saveTasks()
-                break
-            }
-          })
-        })
-
-        document.getElementById("restartBtn").addEventListener("click", restartSession)
-        document.getElementById("confirmBtn").addEventListener("click", () => handleRestartConfirmation("yes"))
-        document.getElementById("cancelBtn").addEventListener("click", () => handleRestartConfirmation("no"))
-        document.getElementById("sitesBox").addEventListener("click", toggleSitesPopup)
-        document.getElementById("closeSitesPopup").addEventListener("click", closeSitesPopup)
-        document.getElementById("lofiPlay").addEventListener("click", playLofi)
-        document.getElementById("lofiPause").addEventListener("click", pauseLofi)
-        document.getElementById("lofiPrev").addEventListener("click", prevLofi)
-        document.getElementById("lofiNext").addEventListener("click", nextLofi)
-        document.getElementById("statsBtn").addEventListener("click", toggleAnalytics)
-        document.getElementById("todoBtn").addEventListener("click", toggleTodo)
-        document.getElementById("pyqBtn").addEventListener("click", redirectToPYQs)
-        document.getElementById("pdfToggle").addEventListener("click", togglePDFViewer)
-        document.getElementById("pdfInput").addEventListener("change", handlePDFUpload)
-        document.getElementById("fireBox").addEventListener("click", toggleAIPopup)
-        document.getElementById("streakShieldBtn").addEventListener("click", showStreakShieldDialog)
-        document
-          .getElementById("streakShieldConfirmBtn")
-          .addEventListener("click", () => handleStreakShieldConfirmation("yes"))
-        document
-          .getElementById("streakShieldCancelBtn")
-          .addEventListener("click", () => handleStreakShieldConfirmation("no"))
-        document.getElementById("doublePointsBtn").addEventListener("click", showDoublePointsDialog)
-        document
-          .getElementById("doublePointsConfirmBtn")
-          .addEventListener("click", () => handleDoublePointsConfirmation("yes"))
-        document
-          .getElementById("doublePointsCancelBtn")
-          .addEventListener("click", () => handleDoublePointsConfirmation("no"))
-        document.getElementById("logoutBtn").addEventListener("click", logout)
-        document.getElementById("openMysteryBox").addEventListener("click", openMysteryBox)
-        document.getElementById("deadlineConfirmBtn").addEventListener("click", () => handleDeadlineConfirmation("yes"))
-        document.getElementById("deadlineCancelBtn").addEventListener("click", () => handleDeadlineConfirmation("no"))
-        document.getElementById("sessionContinueBtn").addEventListener("click", () => handleSessionContinue("continue"))
-        document.getElementById("sessionEndBtn").addEventListener("click", () => handleSessionContinue("end"))
-        document.getElementById("audioStoreBtn").addEventListener("click", showAudioTracksStore)
-        document.getElementById("closeAudioStore").addEventListener("click", closeAudioTracksStore)
-        document.getElementById("quietPomodoroBtn").addEventListener("click", showPomodoroOverlay)
-        document.getElementById("pomodoroStartBtn").addEventListener("click", startPomodoro)
-        document.getElementById("pomodoroResetBtn").addEventListener("click", resetPomodoro)
-        document.getElementById("pomodoroCloseBtn").addEventListener("click", closePomodoroOverlay)
-
-        const timerDisplay = document.getElementById("timerDisplay")
-        let isDragging = false
-        let currentX
-        let currentY
-        let xOffset = 0
-        let yOffset = 0
-
-        timerDisplay.addEventListener("mousedown", (e) => {
-          isDragging = true
-          currentX = e.clientX - xOffset
-          currentY = e.clientY - yOffset
-        })
-
-        document.addEventListener("mousemove", (e) => {
-          if (isDragging) {
-            e.preventDefault()
-            xOffset = e.clientX - currentX
-            yOffset = e.clientY - currentY
-            timerDisplay.style.left = `${xOffset}px`
-            timerDisplay.style.top = `${yOffset}px`
-          }
-        })
-
-        document.addEventListener("mouseup", () => {
-          isDragging = false
-        })
-
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden && isFocusModeActive) {
-            distractionCount++
-            totalDistractions++
-            pauseLofi()
-            saveState()
-          } else if (!document.hidden && isFocusModeActive) playLofi()
-        })
-        
-        // Check task deadlines periodically
-        setInterval(checkTaskDeadlines, 60000) // Check every minute
-      })
-    })()
+    });
   </script>
 </body>
 </html>
+    
