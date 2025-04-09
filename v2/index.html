@@ -2175,7 +2175,7 @@ document.addEventListener("visibilitychange", () => {
           if (isDragging) {
             e.preventDefault()
             xOffset = e.clientX - currentX
-            yOffset = e.clientY - currentY
+            yOffset = e.clientY - yOffset
             timerDisplay.style.left = `${xOffset}px`
             timerDisplay.style.top = `${yOffset}px`
           }
@@ -2272,7 +2272,1320 @@ document.addEventListener("DOMContentLoaded", () => {
           })
         }
       })
+
+// Add these missing functions that are referenced but not defined in the code
+
+// Add the prevLofi function
+function prevLofi() {
+  console.log("Previous lofi track requested");
+  
+  if (!lofiAudio) {
+    console.error("Lofi audio element not found");
+    return;
+  }
+  
+  // Update the current index
+  currentLofiIndex = (currentLofiIndex - 1 + lofiSongs.length) % lofiSongs.length;
+  console.log("Switching to track index:", currentLofiIndex);
+  
+  // Update the source
+  lofiAudio.src = lofiSongs[currentLofiIndex];
+  
+  // Play the new track
+  playLofi();
+}
+
+// Add the nextLofi function
+function nextLofi() {
+  console.log("Next lofi track requested");
+  
+  if (!lofiAudio) {
+    console.error("Lofi audio element not found");
+    return;
+  }
+  
+  // Update the current index
+  currentLofiIndex = (currentLofiIndex + 1) % lofiSongs.length;
+  console.log("Switching to track index:", currentLofiIndex);
+  
+  // Update the source
+  lofiAudio.src = lofiSongs[currentLofiIndex];
+  
+  // Play the new track
+  playLofi();
+}
+
+// Add the toggleSitesPopup function
+function toggleSitesPopup() {
+  const popup = document.getElementById("sitesPopup");
+  if (!popup) return;
+  popup.style.display = popup.style.display === "block" ? "none" : "block";
+}
+
+// Add the closeSitesPopup function
+function closeSitesPopup() {
+  const popup = document.getElementById("sitesPopup");
+  if (!popup) return;
+  popup.style.display = "none";
+}
+
+// Add the updateClock function
+function updateClock() {
+  const clockDisplay = document.getElementById("clockDisplay");
+  if (!clockDisplay) return;
+
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const seconds = now.getSeconds().toString().padStart(2, "0");
+  const period = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  hours = hours.toString().padStart(2, "0");
+  clockDisplay.innerHTML = `<span class="time">${hours}:${minutes}:${seconds}</span> <span class="period">${period}</span>`;
+}
+
+// Add the loadSavedState function
+function loadSavedState() {
+  try {
+    const savedState = localStorage.getItem("focusModeState");
+    if (savedState) {
+      const progressBar = document.getElementById("progressBar");
+      if (progressBar) progressBar.style.display = "none";
+
+      const state = JSON.parse(savedState);
+      videoIds = state.videoIds || [];
+      currentVideoIndex = state.currentVideoIndex || 0;
+      distractionCount = state.distractionCount || 0;
+      points = state.points || 0;
+      timerMode = state.timerMode || "Focus Time";
+      timerRemaining = state.timerRemaining || focusDuration / 1000;
+      isFocusModeActive = state.isFocusModeActive || false;
+      isSignedIn = state.isSignedIn || false;
+      currentUser = state.currentUser || null;
+      completedVideos = new Set(state.completedVideos || []);
+      allVideosCompleted = state.allVideosCompleted || false;
+      totalFocusTime = state.totalFocusTime || 0;
+      totalDistractions = state.totalDistractions || 0;
+      totalVideosWatched = state.totalVideosWatched || 0;
+      streakDays = state.streakDays || 0;
+      lastFocusDate = state.lastFocusDate || null;
+      mysteryBoxCount = state.mysteryBoxCount || 0;
+      activePowerUps = state.activePowerUps || {
+        doublePoints: { active: false, expiry: null },
+        streakShield: { active: false, used: false, expiry: null },
+      };
+        expiry: null },
+        streakShield: { active: false, used: false, expiry: null },
+      };
+      
+      // Load daily points data
+      if (state.dailyPointsData) {
+        dailyPointsData = state.dailyPointsData;
+      } else {
+        loadDailyPointsData();
+      }
+      
+      // Load premium tracks state
+      if (state.premiumLofiTracks) {
+        state.premiumLofiTracks.forEach(savedTrack => {
+          const track = premiumLofiTracks.find(t => t.id === savedTrack.id);
+          if (track) {
+            track.unlocked = savedTrack.unlocked;
+            if (track.unlocked && !lofiSongs.includes(track.url)) {
+              lofiSongs.push(track.url);
+            }
+          }
+        });
+      }
+
+      updateAnalytics();
+      updateAchievementLevel();
+      updateStreak();
+      if (isSignedIn && currentUser) {
+        document.getElementById("landingPage").style.display = "none";
+        document.getElementById("signinForm").style.display = "none";
+        document.getElementById("inputForm").style.display = "block";
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+        document.getElementById("clockDisplay").style.display = "block";
+        document.getElementById("sitesBox").style.display = "none"; // Keep Allied Realms hidden on input page
+        document.getElementById("lofiPlayer").style.display = "block";
+        pauseLofi(); // Ensure lofi doesn't autoplay
+        restoreUrlInputs();
+        populatePlaylistSelect();
+        restoreTasks();
+        startReminderTimer();
+        if (mysteryBoxCount > 0) showMysteryBoxPopup();
+        updateSidebarDashboard();
+      }
+      if (videoIds.length > 0) {
+        document.getElementById("inputForm").style.display = "none";
+        document.getElementById("player").style.display = "block";
+        document.getElementById("restartBtn").style.display = "block";
+        document.getElementById("pdfToggle").style.display = "block";
+        document.getElementById("clockDisplay").style.display = "none";
+        document.getElementById("sitesBox").style.display = "none";
+        document.getElementById("lofiPlayer").style.display = "none";
+        stopReminderTimer();
+        loadYouTubeAPI()
+          .then(() => {
+            setupYouTubePlayer();
+            if (isFocusModeActive) startTimer(timerRemaining * 1000, timerMode);
+          })
+          .catch((err) => console.error("YouTube API load failed:", err));
+      }
+    } else {
+      document.getElementById("landingPage").style.display = "block";
+      document.getElementById("signinForm").style.display = "none";
+      document.getElementById("inputForm").style.display = "none";
+      document.getElementById("clockDisplay").style.display = "none";
+      document.getElementById("sitesBox").style.display = "none";
+      document.getElementById("lofiPlayer").style.display = "none";
+      stopReminderTimer();
+      updateAnalytics();
+      updateAchievementLevel();
+      updateStreak();
+      restoreTasks();
+    }
+  } catch (err) {
+    console.error("Load saved state error:", err);
+  }
+}
+
+// Add the updateAnalytics function
+function updateAnalytics() {
+  const totalFocusTimeElement = document.getElementById("totalFocusTime");
+  const totalDistractionsElement = document.getElementById("totalDistractions");
+  const totalVideosWatchedElement = document.getElementById("totalVideosWatched");
+  
+  if (totalFocusTimeElement) totalFocusTimeElement.textContent = Math.floor(totalFocusTime / 60);
+  if (totalDistractionsElement) totalDistractionsElement.textContent = totalDistractions;
+  if (totalVideosWatchedElement) totalVideosWatchedElement.textContent = totalVideosWatched;
+}
+
+// Add the updateAchievementLevel function
+function updateAchievementLevel() {
+  const achievementDiv = document.getElementById("achievementLevel");
+  if (!achievementDiv) return;
+
+  const level = getAchievementLevel(points);
+  let style = `color: ${level.color}; font-weight: bold;`;
+  if (level.glow) style += " text-shadow: 0 0 10px;";
+  if (level.box) style += " border: 2px solid gold; padding: 5px;";
+  if (level.boxGlow) style += " box-shadow: 0 0 10px gold;";
+  if (level.color === "rainbow") achievementDiv.classList.add("rainbow");
+  else achievementDiv.classList.remove("rainbow");
+  achievementDiv.innerHTML = level.level;
+  achievementDiv.style = style;
+  updateSidebarDashboard();
+}
+
+// Add the getAchievementLevel function
+function getAchievementLevel(points) {
+  let currentLevel = achievementLevels[0];
+  for (const level of achievementLevels) {
+    if (points >= level.points) currentLevel = level;
+    else break;
+  }
+  return currentLevel;
+}
+
+// Add the updateStreak function
+function updateStreak() {
+  const streakDisplay = document.getElementById("streakDisplay");
+  if (!streakDisplay) return;
+
+  const today = new Date().toDateString();
+  const lastDate = localStorage.getItem("lastFocusDate");
+
+  if (lastDate) {
+    const last = new Date(lastDate);
+    const diffTime = new Date(today) - last;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      streakDays++;
+      checkMysteryBoxMilestone();
+    } else if (diffDays > 1) {
+      if (activePowerUps.streakShield.active && Date.now() < activePowerUps.streakShield.expiry) {
+        streakDays++;
+        alert("Streak Shield protected your streak!");
+      } else {
+        streakDays = 0; // Reset streak if no focus session and no active shield
+      }
+    }
+  } else {
+    streakDays = 1; // First focus session
+  }
+
+  localStorage.setItem("lastFocusDate", today);
+  streakDisplay.innerHTML = `<span style="color: #8e2de2;">🔥</span> ${streakDays} day${streakDays === 1 ? "" : "s"} of focus`;
+
+  if (isSignedIn && currentUser) {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    users[currentUser].streakDays = streakDays;
+    users[currentUser].mysteryBoxCount = mysteryBoxCount;
+    users[currentUser].activePowerUps = activePowerUps;
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+  const sidebarStreak = document.getElementById("sidebarStreak");
+  if (sidebarStreak) sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`;
+}
+
+// Add the checkMysteryBoxMilestone function
+function checkMysteryBoxMilestone() {
+  if (streakDays > 0 && streakDays % MYSTERY_BOX_STREAK_INTERVAL === 0) {
+    mysteryBoxCount++;
+    showMysteryBoxPopup();
+    saveState();
+  }
+}
+
+// Add the showMysteryBoxPopup function
+function showMysteryBoxPopup() {
+  const popup = document.getElementById("mysteryBoxPopup");
+  const rewardText = document.getElementById("mysteryRewardText");
+  if (!popup || !rewardText) return;
+
+  rewardText.textContent = `You earned a Focus Mystery Box! (${mysteryBoxCount} available)`;
+  popup.style.display = "block";
+}
+
+// Add the openMysteryBox function
+function openMysteryBox() {
+  if (mysteryBoxCount <= 0) return;
+
+  const popup = document.getElementById("mysteryBoxPopup");
+  const rewardText = document.getElementById("mysteryRewardText");
+  if (!popup || !rewardText) return;
+
+  const reward = mysteryBoxRewards[Math.floor(Math.random() * mysteryBoxRewards.length)];
+  let rewardValue = reward.value instanceof Function ? reward.value() : reward.value;
+
+  switch (reward.type) {
+    case "points":
+      points += rewardValue;
+      updateDailyPoints(rewardValue);
+      break;
+    case "doublePoints":
+      activePowerUps.doublePoints.active = true;
+      activePowerUps.doublePoints.expiry = Date.now() + rewardValue;
+      setTimeout(() => {
+        activePowerUps.doublePoints.active = false;
+        saveState();
+        alert("Double Points power-up has expired!");
+      }, rewardValue);
+      break;
+    case "streakShield":
+      activePowerUps.streakShield.active = true;
+      activePowerUps.streakShield.used = false;
+      activePowerUps.streakShield.expiry = Date.now() + STREAK_SHIELD_DURATION;
+      setTimeout(() => {
+        activePowerUps.streakShield.active = false;
+        saveState();
+        alert("Streak Shield has expired!");
+      }, STREAK_SHIELD_DURATION);
+      break;
+  }
+
+  rewardText.textContent = `Reward: ${reward.message(rewardValue)}`;
+  mysteryBoxCount--;
+  document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+  saveState();
+
+  setTimeout(() => {
+    if (mysteryBoxCount > 0) showMysteryBoxPopup();
+    else popup.style.display = "none";
+  }, 2000);
+}
+
+// Add the loadDailyPointsData function
+function loadDailyPointsData() {
+  if (isSignedIn && currentUser) {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    if (users[currentUser] && users[currentUser].dailyPointsData) {
+      dailyPointsData = users[currentUser].dailyPointsData;
+    }
+  } else {
+    dailyPointsData = JSON.parse(localStorage.getItem("dailyPointsData") || "{}");
+  }
+}
+
+// Add the updateDailyPoints function
+function updateDailyPoints(pointsEarned) {
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (!dailyPointsData[today]) {
+    dailyPointsData[today] = 0;
+  }
+  
+  dailyPointsData[today] += pointsEarned;
+  saveDailyPointsData();
+}
+
+// Add the saveDailyPointsData function
+function saveDailyPointsData() {
+  if (isSignedIn && currentUser) {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    if (users[currentUser]) {
+      users[currentUser].dailyPointsData = dailyPointsData;
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+  } else {
+    localStorage.setItem("dailyPointsData", JSON.stringify(dailyPointsData));
+  }
+}
+
+// Add the restoreUrlInputs function
+function restoreUrlInputs() {
+  const urlInputs = document.getElementById("urlInputs");
+  if (!urlInputs) return;
+
+  urlInputs.innerHTML = "";
+  videoIds.forEach((id, index) => {
+    const container = document.createElement("div");
+    container.className = "url-container";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "youtube-url";
+    input.placeholder = "YouTube URL (Videos or Live Streams)";
+    input.value = `https://www.youtube.com/watch?v=${id}`;
+    container.appendChild(input);
+    if (index > 0) {
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "X";
+      removeBtn.onclick = () => {
+        if (urlInputs.children.length > 1) urlInputs.removeChild(container);
+      };
+      container.appendChild(removeBtn);
+    }
+    urlInputs.appendChild(container);
+  });
+  if (videoIds.length === 0) {
+    const container = document.createElement("div");
+    container.className = "url-container";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "youtube-url";
+    input.placeholder = "YouTube URL (Videos or Live Streams)";
+    input.required = true;
+    container.appendChild(input);
+    urlInputs.appendChild(container);
+  }
+}
+
+// Add the populatePlaylistSelect function
+function populatePlaylistSelect() {
+  const playlistSelect = document.getElementById("playlistSelect");
+  if (!playlistSelect) return;
+
+  playlistSelect.innerHTML = '<option value="">Select a Playlist</option>';
+  playlists.forEach((playlist) => {
+    const option = document.createElement("option");
+    option.value = playlist.name;
+    option.textContent = playlist.name;
+    playlistSelect.appendChild(option);
+  });
+
+  playlistSelect.onchange = () => {
+    const selectedName = playlistSelect.value;
+    if (selectedName) {
+      const selectedPlaylist = playlists.find((p) => p.name === selectedName);
+      if (selectedPlaylist) {
+        videoIds = selectedPlaylist.videoIds;
+        restoreUrlInputs();
+      }
+    }
+  };
+}
+
+// Add the restoreTasks function
+function restoreTasks() {
+  const tasksDiv = document.getElementById("tasks");
+  if (!tasksDiv) return;
+
+  tasksDiv.innerHTML = "";
+  if (tasks.length === 0) addTaskLine();
+  else {
+    tasks.forEach((task) => {
+      const container = document.createElement("div");
+      container.className = "task-line";
+      
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "task-check";
+      checkbox.checked = task.completed;
+      checkbox.onchange = () => saveTasks();
+      
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "task-text";
+      input.value = task.text;
+      input.placeholder = "Write a task...";
+      input.onchange = () => saveTasks();
+      
+      const deadlineBtn = document.createElement("button");
+      deadlineBtn.className = "set-deadline";
+      deadlineBtn.textContent = "⏰";
+      deadlineBtn.onclick = () => showDeadlineDialog(container);
+      
+      const removeBtn = document.createElement("span");
+      removeBtn.className = "remove-task";
+      removeBtn.textContent = "x";
+      removeBtn.onclick = () => removeTask(removeBtn);
+      
+      container.appendChild(checkbox);
+      container.appendChild(input);
+      container.appendChild(deadlineBtn);
+      container.appendChild(removeBtn);
+      
+      // Add deadline info if exists
+      if (task.deadline) {
+        const deadlineDate = new Date(task.deadline);
+        const deadlineInfo = document.createElement("span");
+        deadlineInfo.className = "deadline-info";
+        deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        container.appendChild(deadlineInfo);
+        
+        const pointsInfo = document.createElement("span");
+        pointsInfo.className = "points-info";
+        pointsInfo.textContent = `+${task.points || 50}pts`;
+        container.appendChild(pointsInfo);
+      }
+      
+      tasksDiv.appendChild(container);
+    });
+  }
+  
+  // Check for any passed deadlines
+  checkTaskDeadlines();
+}
+
+// Add the addTaskLine function
+function addTaskLine() {
+  const tasksDiv = document.getElementById("tasks");
+  if (!tasksDiv) return null;
+
+  const container = document.createElement("div");
+  container.className = "task-line";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.className = "task-check";
+  checkbox.onchange = () => saveTasks();
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "task-text";
+  input.placeholder = "Write a task...";
+  input.onkeydown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newInput = addTaskLine();
+      if (newInput) newInput.focus();
+    }
+  };
+  input.onchange = () => saveTasks();
+  
+  const deadlineBtn = document.createElement("button");
+  deadlineBtn.className = "set-deadline";
+  deadlineBtn.textContent = "⏰";
+  deadlineBtn.onclick = () => showDeadlineDialog(container);
+  
+  const removeBtn = document.createElement("span");
+  removeBtn.className = "remove-task";
+  removeBtn.textContent = "x";
+  removeBtn.onclick = () => removeTask(removeBtn);
+  
+  container.appendChild(checkbox);
+  container.appendChild(input);
+  container.appendChild(deadlineBtn);
+  container.appendChild(removeBtn);
+  tasksDiv.appendChild(container);
+  return input;
+}
+
+// Add the removeTask function
+function removeTask(element) {
+  const tasksDiv = document.getElementById("tasks");
+  if (!tasksDiv || !element || !element.parentElement) return;
+
+  if (tasksDiv.children.length > 1) {
+    tasksDiv.removeChild(element.parentElement);
+    saveTasks();
+  }
+}
+
+// Add the saveTasks function
+function saveTasks() {
+  const taskLines = document.querySelectorAll(".task-line");
+  if (!taskLines.length) return;
+
+  tasks = Array.from(taskLines)
+    .map((line) => {
+      const checkbox = line.querySelector(".task-check");
+      const input = line.querySelector(".task-text");
+      const deadlineInfo = line.querySelector(".deadline-info");
+      const pointsInfo = line.querySelector(".points-info");
+      
+      // Get existing task to preserve deadline if it exists
+      const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(line);
+      const existingTask = tasks[taskIndex] || {};
+      
+      return {
+        text: input ? input.value.trim() : "",
+        completed: checkbox ? checkbox.checked : false,
+        deadline: existingTask.deadline || null,
+        points: existingTask.points || null,
+        deadlineChecked: existingTask.deadlineChecked || false
+      };
+    })
+    .filter((task) => task.text !== "");
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  if (isSignedIn && currentUser) {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    users[currentUser].tasks = tasks;
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+}
+
+// Add the checkTaskDeadlines function
+function checkTaskDeadlines() {
+  const now = Date.now();
+  let tasksUpdated = false;
+  
+  tasks.forEach((task, index) => {
+    // Skip tasks without deadlines or already completed
+    if (!task.deadline || task.deadlineChecked) return;
+    
+    if (now > task.deadline) {
+      // Deadline passed
+      if (task.completed) {
+        // Task was completed on time
+        const earnedPoints = task.points || 50;
+        const pointsToAdd = applyPowerUps(earnedPoints);
+        points += pointsToAdd;
+        updateDailyPoints(pointsToAdd);
+        alert(`Task "${task.text}" completed on time! +${earnedPoints} XP`);
+      } else {
+        // Task was not completed on time
+        const lostPoints = Math.floor((task.points || 50) / 2);
+        alert(`Task "${task.text}" deadline missed! -${lostPoints} XP`);
+        points = Math.max(0, points - lostPoints);
+      }
+      
+      // Mark as checked so we don't process it again
+      tasks[index].deadlineChecked = true;
+      tasksUpdated = true;
+      
+      document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+    }
+  });
+  
+  if (tasksUpdated) {
+    saveTasks();
+    saveState();
+  }
+}
+
+// Add the applyPowerUps function
+function applyPowerUps(pointsEarned) {
+  if (activePowerUps.doublePoints.active && Date.now() < activePowerUps.doublePoints.expiry) {
+    return pointsEarned * 2;
+  }
+  return pointsEarned;
+}
+
+// Add the showDeadlineDialog function
+function showDeadlineDialog(taskElement) {
+  const dialog = document.getElementById("deadlineDialog");
+  if (!dialog) return;
+  
+  currentTaskForDeadline = taskElement;
+  
+  // Set default date to tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateInput = document.getElementById("deadlineDate");
+  dateInput.value = tomorrow.toISOString().split('T')[0];
+  
+  // Set default time to current time
+  const timeInput = document.getElementById("deadlineTime");
+  const now = new Date();
+  timeInput.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  
+  dialog.style.display = "block";
+}
+
+// Add the handleDeadlineConfirmation function
+function handleDeadlineConfirmation(choice) {
+  const dialog = document.getElementById("deadlineDialog");
+  if (!dialog || !currentTaskForDeadline) return;
+
+  dialog.style.display = "none";
+  
+  if (choice === "yes") {
+    const dateInput = document.getElementById("deadlineDate").value;
+    const timeInput = document.getElementById("deadlineTime").value;
+    const difficultySelect = document.getElementById("taskDifficulty");
+    const points = difficultySelect.value;
+    
+    const deadlineDate = new Date(`${dateInput}T${timeInput}`);
+    
+    // Add deadline info to the task
+    const deadlineInfo = document.createElement("span");
+    deadlineInfo.className = "deadline-info";
+    deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+    
+    const pointsInfo = document.createElement("span");
+    pointsInfo.className = "points-info";
+    pointsInfo.textContent = `+${points}pts`;
+    
+    // Remove existing deadline info if any
+    const existingDeadline = currentTaskForDeadline.querySelector(".deadline-info");
+    if (existingDeadline) existingDeadline.remove();
+    
+    const existingPoints = currentTaskForDeadline.querySelector(".points-info");
+    if (existingPoints) existingPoints.remove();
+    
+    currentTaskForDeadline.appendChild(deadlineInfo);
+    currentTaskForDeadline.appendChild(pointsInfo);
+    
+    // Store deadline in task data
+    const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(currentTaskForDeadline);
+    if (taskIndex !== -1 && tasks[taskIndex]) {
+      tasks[taskIndex].deadline = deadlineDate.getTime();
+      tasks[taskIndex].points = parseInt(points);
+      saveTasks();
+    }
+  }
+  
+  currentTaskForDeadline = null;
+}
+
+// Add the startReminderTimer function
+function startReminderTimer() {
+  const inputForm = document.getElementById("inputForm");
+  if (inputForm.style.display !== "block") {
+    stopReminderTimer();
+    timeOnInputForm = 0;
+    return;
+  }
+
+  reminderInterval = setInterval(() => {
+    timeOnInputForm += reminderIntervalTime;
+    if (timeOnInputForm >= reminderThreshold) {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Check Your To-Do List!", {
+          body: "Hey hero, don't forget to review your quests!",
+          icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
+        });
+      } else if ("Notification" in window && Notification.permission !== "denied") {
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            new Notification("Check Your To-Do List!", {
+              body: "Hey hero, don't forget to review your quests!",
+              icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
+            });
+          } else {
+            alert("Reminder: Check your to-do list!");
+          }
+        });
+      } else {
+        alert("Reminder: Check your to-do list!");
+      }
+    }
+  }, reminderIntervalTime);
+}
+
+// Add the stopReminderTimer function
+function stopReminderTimer() {
+  if (reminderInterval) {
+    clearInterval(reminderInterval);
+    reminderInterval = null;
+  }
+}
+
+// Add the toggleTodo function
+function toggleTodo() {
+  const todoList = document.getElementById("todoList");
+  if (!todoList) return;
+  todoList.style.display = todoList.style.display === "block" ? "none" : "block";
+}
+
+// Add the toggleAnalytics function
+function toggleAnalytics() {
+  const analytics = document.getElementById("analytics");
+  if (!analytics) return;
+  analytics.style.display = analytics.style.display === "block" ? "none" : "block";
+}
+
+// Add the redirectToPYQs function
+function redirectToPYQs() {
+  window.open("https://room.examgoal.com/", "_blank");
+}
+
+// Add the togglePDFViewer function
+function togglePDFViewer() {
+  const pdfViewer = document.getElementById("pdfViewer");
+  if (!pdfViewer) return;
+  pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block";
+}
+
+// Add the handlePDFUpload function
+function handlePDFUpload(event) {
+  const file = event.target.files[0];
+  if (!file || file.type !== "application/pdf") {
+    alert("Please upload a valid PDF file.");
+    return;
+  }
+
+  const pdfFrame = document.getElementById("pdfFrame");
+  if (!pdfFrame) return;
+
+  const url = URL.createObjectURL(file);
+  pdfFrame.src = url;
+  document.getElementById("pdfViewer").style.display = "block";
+}
+
+// Add the toggleAIPopup function
+function toggleAIPopup() {
+  const aiPopup = document.getElementById("aiPopup");
+  if (!aiPopup) return;
+  aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block";
+}
+
+// Add the showStreakShieldDialog function
+function showStreakShieldDialog() {
+  const dialog = document.getElementById("streakShieldDialog");
+  if (!dialog) return;
+  if (points < STREAK_SHIELD_COST) {
+    alert("Not enough XP! You need 800 XP to buy a Streak Shield.");
+    return;
+  }
+  dialog.style.display = "block";
+}
+
+// Add the handleStreakShieldConfirmation function
+function handleStreakShieldConfirmation(choice) {
+  const dialog = document.getElementById("streakShieldDialog");
+  if (!dialog) return;
+
+  dialog.style.display = "none";
+  if (choice === "yes") {
+    points -= STREAK_SHIELD_COST;
+    activePowerUps.streakShield.active = true;
+    activePowerUps.streakShield.used = false;
+    activePowerUps.streakShield.expiry = Date.now() + STREAK_SHIELD_DURATION;
+    document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+    alert("Streak Shield activated for 1 week!");
+    saveState();
+    setTimeout(() => {
+      activePowerUps.streakShield.active = false;
+      saveState();
+      alert("Your Streak Shield has expired!");
+    }, STREAK_SHIELD_DURATION);
+  }
+}
+
+// Add the showDoublePointsDialog function
+function showDoublePointsDialog() {
+  const dialog = document.getElementById("doublePointsDialog");
+  if (!dialog) return;
+  if (points < DOUBLE_POINTS_COST) {
+    alert("Not enough XP! You need 800 XP to buy Double Points Power-Up.");
+    return;
+  }
+  dialog.style.display = "block";
+}
+
+// Add the handleDoublePointsConfirmation function
+function handleDoublePointsConfirmation(choice) {
+  const dialog = document.getElementById("doublePointsDialog");
+  if (!dialog) return;
+
+  dialog.style.display = "none";
+  if (choice === "yes") {
+    points -= DOUBLE_POINTS_COST;
+    activePowerUps.doublePoints.active = true;
+    activePowerUps.doublePoints.expiry = Date.now() + DOUBLE_POINTS_DURATION;
+    document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+    alert("Double Points Power-Up activated for 24 hours!");
+    saveState();
+    setTimeout(() => {
+      activePowerUps.doublePoints.active = false;
+      saveState();
+      alert("Your Double Points Power-Up has expired!");
+    }, DOUBLE_POINTS_DURATION);
+  }
+}
+
+// Add the showAudioTracksStore function
+function showAudioTracksStore() {
+  const store = document.getElementById("audioTracksStore");
+  const tracksList = document.getElementById("audioTracksList");
+  if (!store || !tracksList) return;
+  
+  tracksList.innerHTML = "";
+  
+  premiumLofiTracks.forEach(track => {
+    const trackItem = document.createElement("div");
+    trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`;
+    
+    const trackName = document.createElement("div");
+    trackName.className = "track-name";
+    trackName.textContent = track.name;
+    
+    const unlockBtn = document.createElement("button");
+    unlockBtn.className = "unlock-track-btn";
+    
+    if (track.unlocked) {
+      unlockBtn.textContent = "UNLOCKED";
+      unlockBtn.disabled = true;
+    } else {
+      unlockBtn.textContent = `UNLOCK (${track.cost} XP)`;
+      unlockBtn.disabled = points < track.cost;
+      unlockBtn.onclick = () => unlockAudioTrack(track.id);
+    }
+    
+    trackItem.appendChild(trackName);
+    trackItem.appendChild(unlockBtn);
+    tracksList.appendChild(trackItem);
+  });
+  
+  store.style.display = "block";
+}
+
+// Add the closeAudioTracksStore function
+function closeAudioTracksStore() {
+  const store = document.getElementById("audioTracksStore");
+  if (store) store.style.display = "none";
+}
+
+// Add the unlockAudioTrack function
+function unlockAudioTrack(trackId) {
+  const track = premiumLofiTracks.find(t => t.id === trackId);
+  if (!track || track.unlocked || points < track.cost) return;
+  
+  // Deduct points and unlock the track
+  points -= track.cost;
+  track.unlocked = true;
+  
+  // Add to lofi songs if not already there
+  if (!lofiSongs.includes(track.url)) {
+    lofiSongs.push(track.url);
+  }
+  
+  document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+  alert(`Successfully unlocked "${track.name}"!`);
+  
+  // Update the store display
+  showAudioTracksStore();
+  saveState();
+}
+
+// Add the showPomodoroOverlay function
+function showPomodoroOverlay() {
+  const overlay = document.getElementById("pomodoroOverlay");
+  if (!overlay) return;
+  
+  // Reset pomodoro timer to 60 minutes
+  pomodoroTimeRemaining = 60 * 60;
+  updatePomodoroDisplay();
+  
+  overlay.style.display = "flex";
+  document.getElementById("pomodoroStatus").textContent = "Ready to begin";
+}
+
+// Add the startPomodoro function
+function startPomodoro() {
+  if (isPomodoroActive) return;
+  
+  isPomodoroActive = true;
+  pomodoroStartTime = Date.now();
+  document.getElementById("pomodoroStatus").textContent = "Focus in progress...";
+  
+  pomodoroInterval = setInterval(() => {
+    pomodoroTimeRemaining--;
+    updatePomodoroDisplay();
+    
+    if (pomodoroTimeRemaining <= 0) {
+      completePomodoroSession();
+    }
+  }, 1000);
+}
+
+// Add the resetPomodoro function
+function resetPomodoro() {
+  clearInterval(pomodoroInterval);
+  isPomodoroActive = false;
+  pomodoroTimeRemaining = 60 * 60;
+  pomodoroStartTime = null;
+  updatePomodoroDisplay();
+  document.getElementById("pomodoroStatus").textContent = "Timer reset";
+}
+
+// Add the closePomodoroOverlay function
+function closePomodoroOverlay() {
+  const overlay = document.getElementById("pomodoroOverlay");
+  if (!overlay) return;
+  
+  if (isPomodoroActive) {
+    if (confirm("Pomodoro session in progress. Are you sure you want to exit?")) {
+      clearInterval(pomodoroInterval);
+      isPomodoroActive = false;
+      overlay.style.display = "none";
+      
+      // Ensure all menu buttons are clickable after closing
+      setTimeout(() => {
+        reattachEventListeners();
+      }, 100);
+    }
+  } else {
+    overlay.style.display = "none";
+    
+    // Ensure all menu buttons are clickable after closing
+    setTimeout(() => {
+      reattachEventListeners();
+    }, 100);
+  }
+}
+
+// Add the reattachEventListeners function
+function reattachEventListeners() {
+  document.getElementById("streakShieldBtn").onclick = showStreakShieldDialog;
+  document.getElementById("doublePointsBtn").onclick = showDoublePointsDialog;
+  document.getElementById("audioStoreBtn").onclick = showAudioTracksStore;
+  document.getElementById("quietPomodoroBtn").onclick = showPomodoroOverlay;
+  document.getElementById("logoutBtn").onclick = logout;
+  document.getElementById("detailedStatsBtn").onclick = showDetailedStats;
+}
+
+// Add the updatePomodoroDisplay function
+function updatePomodoroDisplay() {
+  const timerElement = document.getElementById("pomodoroTimer");
+  if (!timerElement) return;
+  
+  const minutes = Math.floor(pomodoroTimeRemaining / 60);
+  const seconds = pomodoroTimeRemaining % 60;
+  
+  timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+// Add the completePomodoroSession function
+function completePomodoroSession() {
+  clearInterval(pomodoroInterval);
+  isPomodoroActive = false;
+  
+  // Play completion sound
+  const audio = document.getElementById("pomodoroCompleteAudio");
+  if (audio) audio.play().catch(err => console.error("Pomodoro audio error:", err));
+  
+  // Calculate points (1 point per minute)
+  const minutesCompleted = 60 - Math.floor(pomodoroTimeRemaining / 60);
+  const pointsEarned = applyPowerUps(minutesCompleted);
+  points += pointsEarned;
+  updateDailyPoints(pointsEarned);
+  
+  document.getElementById("pomodoroStatus").textContent = `Completed! Earned ${pointsEarned} XP`;
+  document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+  
+  saveState();
+  checkLevelUp();
+}
+
+// Add the checkLevelUp function
+function checkLevelUp() {
+  const currentLevel = getAchievementLevel(previousPoints);
+  const newLevel = getAchievementLevel(points);
+  if (newLevel.points > currentLevel.points) showAchievementOverlay(newLevel.level);
+  previousPoints = points;
+  updateAchievementLevel();
+}
+
+// Add the showAchievementOverlay function
+function showAchievementOverlay(level) {
+  const overlay = document.getElementById("achievementOverlay");
+  if (!overlay) return;
+
+  overlay.textContent = `LEVEL UP! ${level.toUpperCase()} UNLOCKED!`;
+  overlay.style.display = "flex";
+  setTimeout(() => overlay.style.display = "none", 5000);
+}
+
+// Add the showDetailedStats function
+function showDetailedStats() {
+  loadDailyPointsData();
+  renderCalendar();
+  document.getElementById("detailedStatsOverlay").style.display = "flex";
+}
+
+// Add the closeDetailedStats function
+function closeDetailedStats() {
+  document.getElementById("detailedStatsOverlay").style.display = "none";
+}
+
+// Add the renderCalendar function
+function renderCalendar() {
+  const calendarContainer = document.getElementById("calendarContainer");
+  const currentMonthElement = document.getElementById("currentMonth");
+  
+  if (!calendarContainer || !currentMonthElement) return;
+  
+  // Clear previous calendar
+  calendarContainer.innerHTML = "";
+  
+  // Set current month display
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  currentMonthElement.textContent = `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+  
+  // Add day headers
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  dayNames.forEach(day => {
+    const dayHeader = document.createElement("div");
+    dayHeader.className = "calendar-day-header";
+    dayHeader.textContent = day;
+    calendarContainer.appendChild(dayHeader);
+  });
+  
+  // Get first day of month and total days
+  const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+  const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+  const totalDays = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
+  
+  // Add empty cells for days before first day of month
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    const emptyDay = document.createElement("div");
+    emptyDay.className = "calendar-day empty";
+    calendarContainer.appendChild(emptyDay);
+  }
+  
+  // Add days of the month
+  const today = new Date();
+  const isCurrentMonth = today.getMonth() === currentCalendarMonth && today.getFullYear() === currentCalendarYear;
+  
+  for (let day = 1; day <= totalDays; day++) {
+    const dayElement = document.createElement("div");
+    dayElement.className = "calendar-day";
+    
+    // Check if this is today
+    if (isCurrentMonth && today.getDate() === day) {
+      dayElement.classList.add("today");
+    }
+    
+    // Add date number
+    const dateSpan = document.createElement("div");
+    dateSpan.className = "date";
+    dateSpan.textContent = day;
+    dayElement.appendChild(dateSpan);
+    
+    // Check if we have points data for this day
+    const dateString = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayPoints = dailyPointsData[dateString] || 0;
+    
+    // Add points info
+    const pointsSpan = document.createElement("div");
+    pointsSpan.className = "points";
+    pointsSpan.textContent = `${dayPoints} XP`;
+    dayElement.appendChild(pointsSpan);
+    
+    // Color based on points level
+    const level = getPointsLevel(dayPoints);
+    dayElement.classList.add(`level-${level}`);
+    
+    calendarContainer.appendChild(dayElement);
+  }
+}
+
+// Add the getPointsLevel function
+function getPointsLevel(points) {
+  if (points === 0) return 0;
+  if (points <= 50) return 0;
+  if (points <= 100) return 1;
+  if (points <= 200) return 2;
+  if (points <= 300) return 3;
+  return 4;
+}
+
+// Add the navigateCalendar function
+function navigateCalendar(direction) {
+  if (direction === "prev") {
+    currentCalendarMonth--;
+    if (currentCalendarMonth < 0) {
+      currentCalendarMonth = 11;
+      currentCalendarYear--;
+    }
+  } else {
+    currentCalendarMonth++;
+    if (currentCalendarMonth > 11) {
+      currentCalendarMonth = 0;
+      currentCalendarYear++;
+    }
+  }
+  
+  renderCalendar();
+}
+
+// Add the showSessionCompleteDialog function
+function showSessionCompleteDialog() {
+  const dialog = document.getElementById("sessionCompleteDialog");
+  if (!dialog) return;
+  dialog.style.display = "block";
+}
+
+// Add the handleSessionContinue function
+function handleSessionContinue(choice) {
+  const dialog = document.getElementById("sessionCompleteDialog");
+  if (!dialog) return;
+  
+  dialog.style.display = "none";
+  
+  if (choice === "continue") {
+    // Award bonus points
+    const bonusPoints = applyPowerUps(100);
+    points += bonusPoints;
+    updateDailyPoints(bonusPoints);
+    document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+    
+    // Start a new focus session
+    startTimer(focusDuration, "Focus Time");
+  } else {
+    // End the session
+    endFocusSession();
+  }
+  
+  saveState();
+}
+
+// Add the startTimer function
+function startTimer(duration, mode) {
+  const timerDisplay = document.getElementById("timerDisplay");
+  const progressFill = document.getElementById("progressFill");
+  const progressBar = document.getElementById("progressBar");
+  if (!timerDisplay || !progressFill || !progressBar) return;
+
+  isFocusModeActive = true;
+  timerMode = mode;
+  let timeRemaining = duration / 1000;
+  timerRemaining = timeRemaining;
+  progressBar.style.display = "block";
+  const totalDuration = duration / 1000;
+
+  updateStreak();
+
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = Math.floor(timeRemaining % 60);
+    timerDisplay.querySelector("#timerText").textContent = `${timerMode}: ${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    const progress = ((totalDuration - timeRemaining) / totalDuration) * 100;
+    progressFill.style.width = `${progress}%`;
+
+    if (mode === "Focus Time") totalFocusTime += 1;
+    timeRemaining--;
+    timerRemaining = timeRemaining;
+
+    if (timeRemaining < 0) {
+      clearInterval(countdownInterval);
+      progressBar.style.display = "none";
+      if (mode === "Focus Time") {
+        const sessionPoints = applyPowerUps(100); // Base 100 points per focus session, doubled if power-up active
+        points += sessionPoints;
+        updateDailyPoints(sessionPoints);
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
+        checkLevelUp();
+        
+        // Show session complete dialog instead of automatically starting break
+        showSessionCompleteDialog();
+        playFocusAudio();
+      } else if (mode === "Break Time") {
+        startTimer(secondBreakDuration, "Short Break");
+      } else {
+        startTimer(focusDuration, "Focus Time");
+      }
+      saveState();
+    }
+  }, 1000);
+}
+
+// Add the endFocusSession function
+function endFocusSession() {
+  clearInterval(countdownInterval);
+  isFocusModeActive = false;
+  const timerDisplay = document.getElementById("timerDisplay");
+  const progressBar = document.getElementById("progressBar");
+  if (timerDisplay && progressBar) {
+    timerDisplay.querySelector("#timerText").textContent = "Focus Complete!";
+    progressBar.style.display = "none";
+  }
+  // Exit fullscreen when session ends
+  exitFullscreen();
+  saveState();
+}
+
+// Add the exitFullscreen function
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) { // Firefox
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { // IE/Edge
+    document.msExitFullscreen();
+  }
+}
+
+// Add the playFocusAudio function
+function playFocusAudio() {
+  const audio = document.getElementById("focusAudio");
+  if (audio) {
+    // Reset to beginning to ensure it plays
+    audio.currentTime = 0;
+    audio.play().catch((err) => console.error("Audio play error:", err));
+  }
+}
+
+// Add the restartSession function
+function restartSession() {
+  const dialog = document.getElementById("confirmationDialog");
+  if (!dialog) return;
+  dialog.style.display = "block";
+}
+
+// Add the handleRestartConfirmation function
+function handleRestartConfirmation(choice) {
+  const dialog = document.getElementById("confirmationDialog");
+  if (!dialog) return;
+
+  dialog.style.display = "none";
+  if (choice === "yes") {
+    clearInterval(countdownInterval);
+    isFocusModeActive = false;
+    videoIds = [];
+    currentVideoIndex = 0;
+    completedVideos.clear();
+    allVideosCompleted = false;
+    if (player) player.destroy();
+    document.getElementById("player").style.display = "none";
+    document.getElementById("restartBtn").style.display = "none";
+    document.getElementById("pdfToggle").style.display = "none";
+    document.getElementById("videoSidebar").style.right = "-320px";
+    document.getElementById("inputForm").style.display = "block";
+    document.getElementById("clockDisplay").style.display = "block";
+    document.getElementById("sitesBox").style.display = "none";
+    document.getElementById("lofiPlayer").style.display = "block";
+    const progressBar = document.getElementById("progressBar");
+    if (progressBar) progressBar.style.display = "none";
+    // Exit fullscreen when restarting
+    exitFullscreen();
+    restoreUrlInputs();
+    saveState();
+    startReminderTimer();
+  }
+}
     })()
-  </script>
+</script>
 </body>
 </html>
