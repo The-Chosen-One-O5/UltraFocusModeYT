@@ -1359,6 +1359,67 @@
       margin-top: 15px;
     }
 
+    #lofiPlayer {
+      position: fixed;
+      bottom: 60px;
+      right: 10px;
+      background: var(--bg-medium);
+      padding: 10px;
+      border: 2px solid var(--secondary);
+      z-index: 101;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: auto;
+      display: none;
+    }
+
+    .lofi-player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-box {
+      text-align: center;
+    }
+
+    .title-1 {
+      font-size: 14px;
+      color: var(--text);
+      font-family: monospace;
+    }
+
+    .title-2 {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: monospace;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .controls button {
+      background: var(--primary);
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: auto;
+    }
+
+    .controls button:hover {
+      background: var(--secondary);
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+    }
+
     @media (max-width: 800px) {
       .title { font-size: 24px; }
       button { padding: 8px 16px; font-size: 12px; margin: 0 5px 10px; }
@@ -1622,6 +1683,37 @@
         </div>
       </div>
     </div>
+
+    <div id="lofiPlayer" style="display: none;">
+      <div class="lofi-player">
+        <div class="title-box">
+          <p class="title-1"></p>
+          <p class="title-2"></p>
+        </div>
+        <div class="controls">
+          <button id="lofiPrev">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="11 4 4 12 11 20"></polyline>
+              <line x1="20" y1="12" x2="4" y2="12"></line>
+            </svg>
+          </button>
+          <button id="lofiPause">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" d="M12 21.6a9.6 9.6 0 1 0 0-19.2 9.6 9.6 0 0 0 0 19.2ZM9.6 7.2a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Zm4.8 0a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+          <button id="lofiNext">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="13 4 20 12 13 20"></polyline>
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+            </svg>
+          </button>
+          <button id="volumeButton">
+            🔊
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -1767,6 +1859,8 @@
       document.getElementById('restartBtn').style.display = 'block';
       document.getElementById('sitesBox').style.display = 'block';
       document.getElementById('pdfToggle').style.display = 'block';
+      document.getElementById('lofiPlayer').style.display = 'block';
+      playAudioTrack(); // Start playing the first unlocked track
       loadVideoSidebar();
       initializePlayer();
       startTimer();
@@ -1926,18 +2020,18 @@
     });
 
     document.getElementById('confirmBtn').addEventListener('click', () => {
-      endSession(true);
+      endSession();
+      document.getElementById('confirmationDialog').style.display = 'none';
     });
 
     document.getElementById('cancelBtn').addEventListener('click', () => {
       document.getElementById('confirmationDialog').style.display = 'none';
     });
 
-    function endSession(manual = false) {
+    function endSession() {
       clearInterval(timerInterval);
-      player.destroy();
+      player.stopVideo();
       document.getElementById('player').style.display = 'none';
-      document.getElementById('inputForm').style.display = 'block';
       document.getElementById('timerDisplay').style.display = 'none';
       document.getElementById('pointsDisplay').style.display = 'none';
       document.getElementById('clockDisplay').style.display = 'none';
@@ -1945,14 +2039,22 @@
       document.getElementById('sitesBox').style.display = 'none';
       document.getElementById('videoSidebar').style.right = '-320px';
       document.getElementById('pdfToggle').style.display = 'none';
-      document.getElementById('confirmationDialog').style.display = 'none';
+      document.getElementById('lofiPlayer').style.display = 'none';
       audioPlayer.pause();
-      if (!manual && currentVideoIndex >= videoIds.length) {
+      document.getElementById('inputForm').style.display = 'block';
+      updateStats();
+      if (focusTime >= 25 * 60) {
         streak++;
         localStorage.setItem('streak', streak);
         updateStreakDisplay();
         checkMysteryBox();
       }
+    }
+
+    function updateStats() {
+      document.getElementById('totalFocusTime').textContent = Math.floor(focusTime / 60);
+      document.getElementById('totalDistractions').textContent = distractions;
+      document.getElementById('totalVideosWatched').textContent = videosWatched;
     }
 
     function loadVideoSidebar() {
@@ -1975,41 +2077,30 @@
       });
     }
 
+    document.getElementById('statsBtn').addEventListener('click', () => {
+      const analytics = document.getElementById('analytics');
+      analytics.style.display = analytics.style.display === 'block' ? 'none' : 'block';
+      updateStats();
+    });
+
     document.getElementById('todoBtn').addEventListener('click', () => {
       const todoList = document.getElementById('todoList');
-      if (todoList.style.display === 'block' && !todoList.classList.contains('expanded')) {
-        todoList.style.display = 'none';
-      } else {
-        todoList.style.display = 'block';
-        todoList.classList.add('expanded');
-      }
+      todoList.classList.toggle('expanded');
+      todoList.style.display = todoList.style.display === 'block' ? 'none' : 'block';
     });
 
     document.addEventListener('click', (e) => {
       const todoList = document.getElementById('todoList');
-      if (todoList.classList.contains('expanded') && !todoList.contains(e.target) && e.target.id !== 'todoBtn') {
+      const todoBtn = document.getElementById('todoBtn');
+      if (todoList.classList.contains('expanded') && !todoList.contains(e.target) && e.target !== todoBtn) {
         todoList.classList.remove('expanded');
-        setTimeout(() => {
-          todoList.style.display = 'none';
-        }, 300); // Match transition duration
+        todoList.style.display = 'none';
       }
     });
 
-    document.getElementById('statsBtn').addEventListener('click', () => {
-      const analytics = document.getElementById('analytics');
-      analytics.style.display = analytics.style.display === 'block' ? 'none' : 'block';
-      updateAnalytics();
-    });
-
     document.getElementById('pyqBtn').addEventListener('click', () => {
-      window.open('https://forestquest.vercel.app/', '_blank');
+      window.open('https://the-chosen-one-o5.github.io/PYQs-for-DSA/', '_blank');
     });
-
-    function updateAnalytics() {
-      document.getElementById('totalFocusTime').textContent = Math.floor(focusTime / 60);
-      document.getElementById('totalDistractions').textContent = distractions;
-      document.getElementById('totalVideosWatched').textContent = videosWatched;
-    }
 
     function loadTasks() {
       const tasksDiv = document.getElementById('tasks');
@@ -2017,9 +2108,12 @@
       tasks.forEach((task, index) => {
         addTaskElement(task.text, task.completed, task.deadline, task.points, index);
       });
-      addTaskElement();
+      if (tasks.length === 0) {
+        addTaskElement();
+      }
     }
-function addTaskElement(text = '', completed = false, deadline = null, points = 0, index = tasks.length) {
+
+    function addTaskElement(text = '', completed = false, deadline = null, points = 0, index = tasks.length) {
       const tasksDiv = document.getElementById('tasks');
       const taskLine = document.createElement('div');
       taskLine.className = 'task-line';
@@ -2344,7 +2438,7 @@ function addTaskElement(text = '', completed = false, deadline = null, points = 
         audioList.appendChild(trackItem);
       });
 
-      document.querySelectorAll('.unlock-track-btn').forEach(btn => {
+      document.querySelectorAll('.unlock-tracker-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const index = parseInt(btn.getAttribute('data-index'));
           const track = audioTracks[index];
@@ -2360,12 +2454,66 @@ function addTaskElement(text = '', completed = false, deadline = null, points = 
             trackItem.classList.remove('locked');
             trackItem.classList.add('unlocked');
             showAchievement(`${track.name} Unlocked!`);
+            playAudioTrack();
           } else if (!track.unlocked) {
             alert('Not enough XP!');
           }
         });
       });
     }
+
+    function playAudioTrack() {
+      const unlockedTracks = audioTracks.filter(track => track.unlocked);
+      if (unlockedTracks.length > 0) {
+        const track = unlockedTracks[currentTrackIndex % unlockedTracks.length];
+        audioPlayer.src = track.src;
+        audioPlayer.play();
+        updateLofiPlayer(track.name);
+      }
+    }
+
+    function updateLofiPlayer(trackName) {
+      document.querySelector('.title-1').textContent = trackName.split(' - ')[0] || trackName;
+      document.querySelector('.title-2').textContent = trackName.split(' - ')[1] || 'Unknown Artist';
+    }
+
+    document.getElementById('lofiPrev').addEventListener('click', () => {
+      const unlockedTracks = audioTracks.filter(track => track.unlocked);
+      if (unlockedTracks.length > 0) {
+        currentTrackIndex = (currentTrackIndex - 1 + unlockedTracks.length) % unlockedTracks.length;
+        playAudioTrack();
+      }
+    });
+
+    document.getElementById('lofiNext').addEventListener('click', () => {
+      const unlockedTracks = audioTracks.filter(track => track.unlocked);
+      if (unlockedTracks.length > 0) {
+        currentTrackIndex = (currentTrackIndex + 1) % unlockedTracks.length;
+        playAudioTrack();
+      }
+    });
+
+    document.getElementById('lofiPause').addEventListener('click', () => {
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        document.getElementById('lofiPause').innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M21.6 12a9.6 9.6 0 1 1-19.2 0 9.6 9.6 0 0 1 19.2 0ZM8.4 9.6a1.2 1.2 0 1 1 2.4 0v4.8a1.2 1.2 0 1 1-2.4 0V9.6Zm6-1.2a1.2 1.2 0 0 0-1.2 1.2v4.8a1.2 1.2 0 1 0 2.4 0V9.6a1.2 1.2 0 0 0-1.2-1.2Z" clip-rule="evenodd"></path>
+          </svg>
+        `;
+      } else {
+        audioPlayer.pause();
+        document.getElementById('lofiPause').innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M12 21.6a9.6 9.6 0 1 0 0-19.2 9.6 9.6 0 0 0 0 19.2ZM9.6 7.2a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Zm4.8 0a1.2 1.2 0 0 1 1.2 1.2v7.2a1.2 1.2 0 0 1-2.4 0V8.4a1.2 1.2 0 0 1 1.2-1.2Z" clip-rule="evenodd"></path>
+          </svg>
+        `;
+      }
+    });
+
+    document.getElementById('volumeButton').addEventListener('click', () => {
+      audioPlayer.volume = audioPlayer.volume === 0 ? 1 : 0;
+    });
 
     document.getElementById('quietPomodoroBtn').addEventListener('click', () => {
       document.getElementById('pomodoroOverlay').style.display = 'flex';
@@ -2435,12 +2583,7 @@ function addTaskElement(text = '', completed = false, deadline = null, points = 
 
     audioPlayer.addEventListener('ended', () => {
       currentTrackIndex++;
-      const unlockedTracks = audioTracks.filter(track => track.unlocked);
-      if (unlockedTracks.length > 0) {
-        currentTrackIndex = currentTrackIndex % unlockedTracks.length;
-        audioPlayer.src = unlockedTracks[currentTrackIndex].src;
-        audioPlayer.play();
-      }
+      playAudioTrack();
     });
 
     window.addEventListener('beforeunload', (e) => {
@@ -2452,4 +2595,3 @@ function addTaskElement(text = '', completed = false, deadline = null, points = 
   </script>
 </body>
 </html>
-    
