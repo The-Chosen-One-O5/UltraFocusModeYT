@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Focus Mode YouTube Player</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"> <!-- Font for Pomodoro -->
   <style>
-    /* --- Existing Styles (Keep as is, unless noted) --- */
     * {
       margin: 0;
       padding: 0;
@@ -29,138 +27,31 @@
     body {
       background-color: var(--bg-dark);
       min-height: 100vh;
-      /* display: flex; */ /* Remove flex from body if top bar is fixed */
-      /* justify-content: center; */
-      /* align-items: center; */
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-family: monospace;
       color: var(--text);
-      overflow-x: hidden; /* Prevent horizontal scroll */
+      overflow: hidden;
       font-size: 18px;
       line-height: 1.4;
-      padding-top: 60px; /* Add padding for fixed top bar */
     }
 
-    /* --- Top Navigation Bar Styles --- */
-    #topNavBar {
-      position: fixed;
-      top: 0;
-      left: 0;
+    .game-container {
       width: 100%;
-      height: 60px;
-      background-color: var(--bg-medium);
-      border-bottom: 2px solid var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      z-index: 1000; /* Ensure it's above most content */
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    #navLogo {
-      font-family: monospace;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--text);
-      text-shadow: 2px 2px 0px var(--primary-dark);
-      letter-spacing: 1px;
-    }
-     #navLogo span {
-       color: var(--secondary);
-     }
-
-    #navClockContainer {
-       font-size: 20px;
-       font-family: monospace;
-       font-weight: bold;
-    }
-     #navClockContainer .time { color: var(--primary); }
-     #navClockContainer .period { color: var(--secondary); }
-
-
-    #navButtons {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    /* Streak Button Styles (Adapted from provided CSS) */
-    .StreakBtn {
-      display: flex;
-      align-items: center;
-      justify-content: center; /* Center the icon */
-      width: 45px;
-      height: 45px;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
+      height: 100vh;
       position: relative;
-      overflow: hidden; /* Keep hidden for tooltip */
-      transition-duration: .3s;
-      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
-      background-color: var(--accent-alt); /* Orange for streak */
-      padding: 0; /* Reset padding */
-      color: var(--text); /* Ensure icon color */
-      font-size: 20px; /* Adjust icon size */
-    }
-
-    .StreakBtn .tooltiptext {
-      visibility: hidden;
-      width: 120px;
-      background-color: var(--bg-light);
-      color: var(--text);
-      text-align: center;
-      border-radius: 6px;
-      padding: 5px 0;
-      position: absolute;
+      overflow: hidden;
+      background-image: radial-gradient(circle at 10% 20%, rgba(142, 45, 226, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(65, 105, 225, 0.1) 0%, transparent 20%),
+        linear-gradient(to bottom, var(--bg-dark), var(--bg-medium));
+      display: flex;
+      justify-content: center;
+      align-items: center;
       z-index: 1;
-      bottom: 125%; /* Position above the button */
-      left: 50%;
-      margin-left: -60px; /* Center the tooltip */
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 12px;
-      font-family: monospace;
     }
 
-    .StreakBtn:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    /* Basic styles for other nav buttons */
-    .NavBtn {
-      background: var(--primary);
-      color: var(--text);
-      border: none;
-      padding: 8px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: monospace;
-      font-size: 14px;
-      transition: background 0.3s;
-    }
-    .NavBtn:hover {
-      background: var(--primary-dark);
-    }
-
-    /* --- Container for Pages --- */
-    .page-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: calc(100vh - 60px); /* Adjust height considering top bar */
-        width: 100%;
-        padding: 20px; /* Add some padding */
-        position: relative;
-        overflow: hidden; /* Keep gradient contained */
-        background-image: radial-gradient(circle at 10% 20%, rgba(142, 45, 226, 0.1) 0%, transparent 20%),
-          radial-gradient(circle at 90% 80%, rgba(65, 105, 225, 0.1) 0%, transparent 20%),
-          linear-gradient(to bottom, var(--bg-dark), var(--bg-medium));
-        z-index: 1;
-    }
-
-    .page-container::before { /* Keep the dot pattern */
+    .game-container::before {
       content: "";
       position: absolute;
       top: 0;
@@ -172,31 +63,21 @@
       z-index: 2;
     }
 
-    /* --- Page Styles (Common Base) --- */
     #landingPage,
     #signinForm,
-    #homePage,
-    #watchLecturesPage,
-    #profilePage, /* Add styles for profile/stats pages */
-    #focusStatsPage {
+    #inputForm {
       text-align: center;
       width: 100%;
-      max-width: 900px; /* Adjust as needed */
+      max-width: 800px;
       margin: 0 auto;
       padding: 40px 20px;
       position: relative;
       z-index: 10;
-      background-color: rgba(15, 15, 27, 0.85); /* Slightly less transparent */
+      background-color: rgba(15, 15, 27, 0.8);
       border: 2px solid var(--secondary);
       border-radius: 8px;
       box-shadow: 0 0 20px rgba(142, 45, 226, 0.3);
-      pointer-events: auto; /* Ensure interaction */
-      display: none; /* Hide all pages by default */
-    }
-    #landingPage { display: block; } /* Show landing page initially */
-
-    #watchLecturesPage {
-        max-width: 1300px; /* Allow wider for player */
+      pointer-events: auto;
     }
 
     .title {
@@ -231,362 +112,1060 @@
       margin-bottom: 30px;
     }
 
-    /* --- Home Page Specific Styles --- */
-    #homePage .welcome-msg {
+    button {
+      display: inline-block;
+      padding: 12px 30px;
+      font-size: 18px;
+      font-family: monospace;
+      font-weight: 600;
+      background: var(--secondary);
+      border: none;
+      color: var(--text);
+      border-radius: 0;
+      cursor: pointer;
+      margin: 0 10px 15px;
+      transition: all 0.3s;
+      position: relative;
+      box-shadow: 4px 4px 0 var(--primary-dark);
+      text-transform: uppercase;
+      font-size: 14px;
+      letter-spacing: 1px;
+      z-index: 11;
+      pointer-events: auto;
+    }
+
+    button:hover {
+      background: var(--primary);
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--primary-dark);
+    }
+
+    button:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .github-btn {
+      background: var(--bg-light);
+      box-shadow: 4px 4px 0 var(--bg-medium);
+    }
+
+    .github-btn:hover {
+      background: var(--bg-medium);
+      box-shadow: 2px 2px 0 var(--bg-medium);
+    }
+
+    #features {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+
+    .feature {
+      background: var(--bg-light);
+      padding: 15px 20px;
+      border-radius: 0;
+      width: 200px;
+      box-shadow: 4px 4px 0 var(--bg-medium);
+      border: 2px solid var(--primary);
+      position: relative;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .feature::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .feature i {
       font-size: 24px;
-      margin-bottom: 15px;
-      color: var(--primary);
-    }
-    #homePage .time-date {
-      font-size: 18px;
-      margin-bottom: 15px;
-      color: var(--text-dim);
-    }
-    #homePage .focus-status {
-      font-size: 18px;
-      margin-bottom: 30px;
       color: var(--secondary);
-      font-weight: bold;
-    }
-    #homePage .motivation {
-        font-style: italic;
-        color: var(--accent-alt);
-        margin-top: 40px;
-        font-size: 16px;
+      margin-bottom: 10px;
     }
 
-    /* --- Watch Lectures Page Styles --- */
-    #lectureInputSection {
-       /* Styles for the input part of the watch page */
-       margin-bottom: 30px;
+    .feature p {
+      font-size: 16px;
+      color: var(--text);
     }
 
-    #player { /* Keep player styles, but ensure it's initially hidden */
+    input,
+    select {
+      display: block;
+      width: 100%;
+      max-width: 320px;
+      margin: 10px auto;
+      padding: 12px;
+      border-radius: 0;
+      font-size: 16px;
+      font-family: monospace;
+      background: var(--bg-light);
+      border: 2px solid var(--primary);
+      color: var(--text);
+      outline: none;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+      z-index: 11;
+      pointer-events: auto;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 2px rgba(142, 45, 226, 0.3);
+    }
+
+    #inputForm {
+      max-height: 80vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--secondary) var(--bg-medium);
+    }
+
+    #inputForm::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #inputForm::-webkit-scrollbar-track {
+      background: var(--bg-medium);
+    }
+
+    #inputForm::-webkit-scrollbar-thumb {
+      background: var(--secondary);
+      border-radius: 0;
+      border: 2px solid var(--bg-medium);
+    }
+
+    #player {
       width: 100%;
       max-width: 1200px;
       aspect-ratio: 16 / 9;
       border-radius: 0;
       overflow: hidden;
-      display: none; /* Initially hidden */
+      display: none;
       background: #000;
       border: 4px solid var(--primary);
       box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
       z-index: 5;
-      margin: 20px auto 0; /* Add margin when visible */
     }
 
-    /* --- Profile & Stats Page Styles --- */
-     #profilePage, #focusStatsPage {
-         position: fixed; /* Make them overlays/modals */
-         top: 50%;
-         left: 50%;
-         transform: translate(-50%, -50%);
-         width: 90%;
-         max-width: 500px;
-         max-height: 80vh;
-         overflow-y: auto;
-         z-index: 105; /* Above other content but below dialogs */
-         border-color: var(--accent); /* Different border */
-         box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
-         scrollbar-width: thin;
-         scrollbar-color: var(--accent) var(--bg-medium);
-     }
-      #profilePage::-webkit-scrollbar, #focusStatsPage::-webkit-scrollbar { width: 8px; }
-      #profilePage::-webkit-scrollbar-track, #focusStatsPage::-webkit-scrollbar-track { background: var(--bg-medium); }
-      #profilePage::-webkit-scrollbar-thumb, #focusStatsPage::-webkit-scrollbar-thumb { background: var(--accent); }
-
-
-     #profilePage h3, #focusStatsPage h3 {
-         color: var(--accent);
-         margin-bottom: 25px;
-         font-size: 24px;
-     }
-     .profile-info p, #focusStatsPage p {
-         font-size: 18px;
-         margin: 10px 0;
-         padding-bottom: 8px;
-         border-bottom: 1px solid var(--bg-light);
-         display: flex;
-         justify-content: space-between;
-     }
-     .profile-info span:first-child, #focusStatsPage span:first-child {
-         font-weight: bold;
-         color: var(--primary);
-         margin-right: 10px;
-     }
-     .profile-pic { /* Placeholder style */
-         width: 80px;
-         height: 80px;
-         background: var(--bg-light);
-         border-radius: 50%;
-         margin: 0 auto 20px;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         font-size: 40px;
-         border: 2px solid var(--primary);
-     }
-     .close-modal-btn {
-         position: absolute;
-         top: 10px;
-         right: 15px;
-         background: var(--accent);
-         color: var(--text);
-         border: none;
-         border-radius: 50%;
-         width: 30px;
-         height: 30px;
-         font-size: 18px;
-         font-weight: bold;
-         cursor: pointer;
-         line-height: 28px;
-         text-align: center;
-     }
-
-    /* Stats Calendar Styles */
-    #statsCalendar {
-        margin-top: 30px;
-        border-collapse: collapse;
-        width: 100%;
+    #timerDisplay {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: var(--text);
+      font-size: 24px;
+      z-index: 101;
+      cursor: move;
+      padding: 10px;
+      background: var(--bg-medium);
+      border: 2px solid var(--primary);
+      font-family: monospace;
+      font-size: 16px;
+      pointer-events: auto;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
     }
-    #statsCalendar th, #statsCalendar td {
-        border: 1px solid var(--bg-light);
-        padding: 5px;
-        text-align: center;
-        font-size: 12px;
-        width: 14.28%; /* 7 days */
-        height: 40px;
-    }
-    #statsCalendar th {
-        color: var(--secondary);
-    }
-    #statsCalendar td {
-        cursor: default;
-        background-color: var(--bg-light); /* Default empty day */
-        position: relative; /* For tooltip */
-        color: var(--text-dim);
-    }
-    #statsCalendar td.has-data {
-        color: var(--text);
-        font-weight: bold;
-    }
-    /* Add classes for different heatmap levels (adjust colors) */
-    #statsCalendar td.level-1 { background-color: rgba(65, 105, 225, 0.2); }
-    #statsCalendar td.level-2 { background-color: rgba(65, 105, 225, 0.4); }
-    #statsCalendar td.level-3 { background-color: rgba(65, 105, 225, 0.6); }
-    #statsCalendar td.level-4 { background-color: rgba(65, 105, 225, 0.8); }
-    #statsCalendar td.level-5 { background-color: var(--primary); }
 
+    #timerDisplay button {
+      pointer-events: auto;
+      padding: 5px 10px;
+      margin: 0 5px;
+      font-size: 12px;
+      z-index: 102;
+    }
 
-    /* --- Sidebar Styles (Updated) --- */
+    #pointsDisplay {
+      position: fixed;
+      top: 50px;
+      left: 10px;
+      font-size: 18px;
+      color: var(--text);
+      font-family: monospace;
+      font-weight: 600;
+      z-index: 101;
+      background: var(--bg-medium);
+      padding: 8px 12px;
+      border: 2px solid var(--secondary);
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+    }
+
+    #clockDisplay {
+      position: fixed;
+      top: 90px;
+      left: 10px;
+      font-size: 20px;
+      font-family: monospace;
+      font-weight: bold;
+      z-index: 101;
+      padding: 8px 12px;
+      background: var(--bg-medium);
+      border: 2px solid var(--primary);
+      display: none;
+      pointer-events: none;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    #clockDisplay .time {
+      color: var(--primary);
+      font-weight: 600;
+      text-shadow: 3px 3px 0px var(--primary-dark);
+      letter-spacing: 2px;
+    }
+
+    #clockDisplay .period {
+      color: var(--secondary);
+      font-weight: 600;
+      text-shadow: 3px 3px 0px var(--primary-dark);
+      letter-spacing: 2px;
+    }
+
+    #progressBar {
+      width: 200px;
+      height: 10px;
+      background: var(--bg-light);
+      display: none;
+      margin-top: 5px;
+      border: 2px solid var(--primary);
+      z-index: 101;
+    }
+
+    #progressFill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    #sitesBox {
+      display: none;
+      position: fixed;
+      top: 130px;
+      left: 10px;
+      z-index: 101;
+      padding: 8px 12px;
+      background: var(--bg-medium);
+      border: 2px solid var(--primary);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    #sitesPopup {
+      position: fixed;
+      top: 170px;
+      left: 10px;
+      width: 250px;
+      background: var(--bg-medium);
+      padding: 15px;
+      border: 2px solid var(--secondary);
+      display: none;
+      z-index: 102;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: auto;
+    }
+
+    #sitesPopup a {
+      display: block;
+      color: var(--primary);
+      text-decoration: none;
+      margin: 10px 0;
+      font-size: 14px;
+      font-family: monospace;
+      padding: 5px;
+      border: 1px solid var(--primary);
+      transition: all 0.3s;
+      pointer-events: auto;
+    }
+
+    #sitesPopup a:hover {
+      color: var(--text);
+      background: var(--primary);
+      transform: translate(2px, 2px);
+    }
+
+    #closeSitesPopup {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: var(--accent);
+      border: none;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 2px 6px;
+      margin: 0;
+      z-index: 103;
+    }
+
+    #restartBtn {
+      display: none;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: var(--accent);
+      z-index: 103;
+      pointer-events: auto;
+    }
+
+    #videoSidebar {
+      position: fixed;
+      right: -320px;
+      top: 0;
+      width: 300px;
+      height: 100%;
+      background: var(--bg-medium);
+      transition: right 0.3s ease;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 102;
+      border-left: 4px solid var(--primary);
+      pointer-events: auto;
+    }
+
+    .thumbnail {
+      width: 100%;
+      margin-bottom: 15px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 0;
+      transition: all 0.3s;
+      image-rendering: pixelated;
+      pointer-events: auto;
+    }
+
+    .thumbnail:hover {
+      border-color: var(--secondary);
+      transform: scale(1.05);
+    }
+
+    #minimizeBtn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: var(--accent);
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+      margin: 0;
+      box-shadow: none;
+      z-index: 102;
+    }
+
+    .url-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .url-container button {
+      margin-left: 10px;
+      padding: 5px 10px;
+      background: var(--accent);
+      font-size: 14px;
+      box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+      z-index: 11;
+    }
+
+    #statsBtn,
+    #todoBtn,
+    #pyqBtn {
+      padding: 8px 16px;
+      font-size: 12px;
+      margin: 0 5px 15px;
+      z-index: 11;
+    }
+
+    #analytics,
+    #todoList {
+      position: absolute;
+      left: 10px;
+      background: var(--bg-medium);
+      padding: 15px;
+      border: 2px solid var(--secondary);
+      display: none;
+      z-index: 100;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: auto;
+    }
+
+    #analytics {
+      top: 90px;
+    }
+
+    #todoList {
+      top: 50px;
+      width: 300px;
+      max-height: 400px;
+    }
+
+    #tasks {
+      overflow-y: auto;
+      max-height: 320px;
+      margin-bottom: 10px;
+      background: none;
+    }
+
+    #analytics h3,
+    #todoList h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: var(--secondary);
+      font-family: monospace;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    #analytics p {
+      font-size: 16px;
+      margin: 5px 0;
+      border-bottom: 1px solid var(--bg-light);
+      padding-bottom: 5px;
+    }
+
+    .task-line {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      background: var(--bg-light);
+      padding: 5px;
+      border: 1px solid var(--primary);
+      pointer-events: auto;
+    }
+
+    .task-line input[type="checkbox"] {
+      margin-right: 10px;
+      width: 16px;
+      height: 16px;
+      appearance: none;
+      border: 2px solid var(--primary);
+      background: var(--bg-medium);
+      position: relative;
+      pointer-events: auto;
+      z-index: 11;
+    }
+
+    .task-line input[type="checkbox"]:checked {
+      background: var(--secondary);
+    }
+
+    .task-line input[type="checkbox"]:checked::after {
+      content: "✓";
+      position: absolute;
+      color: var(--text);
+      font-size: 12px;
+      top: -2px;
+      left: 2px;
+    }
+
+    .task-line input[type="text"] {
+      flex-grow: 1;
+      font-size: 16px;
+      font-family: monospace;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--text-dim);
+      padding: 2px 0;
+      outline: none;
+      box-shadow: none;
+      margin: 0;
+      pointer-events: auto;
+      z-index: 11;
+    }
+
+    .task-line input[type="text"]:focus {
+      border-bottom: 1px solid var(--secondary);
+      box-shadow: none;
+    }
+
+    .task-line .remove-task {
+      margin-left: 10px;
+      color: var(--accent);
+      font-size: 16px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      line-height: 1;
+      pointer-events: auto;
+      z-index: 11;
+    }
+
+    .task-line .set-deadline {
+      margin-left: 5px;
+      color: var(--primary);
+      font-size: 14px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 2px 5px;
+      border: 1px solid var(--primary);
+      pointer-events: auto;
+      z-index: 11;
+    }
+
+    .task-line .set-deadline:hover {
+      background: var(--primary);
+      color: var(--text);
+    }
+
+    .task-line .deadline-info {
+      margin-left: 5px;
+      font-size: 12px;
+      color: var(--accent-alt);
+    }
+
+    .task-line .points-info {
+      margin-left: 5px;
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    #lofiPlayer {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      z-index: 101;
+      display: none;
+      background: var(--bg-medium);
+      padding: 10px;
+      border: 2px solid var(--primary);
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: auto;
+    }
+
+    #lofiPlayer button {
+      background: var(--secondary);
+      border: none;
+      color: var(--text);
+      padding: 5px 10px;
+      margin: 0 2px;
+      cursor: pointer;
+      font-size: 12px;
+      box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+      font-family: monospace;
+      z-index: 102;
+    }
+
+    #achievementOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: gold;
+      font-size: 32px;
+      font-weight: bold;
+      z-index: 104;
+      display: none;
+      font-family: monospace;
+      text-align: center;
+      text-shadow: 3px 3px 0 var(--primary-dark);
+      background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    #achievementLevel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      z-index: 101;
+      font-family: monospace;
+      background: var(--bg-medium);
+      padding: 8px 12px;
+      border: 2px solid var(--secondary);
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+    }
+
+    #streakDisplay {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      font-size: 16px;
+      color: var(--text);
+      z-index: 101;
+      background: var(--bg-medium);
+      padding: 8px 12px;
+      border: 2px solid var(--secondary);
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      font-family: monospace;
+    }
+
+    .glow {
+      text-shadow: 0 0 10px var(--text);
+      animation: pulse 2s infinite;
+    }
+
+    .box-glow {
+      border: 2px solid gold;
+      padding: 5px;
+      box-shadow: 0 0 10px gold;
+      animation: pulse 2s infinite;
+    }
+
+    .rainbow {
+      background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbow 3s infinite;
+    }
+
+    @keyframes rainbow {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    #confirmationDialog,
+    #streakShieldDialog,
+    #doublePointsDialog,
+    #deadlineDialog,
+    #sessionCompleteDialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-medium);
+      padding: 20px;
+      border: 4px solid var(--accent);
+      box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
+      z-index: 105;
+      display: none;
+      text-align: center;
+      pointer-events: auto;
+      font-family: monospace;
+    }
+
+    #confirmationDialog p,
+    #streakShieldDialog p,
+    #doublePointsDialog p,
+    #deadlineDialog p,
+    #sessionCompleteDialog p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    #confirmationDialog button,
+    #streakShieldDialog button,
+    #doublePointsDialog button,
+    #deadlineDialog button,
+    #sessionCompleteDialog button {
+      padding: 8px 20px;
+      margin: 0 10px;
+      font-size: 14px;
+      pointer-events: auto;
+      z-index: 106;
+    }
+
+    #confirmBtn,
+    #streakShieldConfirmBtn,
+    #doublePointsConfirmBtn,
+    #deadlineConfirmBtn,
+    #sessionContinueBtn {
+      background: var(--accent);
+    }
+
+    #cancelBtn,
+    #streakShieldCancelBtn,
+    #doublePointsCancelBtn,
+    #deadlineCancelBtn,
+    #sessionEndBtn {
+      background: var(--primary);
+    }
+
+    #deadlineDialog input,
+    #deadlineDialog select {
+      margin: 10px auto;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    #pdfToggle {
+      display: none;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: var(--primary);
+      z-index: 101;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    #pdfViewer {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 500px;
+      background: var(--bg-medium);
+      padding: 15px;
+      border: 4px solid var(--primary);
+      box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+      z-index: 101;
+      pointer-events: auto;
+    }
+
+    #pdfInput {
+      margin-bottom: 10px;
+      width: 100%;
+      pointer-events: auto;
+      z-index: 102;
+    }
+
+    #pdfFrame {
+      width: 100%;
+      height: 90%;
+      border: none;
+      background: #fff;
+    }
+
+    #fireBox {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border-radius: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      border: 2px solid var(--secondary);
+      pointer-events: auto;
+    }
+
+    #fireBox:hover {
+      background: var(--secondary);
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    #aiPopup {
+      position: fixed;
+      bottom: 60px;
+      left: 10px;
+      width: 300px;
+      height: 400px;
+      background: var(--bg-medium);
+      border-radius: 0;
+      padding: 5px;
+      display: none;
+      z-index: 101;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+      border: 4px solid var(--primary);
+      pointer-events: auto;
+    }
+
+    #aiPopup iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
     .game-sidebar {
-        position: fixed;
-        left: -250px; /* Keep initial state */
-        top: 0;
-        width: 250px;
-        height: 100vh;
-        background: var(--bg-medium);
-        border-right: 4px solid var(--primary);
-        z-index: 200;
-        transition: left 0.3s ease;
-        padding: 80px 0 20px; /* Add padding top for nav bar */
-        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
-        overflow-y: auto;
-        pointer-events: auto;
+      position: fixed;
+      left: -250px;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      background: var(--bg-medium);
+      border-right: 4px solid var(--primary);
+      z-index: 200;
+      transition: left 0.3s ease;
+      padding: 20px 0;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+      overflow-y: auto;
+      pointer-events: auto;
     }
-     .sidebar-trigger { /* Keep trigger */
-       position: fixed;
-       left: 0;
-       top: 50%;
-       transform: translateY(-50%);
-       width: 20px;
-       height: 80px;
-       background: var(--primary);
-       z-index: 199;
-       border-radius: 0 5px 5px 0;
-       cursor: pointer;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       color: var(--text);
-       font-weight: bold;
-       writing-mode: vertical-rl;
-       text-orientation: mixed;
-       font-size: 12px;
-       letter-spacing: 1px;
-       pointer-events: auto;
-       margin-top: 30px; /* Adjust trigger position due to top bar */
-     }
-     .sidebar-section button, .sidebar-section a { /* Style links/buttons */
-         /* Existing styles */
-         display: block;
-         width: calc(100% - 30px); /* Adjust width for padding */
-         padding: 10px 15px;
-         margin: 8px 15px;
-         background: var(--bg-light);
-         color: var(--text);
-         border: 1px solid var(--primary);
-         text-align: left;
-         font-size: 14px;
-         cursor: pointer;
-         transition: all 0.2s;
-         pointer-events: auto;
-         z-index: 201;
-         font-family: monospace;
-         text-decoration: none; /* For 'a' tags */
-         box-shadow: 2px 2px 0 var(--primary-dark); /* Subtle shadow */
-         text-transform: uppercase;
-     }
-      .sidebar-section button:hover, .sidebar-section a:hover {
-          background: var(--primary);
-          transform: translateX(5px);
-          box-shadow: none;
-      }
 
-    /* --- Pomodoro Styles (Updated) --- */
+    .sidebar-trigger:hover + .game-sidebar,
+    .game-sidebar:hover {
+      left: 0;
+    }
+
+    .sidebar-trigger {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 80px;
+      background: var(--primary);
+      z-index: 199;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      font-weight: bold;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 12px;
+      letter-spacing: 1px;
+      pointer-events: auto;
+    }
+
+    .sidebar-section {
+      padding: 15px;
+      border-bottom: 2px solid var(--bg-dark);
+    }
+
+    .sidebar-section h3 {
+      color: var(--secondary);
+      font-size: 16px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-section a,
+    .sidebar-section button {
+      display: block;
+      width: 100%;
+      padding: 8px 10px;
+      margin: 5px 0;
+      background: var(--bg-light);
+      color: var(--text);
+      border: 1px solid var(--primary);
+      text-align: left;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      pointer-events: auto;
+      z-index: 201;
+    }
+
+    .sidebar-section a:hover,
+    .sidebar-section button:hover {
+      background: var(--primary);
+      transform: translateX(5px);
+    }
+
+    .dashboard-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dashboard-info p {
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .dashboard-info p span:first-child {
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    #mysteryBoxPopup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-medium);
+      padding: 20px;
+      border: 4px solid gold;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      z-index: 105;
+      display: none;
+      text-align: center;
+      pointer-events: auto;
+      font-family: monospace;
+      width: 300px;
+    }
+
+    #mysteryBoxPopup h3 {
+      color: gold;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    #mysteryBoxPopup p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    #mysteryBoxPopup button {
+      padding: 8px 20px;
+      background: var(--accent);
+      font-size: 14px;
+      pointer-events: auto;
+    }
+
+    /* Audio tracks store styles */
+    #audioTracksStore {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      max-height: 500px;
+      background: var(--bg-medium);
+      padding: 20px;
+      border: 4px solid var(--secondary);
+      box-shadow: 0 0 20px rgba(142, 45, 226, 0.5);
+      z-index: 105;
+      display: none;
+      text-align: center;
+      pointer-events: auto;
+      font-family: monospace;
+      overflow-y: auto;
+    }
+
+    #audioTracksStore h3 {
+      color: var(--secondary);
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .audio-track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: var(--bg-light);
+      border: 1px solid var(--primary);
+    }
+
+    .audio-track-item.locked .track-name {
+      color: var(--text-dim);
+    }
+
+    .audio-track-item.unlocked .track-name {
+      color: var(--accent-alt);
+    }
+
+    .unlock-track-btn {
+      padding: 5px 10px;
+      background: var(--secondary);
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .unlock-track-btn:disabled {
+      background: var(--bg-light);
+      color: var(--text-dim);
+      cursor: not-allowed;
+    }
+
+    /* Quiet Pomodoro styles */
+    #pomodoroOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 15, 27, 0.9);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+
     #pomodoroContainer {
       width: 400px;
       background: var(--bg-medium);
       padding: 30px;
-      /* border: 4px solid var(--secondary); */ /* Removed border */
-      border-radius: 10px; /* Added subtle rounding */
+      border: 4px solid var(--secondary);
       box-shadow: 0 0 30px rgba(142, 45, 226, 0.5);
       text-align: center;
       pointer-events: auto;
     }
+
     #pomodoroTimer {
-      font-size: 90px; /* Larger */
+      font-size: 80px;
       font-weight: bold;
       color: var(--text);
       margin: 20px 0;
-      font-family: 'Orbitron', monospace; /* Digital-style font */
-      text-shadow: 0 0 10px var(--secondary); /* Add glow */
+      font-family: monospace;
     }
 
-    /* --- Global Elements Positioning --- */
-     #timerDisplay { /* Only shown on lecture page now */
-         display: none; /* Hidden by default */
-         position: fixed;
-         top: 70px; /* Below top bar */
-         left: 10px;
-         /* Keep other styles */
-         z-index: 101;
-     }
-     #pointsDisplay {
-         position: fixed;
-         top: 70px; /* Below top bar */
-         right: 10px; /* Move to right */
-         /* Keep other styles */
-         z-index: 101;
-     }
-     #lofiPlayer {
-         position: fixed;
-         bottom: 10px;
-         right: 10px;
-         z-index: 101;
-         display: block; /* Should always be visible after login */
-         /* Keep other styles */
-     }
-     #fireBox {
-         position: fixed;
-         bottom: 10px;
-         left: 10px;
-         z-index: 100;
-         /* Keep other styles */
-     }
-      #aiPopup {
-          position: fixed;
-          bottom: 60px; /* Above firebox */
-          left: 10px;
-          z-index: 101;
-          /* Keep other styles */
-      }
+    #pomodoroControls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
 
-     /* Hide elements not needed initially or on specific pages */
-     #restartBtn, #pdfToggle {
-         display: none;
-     }
+    #pomodoroControls button {
+      padding: 10px 25px;
+      font-size: 16px;
+    }
 
-     /* Adjust todoList position if needed */
-     #todoList {
-       position: fixed; /* Make it fixed for overlay */
-       top: 70px; /* Position below top bar */
-       left: 10px;
-       /* Keep other styles */
-       display: none;
-       z-index: 102; /* Above most things but below modals */
-     }
+    #pomodoroStatus {
+      font-size: 18px;
+      color: var(--accent-alt);
+      margin-top: 15px;
+    }
 
-     /* Remove old elements that are now part of pages/topbar */
-     #clockDisplay, #achievementLevel, #streakDisplay, #sitesBox, #sitesPopup {
-         /* These might be removed or repurposed */
-         /* Let's hide them for now */
-         display: none !important;
-     }
-
-    /* --- Responsive Adjustments (Review and Add as Needed) --- */
     @media (max-width: 800px) {
-       body { padding-top: 50px; } /* Adjust for smaller top bar */
-       #topNavBar { height: 50px; padding: 0 10px; }
-       #navLogo { font-size: 18px; }
-       #navClockContainer { font-size: 16px; }
-       #navButtons { gap: 8px; }
-       .NavBtn { padding: 6px 10px; font-size: 12px; }
-       .StreakBtn { width: 35px; height: 35px; font-size: 16px; }
-       .page-container { padding: 10px; min-height: calc(100vh - 50px); }
-       #landingPage, #signinForm, #homePage, #watchLecturesPage, #profilePage, #focusStatsPage { padding: 20px 15px; }
-       .title { font-size: 24px; }
-       .subtitle { font-size: 16px; }
-       #homePage .welcome-msg { font-size: 20px; }
-       #homePage .time-date, #homePage .focus-status { font-size: 14px; }
-       #homePage .motivation { font-size: 14px; }
-       #pomodoroTimer { font-size: 60px; }
-       #timerDisplay { top: 60px; }
-       #pointsDisplay { top: 60px; }
-       #todoList { top: 60px; width: calc(100% - 20px); max-width: 300px; }
-       .sidebar-trigger { margin-top: 25px; }
-       .game-sidebar { padding-top: 60px; }
+      .title { font-size: 24px; }
+      button { padding: 8px 16px; font-size: 12px; margin: 0 5px 10px; }
+      #features { flex-direction: column; align-items: center; }
+      .feature { width: 90%; max-width: 250px; }
+      #timerDisplay, #pointsDisplay, #clockDisplay, #sitesBox { font-size: 14px; padding: 5px 8px; }
+      #achievementLevel, #streakDisplay { font-size: 14px; padding: 5px 8px; }
+      #videoSidebar { width: 250px; }
+      #lofiPlayer button { padding: 3px 6px; font-size: 10px; }
+      #confirmationDialog, #streakShieldDialog, #doublePointsDialog { width: 90%; max-width: 300px; }
+      #confirmationDialog p, #streakShieldDialog p, #doublePointsDialog p { font-size: 14px; }
+      #pdfViewer { width: 90%; height: 80%; max-height: 500px; }
+      #aiPopup { width: 90%; max-width: 300px; height: 350px; }
+      #mysteryBoxPopup { width: 90%; max-width: 280px; }
+      #audioTracksStore { width: 90%; max-width: 350px; }
+      #pomodoroContainer { width: 90%; max-width: 350px; padding: 20px; }
+      #pomodoroTimer { font-size: 60px; }
     }
   </style>
 </head>
 <body>
-
-  <!-- Top Navigation Bar -->
-  <div id="topNavBar" style="display: none;"> <!-- Initially hidden until logged in -->
-    <div id="navLogo">FOCUS<span>QUEST</span></div>
-    <div id="navClockContainer">
-      <!-- Clock content will be injected by JS -->
-    </div>
-    <div id="navButtons">
-      <button class="NavBtn" id="profileBtn">Profile</button>
-      <button class="StreakBtn" id="streakBtn">
-        🔥 <!-- Fire icon -->
-        <span class="tooltiptext" id="streakTooltip">0-day focus streak</span>
-      </button>
-      <!-- <button class="NavBtn" id="settingsBtn">Settings</button> --> <!-- Add if needed -->
-    </div>
-  </div>
-
-  <!-- Main Content Area -->
-  <div class="game-container"> <!-- This container now holds the pages -->
-
-    <!-- Sidebar Trigger -->
+  <div class="game-container">
     <div class="sidebar-trigger">MENU</div>
-
-    <!-- Sidebar -->
     <div class="game-sidebar">
-       <!-- REMOVED Dashboard Section -->
       <div class="sidebar-section">
-        <h3>Navigation</h3>
-        <button data-page="homePage">HOME</button>
-        <button data-page="watchLecturesPage">WATCH LECTURES</button>
-        <button id="sidebarTodoBtn">TO-DO LIST</button>
-        <button id="sidebarStatsBtn">FOCUS STATS</button>
-        <a href="https://room.examgoal.com/" target="_blank" rel="noreferrer">PYQs PRACTICE</a>
+        <h3>Dashboard</h3>
+        <div class="dashboard-info">
+          <p><span>Hero:</span> <span id="sidebarUsername">Guest</span></p>
+          <p><span>Level:</span> <span id="sidebarLevel">Mortal</span></p>
+          <p><span>XP:</span> <span id="sidebarXP">0</span></p>
+          <p><span>Streak:</span> <span id="sidebarStreak">0 days</span></p>
+        </div>
       </div>
       <div class="sidebar-section">
         <h3>Allied Realms</h3>
-        <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer">FOREST QUEST</a>
+        <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer">FOREST QUEST - TASK MANAGEMENT</a>
         <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer">POMODORO REALM</a>
         <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer">DAILY QUEST PLANNER</a>
       </div>
@@ -596,158 +1175,111 @@
       </div>
       <div class="sidebar-section">
         <h3>Shops</h3>
-        <button id="streakShieldBtn">STREAK SHIELD (800 XP)</button>
-        <button id="doublePointsBtn">DOUBLE XP (800 XP)</button>
-        <button id="audioStoreBtn">AUDIO STORE</button>
+        <button id="streakShieldBtn">STREAK SHIELD</button>
+        <button id="doublePointsBtn">DOUBLE POINTS POWER-UP</button>
+        <button id="audioStoreBtn">AUDIO TRACKS STORE</button>
       </div>
       <div class="sidebar-section">
         <h3>Account</h3>
         <button id="logoutBtn">LOGOUT</button>
       </div>
     </div>
-
-    <!-- Page Wrappers -->
-    <div class="page-container"> <div id="landingPage">
-        <div class="title">QUEST FOR <span>FOCUS</span></div>
-        <div class="subtitle">Begin your learning adventure!</div>
-        <button data-action="show-signin">START GAME</button>
-        <button class="github-btn" data-action="github">GITHUB REPO</button>
-        <div id="features">
-          <div class="feature">
-            <i class="fas fa-ad"></i>
-            <p>Ad Free<br>No distractions on your quest</p>
-          </div>
-          <div class="feature">
-            <i class="fas fa-moon"></i>
-            <p>Dark Mode<br>Save your vision for the final boss</p>
-          </div>
+    <div id="landingPage">
+      <div class="title">QUEST FOR <span>FOCUS</span></div>
+      <div class="subtitle">Begin your learning adventure!</div>
+      <button data-action="start-game">START GAME</button>
+      <button class="github-btn" data-action="github">GITHUB REPO</button>
+      <div id="features">
+        <div class="feature">
+          <i class="fas fa-ad"></i>
+          <p>Ad Free<br>No distractions on your quest</p>
+        </div>
+        <div class="feature">
+          <i class="fas fa-moon"></i>
+          <p>Dark Mode<br>Save your vision for the final boss</p>
         </div>
       </div>
-
-      <div id="signinForm" style="display: none;">
-        <div class="title">CREATE YOUR <span>ACCOUNT</span></div>
-        <div class="subtitle">Sign in to track your progress</div>
-        <input type="text" id="username" placeholder="Hero Name" required />
-        <input type="password" id="password" placeholder="Secret Code" required />
-        <button data-action="sign-in">ENTER REALM</button>
-        <p>New adventurer? <button data-action="create-account">CREATE ACCOUNT</button></p>
-        <p style="margin-top: 15px;"><button data-action="show-landing">BACK</button></p>
-      </div>
-
-      <!-- NEW Home Page (Shown After Login) -->
-      <div id="homePage" style="display: none;">
-          <div class="title">WELCOME <span>HERO</span></div>
-          <div class="subtitle" id="homeUsername">Ready to conquer your goals?</div>
-          <div class="welcome-msg" id="welcomeMessage">Welcome back! Ready to get in the zone?</div>
-          <div class="time-date" id="homeTimeDate"></div>
-          <div class="focus-status" id="homeFocusStatus">Loading status...</div>
-          <!-- Add quick access buttons or stats here if desired -->
-          <div class="motivation">"The secret of getting ahead is getting started." - Mark Twain</div>
-      </div>
-
-      <!-- NEW Watch Lectures Page -->
-      <div id="watchLecturesPage" style="display: none;">
-          <!-- Input Section -->
-          <div id="lectureInputSection">
-              <div class="title">SELECT YOUR <span>LECTURE</span></div>
-              <select id="playlistSelect">
-                <option value="">Select a Saved Path</option>
-              </select>
-              <input type="text" id="playlistName" placeholder="Save Current Path As..." />
-              <button data-action="save-playlist">SAVE PATH</button>
-              <button data-action="remove-playlist">DELETE PATH</button>
-
-              <div id="urlInputs">
-                <div class="url-container">
-                  <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Live Stream)" required />
-                </div>
-              </div>
-
-              <button data-action="add-url">ADD URL</button>
-              <button data-action="start-playback">BEGIN FOCUS</button>
-          </div>
-
-          <!-- Player (Moved Here) -->
-          <div id="player"></div>
-
-          <!-- Sidebar (Remains associated with player) -->
-          <div id="videoSidebar"></div>
-
-          <!-- Buttons specific to playback -->
-           <button id="restartBtn">EXIT FOCUS</button>
-           <button id="pdfToggle">PDF VIEWER</button>
-      </div>
-
-    </div> <!-- End page-container -->
-
-    <!-- Profile Page Modal -->
-    <div id="profilePage" style="display: none;">
-        <button class="close-modal-btn" onclick="toggleProfilePage(false)">X</button>
-        <h3>Profile Settings</h3>
-        <div class="profile-pic" id="profilePic">👤</div>
-        <div class="profile-info">
-            <p><span>Hero Name:</span> <span id="profileUsername"></span></p>
-            <p><span>Level:</span> <span id="profileLevel"></span></p>
-            <p><span>XP:</span> <span id="profileXP"></span></p>
-            <p><span>Focus Streak:</span> <span id="profileStreak"></span></p>
-            <!-- Add more stats or settings options here -->
-        </div>
     </div>
 
-    <!-- Focus Stats Page Modal -->
-    <div id="focusStatsPage" style="display: none;">
-        <button class="close-modal-btn" onclick="toggleStatsPage(false)">X</button>
-        <h3>Focus Stats</h3>
-        <p><span>Total Focus Time:</span> <span id="statsTotalFocusTime">0</span> min</p>
-        <p><span>Distractions Defeated:</span> <span id="statsTotalDistractions">0</span></p>
-        <p><span>Videos Completed:</span> <span id="statsTotalVideosWatched">0</span></p>
-
-        <h4>Daily Focus Heatmap</h4>
-        <table id="statsCalendar">
-            <thead>
-                <tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>
-            </thead>
-            <tbody id="statsCalendarBody">
-                <!-- Calendar grid generated by JS -->
-            </tbody>
-        </table>
-         <p style="font-size: 12px; margin-top: 10px; border: none;">*More blue means more XP earned that day.</p>
+    <div id="signinForm" style="display: none;">
+      <div class="title">CREATE YOUR <span>ACCOUNT</span></div>
+      <div class="subtitle">Sign in to track your progress</div>
+      <input type="text" id="username" placeholder="Hero Name" required />
+      <input type="password" id="password" placeholder="Secret Code" required />
+      <button data-action="sign-in">ENTER REALM</button>
+      <p>New adventurer? <button data-action="create-account">CREATE ACCOUNT</button></p>
     </div>
 
-    <!-- ToDo List (Now a fixed overlay) -->
-    <div id="todoList">
-        <button class="close-modal-btn" onclick="toggleTodo(false)" style="z-index: 103;">X</button> <!-- Ensure close button is usable -->
-        <h3>TO-DO QUESTS</h3>
+    <div id="inputForm" style="display: none;">
+      <div id="achievementLevel"></div>
+      <div id="streakDisplay"></div>
+      <button id="todoBtn">TO-DO</button>
+      <button id="statsBtn">HERO STATS</button>
+      <button id="pyqBtn">TRAINING GROUNDS</button>
+
+      <div id="todoList">
+        <h3>TO-DO</h3>
         <div id="tasks">
-          <!-- Task lines added by JS -->
+          <div class="task-line">
+            <input type="checkbox" class="task-check" />
+            <input type="text" class="task-text" placeholder="Add a quest..." />
+            <button class="set-deadline">⏰</button>
+            <span class="remove-task">x</span>
+          </div>
         </div>
-        <button data-action="add-task">ADD QUEST</button> <!-- Optional: Button to add new task -->
         <button data-action="save-tasks">SAVE QUESTS</button>
+      </div>
+
+      <div id="analytics">
+        <h3>HERO STATS</h3>
+        <p>Focus Time: <span id="totalFocusTime">0</span> min</p>
+        <p>Distractions Defeated: <span id="totalDistractions">0</span></p>
+        <p>Videos Completed: <span id="totalVideosWatched">0</span></p>
+      </div>
+
+      <div class="title">ENTER YOUR <span>YOUTUBE URL</span></div>
+      <div class="subtitle"></div>
+      <select id="playlistSelect">
+        <option value="">Select a Playlist</option>
+      </select>
+      <input type="text" id="playlistName" placeholder="Save Path As..." />
+      <button data-action="save-playlist">SAVE PLAYLIST</button>
+      <button data-action="remove-playlist">DELETE PLAYLIST</button>
+
+      <div id="urlInputs">
+        <div class="url-container">
+          <input type="text" class="youtube-url" placeholder="YouTube URL (Videos or Live Streams)" required />
+        </div>
+      </div>
+
+      <button data-action="add-url">ADD URL</button>
+      <button data-action="start-playback">BEGIN FOCUS</button>
     </div>
 
-    <!-- Timer Display (Only shown during focus session) -->
+    <div id="player" style="display: none;"></div>
+
     <div id="timerDisplay">
-        <span id="timerText"></span>
-        <div id="progressBar"><div id="progressFill"></div></div>
+      <span id="timerText"></span>
+      <div id="progressBar">
+        <div id="progressFill"></div>
+      </div>
     </div>
 
-    <!-- Points Display (Global) -->
     <div id="pointsDisplay"><span style="color: #8e2de2;">⭐</span> XP: 0</div>
+    <div id="clockDisplay"></div>
 
-    <!-- PDF Viewer (Remains global, toggled) -->
-    <div id="pdfViewer">
-        <input type="file" id="pdfInput" accept=".pdf" />
-        <iframe id="pdfFrame"></iframe>
-        <button onclick="togglePDFViewer(false)" style="background: var(--accent); margin-top: 10px;">CLOSE</button>
+    <div id="sitesBox" style="display: none;">ALLIED REALMS 👇</div>
+    <div id="sitesPopup">
+      <button id="closeSitesPopup">X</button>
+      <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer">FOREST QUEST - TASK MANAGEMENT</a>
+      <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer">POMODORO REALM</a>
+      <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer">DAILY QUEST PLANNER</a>
     </div>
 
-    <!-- Chatbot (Global) -->
-    <div id="fireBox">🧙</div>
-    <div id="aiPopup">
-      <iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameBorder="0"></iframe>
-    </div>
+    <button id="restartBtn" style="display: none;">EXIT</button>
 
-    <!-- Lofi Player (Global) -->
+    <div id="videoSidebar"></div>
+
     <div id="lofiPlayer">
       <div style="text-align: center; margin-bottom: 5px;">LOFI MUSIC ♬</div>
       <button id="lofiPrev">◄</button>
@@ -756,11 +1288,79 @@
       <button id="lofiNext">►</button>
     </div>
 
-    <!-- Pomodoro Overlay -->
-    <div id="pomodoroOverlay">
+    <div id="achievementOverlay"></div>
+
+    <div id="confirmationDialog" style="display: none;">
+      <p>Are you sure you want to abandon your quest?</p>
+      <button id="confirmBtn">YES</button>
+      <button id="cancelBtn">NO</button>
+    </div>
+
+    <div id="streakShieldDialog" style="display: none;">
+      <p>Are you sure you want to buy Streak Shield for 800 XP? (Protects streak for 1 week)</p>
+      <button id="streakShieldConfirmBtn">YES</button>
+      <button id="streakShieldCancelBtn">NO</button>
+    </div>
+
+    <div id="doublePointsDialog" style="display: none;">
+      <p>Are you sure you want to buy Double Points Power-Up for 800 XP? (Doubles points for 24 hours)</p>
+      <button id="doublePointsConfirmBtn">YES</button>
+      <button id="doublePointsCancelBtn">NO</button>
+    </div>
+
+    <div id="deadlineDialog" style="display: none;">
+      <h3>Set Task Deadline</h3>
+      <p>Set a deadline for your task to earn points!</p>
+      <input type="date" id="deadlineDate" />
+      <input type="time" id="deadlineTime" />
+      <select id="taskDifficulty">
+        <option value="50">Easy (50 points)</option>
+        <option value="100">Medium (100 points)</option>
+        <option value="200">Hard (200 points)</option>
+        <option value="300">Very Hard (300 points)</option>
+      </select>
+      <button id="deadlineConfirmBtn">SET DEADLINE</button>
+      <button id="deadlineCancelBtn">CANCEL</button>
+    </div>
+
+    <div id="sessionCompleteDialog" style="display: none;">
+      <h3>Session Complete!</h3>
+      <p>Great work! You've completed a focus session.</p>
+      <p>One more session for +100 bonus points?</p>
+      <button id="sessionContinueBtn">CONTINUE (+100 XP)</button>
+      <button id="sessionEndBtn">END SESSION</button>
+    </div>
+
+    <button id="pdfToggle">PDF UPLOAD</button>
+
+    <div id="pdfViewer">
+      <input type="file" id="pdfInput" accept=".pdf" />
+      <iframe id="pdfFrame"></iframe>
+      <button onclick="togglePDFViewer()" style="background: #ff4444; margin-top: 10px;">CLOSE</button>
+    </div>
+
+    <div id="fireBox">🧙</div>
+    <div id="aiPopup">
+      <iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameBorder="0"></iframe>
+    </div>
+
+    <div id="mysteryBoxPopup" style="display: none;">
+      <h3>Focus Mystery Box</h3>
+      <p id="mysteryRewardText">Click to reveal your reward!</p>
+      <button id="openMysteryBox">OPEN</button>
+    </div>
+
+    <div id="audioTracksStore" style="display: none;">
+      <h3>AUDIO TRACKS STORE</h3>
+      <p>Unlock exclusive Lo-Fi tracks to enhance your focus sessions!</p>
+      <div id="audioTracksList"></div>
+      <button id="closeAudioStore" style="background: #ff4444; margin-top: 15px;">CLOSE</button>
+    </div>
+
+    <div id="pomodoroOverlay" style="display: none;">
       <div id="pomodoroContainer">
         <h3>QUIET POMODORO</h3>
-        <p>Focus in silence, earn XP with each minute</p>
+        <p>Focus in silence, earn points with each minute</p>
         <div id="pomodoroTimer">60:00</div>
         <div id="pomodoroStatus">Ready to begin</div>
         <div id="pomodoroControls">
@@ -771,491 +1371,1549 @@
       </div>
     </div>
 
-    <!-- Dialogs & Overlays (Keep as is) -->
-    <div id="achievementOverlay"></div>
-    <div id="confirmationDialog">...</div>
-    <div id="streakShieldDialog">...</div>
-    <div id="doublePointsDialog">...</div>
-    <div id="deadlineDialog">...</div>
-    <div id="sessionCompleteDialog">...</div>
-    <div id="mysteryBoxPopup">...</div>
-    <div id="audioTracksStore">...</div>
-
-    <!-- Audio Elements (Keep as is) -->
-    <audio id="focusAudio" preload="none" src="..."></audio>
+    <audio id="focusAudio" preload="none" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
     <audio id="lofiAudio" preload="none" loop></audio>
-    <audio id="pomodoroCompleteAudio" preload="none" src="..."></audio>
-
-  </div> <!-- End game-container -->
+    <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
+  </div>
 
   <script>
     ;(() => {
-      // --- Existing Variables (Keep as is unless noted) ---
-      let currentPage = 'landingPage'; // Track current visible page
-      let dailyFocusData = JSON.parse(localStorage.getItem("dailyFocusData") || "{}"); // For calendar heatmap
+      let currentVideoIndex = 0
+      let player
+      let videoIds = []
+      let isFocusModeActive = false
+      let countdownInterval
+      let distractionCount = 0
+      let points = 0
+      let isSignedIn = false
+      let currentUser = null
+      const focusDuration = 50 * 60 * 1000
+      const firstBreakDuration = 15 * 60 * 1000
+      const secondBreakDuration = 10 * 60 * 1000
+      let timerMode = "Focus Time"
+      let timerRemaining = focusDuration / 1000
+      let completedVideos = new Set()
+      let allVideosCompleted = false
+      let totalFocusTime = 0
+      let totalDistractions = 0
+      let totalVideosWatched = 0
+      let playlists = JSON.parse(localStorage.getItem("playlists") || "[]")
+      let tasks = JSON.parse(localStorage.getItem("tasks") || "[]")
+      let previousPoints = 0
+      let streakDays = 0
+      let lastFocusDate = null
+      let isYouTubeAPILoaded = false
+      let lofiAudio
+      const lofiSongs = [
+        "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1",
+        "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1",
+        "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1",
+        "https://www.dropbox.com/scl/fi/lb5f47widcz8mwhg79jiz/Kate-Grove-SKYRIM-THEME-skyrim-elderscrolls-ocarina.mp3?rlkey=f8kpm1ipyowc1wv998myu06us&st=bm9qmodf&dl=1",
+        "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1",
+        "https://www.dropbox.com/scl/fi/7xoemzmrgq0wzbxc9i9tp/Jumping-_brick-Sidewalks-and-skeletons-goth-slowed-reverb-best-part-loop.mp3?rlkey=d4dt6rv6sdzteextqek29geug&st=4umnyp0c&dl=1",
+        "https://www.dropbox.com/scl/fi/macw47c2kvur0yfi4r9up/St3phen-If-Youre-A-Gamer-This-Song-FOUND-You.mp3?rlkey=qudky54311tppavhvnpra89ff&st=7dgshk5k&dl=1",
+        "https://www.dropbox.com/scl/fi/c1iy5yjmf3d57jrb1aokc/KestrelTapes-what-nostalgia-sounds-like...mp3?rlkey=qcdj1vpdnzwdb03fxp0vk0661&st=fyqrl6ge&dl=1",
+        "https://www.dropbox.com/scl/fi/p303xk68pvu8sfrmtwzj2/rhawn-there-is-hopecore.mp3?rlkey=m6tva7g4dsva39ii1l0e8tnu0&st=6z218pii&dl=1",
+        "https://www.dropbox.com/scl/fi/bw4n0ne8nli4dkp7p26po/Jaob-not-just-another-hopecore-playlist.mp3?rlkey=jy0umwkadkxj9cju1yf2wz7hw&st=yjxhzw0s&dl=1",
+        "https://www.dropbox.com/scl/fi/evhrjdri6a9n9bk05qhcu/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=lauo50rz3indg5n3to5gfks1y&st=gcqmonsf&dl=1",
+      ]
+      
+      // Premium audio tracks that can be unlocked
+      const premiumLofiTracks = [
+        { id: "track1", name: "Celestial Dreams", url: "https://www.dropbox.com/scl/fi/3xkks3j4tcmnloz46o03m/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=6w97eurecqph68b8f2r7zn5pf&st=epeucz72&dl=1", unlocked: false, cost: 100 },
+        { id: "track2", name: "Midnight Study", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=ui3kdsq5&dl=1", unlocked: false, cost: 100 },
+        { id: "track3", name: "Rainy Day Focus", url: "https://www.dropbox.com/scl/fi/iaouozc1osse7h5ea9lon/thunder-chosic.com.mp3?rlkey=o7u0rarnh4kk657qhmcgyiolz&st=2r9f625j&dl=1", unlocked: false, cost: 100 },
+        { id: "track4", name: "Epic Concentration", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=cq8j3dij&dl=1", unlocked: false, cost: 100 },
+        { id: "track5", name: "Zen Garden", url: "https://www.dropbox.com/scl/fi/8wf64nv0rwubt7hbs5x20/Kurate-Music-Best-of-Gibran-Alcocer-Beautiful-Piano-Mix.mp3?rlkey=i776feuxag0ebullqe0kjo0gp&st=bb3uyo3h&dl=1", unlocked: false, cost: 100 },
+      ]
+      
+      let currentLofiIndex = 0
+      let currentTaskForDeadline = null
 
+      // Pomodoro variables
+      let pomodoroInterval
+      let pomodoroTimeRemaining = 60 * 60 // 60 minutes in seconds
+      let isPomodoroActive = false
+      let pomodoroStartTime = null
+      let pomodoroPoints = 0
 
-      // --- NEW Helper Function for Page Navigation ---
-      function showPage(pageId) {
-          console.log("Showing page:", pageId);
-          // Hide all main page containers
-          document.getElementById('landingPage').style.display = 'none';
-          document.getElementById('signinForm').style.display = 'none';
-          document.getElementById('homePage').style.display = 'none';
-          document.getElementById('watchLecturesPage').style.display = 'none';
-          // Modals/Overlays are handled separately (Profile, Stats, Todo)
+      // Reminder feature variables
+      let reminderInterval
+      let timeOnInputForm = 0
+      const reminderIntervalTime = 20 * 60 * 1000 // 20 minutes in milliseconds
+      const reminderThreshold = 20 * 60 * 1000 // 20 minutes threshold
 
-          // Show the target page
-          const page = document.getElementById(pageId);
-          if (page) {
-              page.style.display = 'block';
-              currentPage = pageId;
+      // Mystery Box and Power-Up feature variables
+      let mysteryBoxCount = 0
+      let activePowerUps = {
+        doublePoints: { active: false, expiry: null },
+        streakShield: { active: false, used: false, expiry: null },
+      }
+      const STREAK_SHIELD_COST = 800
+      const STREAK_SHIELD_DURATION = 7 * 24 * 60 * 60 * 1000 // 1 week in milliseconds
+      const DOUBLE_POINTS_COST = 800
+      const DOUBLE_POINTS_DURATION = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+      const MYSTERY_BOX_STREAK_INTERVAL = 14
+      const mysteryBoxRewards = [
+        { type: "points", value: () => Math.floor(Math.random() * 451) + 50, message: (val) => `+${val} XP` },
+        { type: "doublePoints", value: DOUBLE_POINTS_DURATION, message: () => "Double Points for 24 Hours" },
+        { type: "streakShield", value: 1, message: () => "1-Day Streak Shield" },
+      ]
 
-              // Show/hide top bar based on login state
-              const topBar = document.getElementById('topNavBar');
-              if (isSignedIn && pageId !== 'landingPage' && pageId !== 'signinForm') {
-                  topBar.style.display = 'flex';
-              } else {
-                  topBar.style.display = 'none';
-              }
+      const achievementLevels = [
+        { points: 0, level: "Mortal", color: "white" },
+        { points: 1000, level: "Soldier", color: "#4169E1" },
+        { points: 2000, level: "Knight", color: "white", glow: true },
+        { points: 3000, level: "KING", color: "#FF8C00", glow: true },
+        { points: 4000, level: "GIGACHAD", color: "#FF4500", glow: true },
+        { points: 5000, level: "Demigod", color: "gold", glow: true },
+        { points: 6000, level: "Titan", color: "gold", glow: true, box: true },
+        { points: 7000, level: "Immortal", color: "gold", glow: true, box: true, boxGlow: true },
+        { points: 8000, level: "Celestial", color: "gold", glow: true, box: true, boxGlow: true },
+        { points: 9000, level: "Divine", color: "rainbow" },
+        { points: 10000, level: "Omnipotent", color: "rainbow", glow: true },
+      ]
 
-              // Show/hide global elements based on page
-              const showGlobalElements = isSignedIn && (pageId === 'homePage' || pageId === 'watchLecturesPage');
-               document.getElementById('lofiPlayer').style.display = showGlobalElements ? 'block' : 'none';
-               document.getElementById('fireBox').style.display = showGlobalElements ? 'flex' : 'none'; // firebox uses flex
-
-               // Specific elements for watchLecturesPage during playback are handled in startPlayback/restartSession
-
-          } else {
-              console.error("Page not found:", pageId);
-              // Fallback to home if logged in, landing otherwise
-              showPage(isSignedIn ? 'homePage' : 'landingPage');
-          }
-
-          // Close sidebar after navigation (optional)
-          document.querySelector('.game-sidebar').style.left = '-250px';
-
-          // Update Home Page content if showing home
-          if(pageId === 'homePage') {
-              updateHomePageContent();
-          }
+      function initAudio() {
+        lofiAudio = document.getElementById("lofiAudio")
+        if (lofiAudio) lofiAudio.src = lofiSongs[currentLofiIndex]
       }
 
-      // --- Update Clock Function (Targets new element) ---
-      function updateClock() {
-        const clockContainer = document.getElementById("navClockContainer"); // Target top nav bar clock
-        const homeTimeDate = document.getElementById("homeTimeDate"); // Target home page date display
-
-        if (!clockContainer) return;
-
-        const now = new Date();
-        let hours = now.getHours();
-        const minutes = now.getMinutes().toString().padStart(2, "0");
-        const seconds = now.getSeconds().toString().padStart(2, "0");
-        const period = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12 || 12;
-        hours = hours.toString().padStart(2, "0");
-
-        // Update top bar clock
-        clockContainer.innerHTML = `<span class="time">${hours}:${minutes}:${seconds}</span> <span class="period">${period}</span>`;
-
-        // Update home page date/time
-        if (homeTimeDate && currentPage === 'homePage') {
-             const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-             homeTimeDate.textContent = now.toLocaleDateString(undefined, dateOptions) + ` - ${hours}:${minutes} ${period}`;
+      function getAchievementLevel(points) {
+        let currentLevel = achievementLevels[0]
+        for (const level of achievementLevels) {
+          if (points >= level.points) currentLevel = level
+          else break
         }
+        return currentLevel
       }
 
-      // --- Update Streak Display (Targets new element) ---
+      function updateAchievementLevel() {
+        const achievementDiv = document.getElementById("achievementLevel")
+        if (!achievementDiv) return
+
+        const level = getAchievementLevel(points)
+        let style = `color: ${level.color}; font-weight: bold;`
+        if (level.glow) style += " text-shadow: 0 0 10px;"
+        if (level.box) style += " border: 2px solid gold; padding: 5px;"
+        if (level.boxGlow) style += " box-shadow: 0 0 10px gold;"
+        if (level.color === "rainbow") achievementDiv.classList.add("rainbow")
+        else achievementDiv.classList.remove("rainbow")
+        achievementDiv.innerHTML = level.level
+        achievementDiv.style = style
+        updateSidebarDashboard()
+      }
+
+      function showAchievementOverlay(level) {
+        const overlay = document.getElementById("achievementOverlay")
+        if (!overlay) return
+
+        overlay.textContent = `LEVEL UP! ${level.toUpperCase()} UNLOCKED!`
+        overlay.style.display = "flex"
+        setTimeout(() => overlay.style.display = "none", 5000)
+      }
+
+      function updateClock() {
+        const clockDisplay = document.getElementById("clockDisplay")
+        if (!clockDisplay) return
+
+        const now = new Date()
+        let hours = now.getHours()
+        const minutes = now.getMinutes().toString().padStart(2, "0")
+        const seconds = now.getSeconds().toString().padStart(2, "0")
+        const period = hours >= 12 ? "PM" : "AM"
+        hours = hours % 12 || 12
+        hours = hours.toString().padStart(2, "0")
+        clockDisplay.innerHTML = `<span class="time">${hours}:${minutes}:${seconds}</span> <span class="period">${period}</span>`
+      }
+
+      function playLofi() {
+        if (!lofiAudio) return
+        lofiAudio.play().catch((err) => console.error("Lofi play error:", err))
+      }
+
+      function pauseLofi() {
+        if (!lofiAudio) return
+        lofiAudio.pause()
+      }
+
+      function prevLofi() {
+        if (!lofiAudio) return
+        currentLofiIndex = (currentLofiIndex - 1 + lofiSongs.length) % lofiSongs.length
+        lofiAudio.src = lofiSongs[currentLofiIndex]
+        playLofi()
+      }
+
+      function nextLofi() {
+        if (!lofiAudio) return
+        currentLofiIndex = (currentLofiIndex + 1) % lofiSongs.length
+        lofiAudio.src = lofiSongs[currentLofiIndex]
+        playLofi()
+      }
+
+      function toggleSitesPopup() {
+        const popup = document.getElementById("sitesPopup")
+        if (!popup) return
+        popup.style.display = popup.style.display === "block" ? "none" : "block"
+      }
+
+      function closeSitesPopup() {
+        const popup = document.getElementById("sitesPopup")
+        if (!popup) return
+        popup.style.display = "none"
+      }
+
       function updateStreak() {
-        // Removed old streakDisplay logic
-        const streakTooltip = document.getElementById("streakTooltip");
-        const streakButton = document.getElementById("streakBtn"); // For potential styling changes based on streak
+        const streakDisplay = document.getElementById("streakDisplay")
+        if (!streakDisplay) return
 
-        if (!streakTooltip) return;
-
-        const today = new Date().toDateString();
-        const lastDate = localStorage.getItem("lastFocusDate");
-        let updatedStreak = false;
+        const today = new Date().toDateString()
+        const lastDate = localStorage.getItem("lastFocusDate")
 
         if (lastDate) {
-          const last = new Date(lastDate);
-          const diffTime = new Date(today).getTime() - last.getTime(); // Use getTime() for accurate difference
-          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          const last = new Date(lastDate)
+          const diffTime = new Date(today) - last
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
           if (diffDays === 1) {
-            streakDays++;
-            updatedStreak = true;
-            checkMysteryBoxMilestone();
+            streakDays++
+            checkMysteryBoxMilestone()
           } else if (diffDays > 1) {
-            console.log(`Streak check: ${diffDays} days since last focus.`);
-            if (activePowerUps.streakShield.active && !activePowerUps.streakShield.used && Date.now() < activePowerUps.streakShield.expiry) {
-               // Don't increment, just protect
-               activePowerUps.streakShield.used = true; // Mark as used for this break
-               alert(`Streak Shield protected your ${streakDays}-day streak! Focus today to continue.`);
-               saveState(); // Save shield usage
+            if (activePowerUps.streakShield.active && Date.now() < activePowerUps.streakShield.expiry) {
+              streakDays++
+              alert("Streak Shield protected your streak!")
             } else {
-                 if (streakDays > 0) { // Only reset if there was a streak
-                     console.log("Streak reset.");
-                     streakDays = 0;
-                     updatedStreak = true;
-                 }
+              streakDays = 0 // Reset streak if no focus session and no active shield
             }
           }
-          // If diffDays is 0, do nothing (already focused today)
-
-        } else if (isFocusModeActive || isPomodoroActive) { // Start streak on first focus of the day
-            streakDays = 1;
-            updatedStreak = true;
-            checkMysteryBoxMilestone();
-        }
-
-        if (updatedStreak && (isFocusModeActive || isPomodoroActive)) { // Only save date if focus actually happened
-            localStorage.setItem("lastFocusDate", today);
-            // Reset shield 'used' status for the next potential break
-             if(activePowerUps.streakShield.active) {
-                 activePowerUps.streakShield.used = false;
-             }
-            if (isSignedIn && currentUser) {
-              const users = JSON.parse(localStorage.getItem("users") || "{}");
-              if (users[currentUser]) {
-                  users[currentUser].streakDays = streakDays;
-                  users[currentUser].lastFocusDate = today;
-                  users[currentUser].mysteryBoxCount = mysteryBoxCount;
-                  users[currentUser].activePowerUps = activePowerUps;
-                  localStorage.setItem("users", JSON.stringify(users));
-              }
-            }
-             console.log("Streak updated to:", streakDays, "Last focus date:", today);
-        }
-
-        // Update UI
-        streakTooltip.textContent = `${streakDays}-day focus streak`;
-        // Optional: Add visual indicator for active streak
-        if (streakDays > 0) {
-            streakButton.style.boxShadow = '0 0 10px gold';
         } else {
-            streakButton.style.boxShadow = '2px 2px 10px rgba(0, 0, 0, 0.199)';
+          streakDays = 1 // First focus session
         }
 
+        localStorage.setItem("lastFocusDate", today)
+        streakDisplay.innerHTML = `<span style="color: #8e2de2;">🔥</span> ${streakDays} day${streakDays === 1 ? "" : "s"} of focus`
 
-        // Update sidebar (if still needed there, but removed from default)
-        updateSidebarDashboard(); // Ensure sidebar function still updates streak if needed elsewhere
-      }
-
-      // --- Update Home Page Content ---
-      function updateHomePageContent() {
-          if (currentPage !== 'homePage') return;
-
-          const welcomeMsg = document.getElementById('welcomeMessage');
-          const focusStatus = document.getElementById('homeFocusStatus');
-          const homeUsername = document.getElementById('homeUsername');
-
-          if(currentUser && welcomeMsg) {
-              homeUsername.textContent = `Hero: ${currentUser}`;
-              // Simple welcome messages
-              const messages = [
-                  `Ready to conquer your quests, ${currentUser}?`,
-                  `Let's get focused, ${currentUser}!`,
-                  `Time to learn and grow, ${currentUser}!`,
-                  `What challenge will you overcome today, ${currentUser}?`
-              ];
-              welcomeMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
-          }
-
-          if(focusStatus) {
-              // Example status - enhance this
-              const incompleteTasks = tasks.filter(task => !task.completed).length;
-              if (incompleteTasks > 0) {
-                  focusStatus.textContent = `Today's objective: ${incompleteTasks} quest${incompleteTasks === 1 ? '' : 's'} remaining!`;
-              } else {
-                  focusStatus.textContent = `All quests complete! Ready for a new challenge?`;
-              }
-          }
-
-          // Time/Date is updated by updateClock()
-      }
-
-
-      // --- Toggle Profile Page ---
-      function toggleProfilePage(show) {
-          const profilePage = document.getElementById('profilePage');
-          if (!profilePage) return;
-
-          if (show) {
-              document.getElementById('profileUsername').textContent = currentUser || 'N/A';
-              const levelData = getAchievementLevel(points);
-              document.getElementById('profileLevel').textContent = levelData.level;
-              document.getElementById('profileXP').textContent = points;
-              document.getElementById('profileStreak').textContent = `${streakDays} day${streakDays === 1 ? '' : 's'}`;
-              // Add profile picture logic if implemented
-              profilePage.style.display = 'block';
-          } else {
-              profilePage.style.display = 'none';
-          }
-      }
-
-      // --- Toggle Stats Page ---
-      function toggleStatsPage(show) {
-          const statsPage = document.getElementById('focusStatsPage');
-          if (!statsPage) return;
-
-          if (show) {
-              // Update basic stats
-              document.getElementById('statsTotalFocusTime').textContent = Math.floor(totalFocusTime / 60);
-              document.getElementById('statsTotalDistractions').textContent = totalDistractions;
-              document.getElementById('statsTotalVideosWatched').textContent = totalVideosWatched;
-
-              // Generate Calendar Heatmap
-              generateCalendarHeatmap();
-
-              statsPage.style.display = 'block';
-          } else {
-              statsPage.style.display = 'none';
-          }
-      }
-
-       // --- Generate Calendar Heatmap ---
-       function generateCalendarHeatmap() {
-           const calendarBody = document.getElementById('statsCalendarBody');
-           if (!calendarBody) return;
-
-           calendarBody.innerHTML = ''; // Clear previous calendar
-
-           const today = new Date();
-           const currentMonth = today.getMonth();
-           const currentYear = today.getFullYear();
-
-           // Go back ~3 months (adjust as needed)
-           let startDate = new Date(currentYear, currentMonth - 3, 1);
-           let endDate = new Date(currentYear, currentMonth + 1, 0); // End of current month
-
-           let date = new Date(startDate);
-           let week = [];
-           let firstDayOffset = date.getDay(); // 0=Sun, 1=Mon, ...
-
-           // Add empty cells for the first week offset
-           for (let i = 0; i < firstDayOffset; i++) {
-               week.push(document.createElement('td'));
-           }
-
-           while (date <= endDate) {
-               let cell = document.createElement('td');
-               let dayOfMonth = date.getDate();
-               cell.textContent = dayOfMonth;
-
-               let dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-               if (dailyFocusData[dateString]) {
-                   let pointsToday = dailyFocusData[dateString];
-                   cell.classList.add('has-data');
-                   // Determine heatmap level (example thresholds)
-                   let level = 0;
-                   if (pointsToday >= 500) level = 5;
-                   else if (pointsToday >= 300) level = 4;
-                   else if (pointsToday >= 150) level = 3;
-                   else if (pointsToday >= 50) level = 2;
-                   else if (pointsToday > 0) level = 1;
-
-                   if (level > 0) {
-                       cell.classList.add(`level-${level}`);
-                   }
-                   cell.title = `${dateString}: ${pointsToday} XP`; // Tooltip
-               } else {
-                    cell.title = `${dateString}: 0 XP`;
-               }
-
-               // Highlight today
-               if (date.toDateString() === today.toDateString()) {
-                   cell.style.borderColor = var(--accent);
-                   cell.style.fontWeight = 'bold';
-               }
-
-               week.push(cell);
-
-               if (date.getDay() === 6) { // Saturday, end of week
-                   let row = document.createElement('tr');
-                   week.forEach(dayCell => row.appendChild(dayCell));
-                   calendarBody.appendChild(row);
-                   week = []; // Start new week
-               }
-
-               date.setDate(date.getDate() + 1); // Move to next day
-           }
-
-           // Add remaining cells for the last week
-           if (week.length > 0) {
-               while (week.length < 7) {
-                   week.push(document.createElement('td'));
-               }
-               let row = document.createElement('tr');
-               week.forEach(dayCell => row.appendChild(dayCell));
-               calendarBody.appendChild(row);
-           }
-       }
-
-        // --- Update Daily Focus Data ---
-        function updateDailyData(pointsEarned) {
-            if (pointsEarned <= 0) return;
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            dailyFocusData[todayStr] = (dailyFocusData[todayStr] || 0) + pointsEarned;
-            localStorage.setItem("dailyFocusData", JSON.stringify(dailyFocusData));
-             console.log("Updated daily data:", todayStr, dailyFocusData[todayStr]);
-
-             // Also save to user data if logged in
-             if (isSignedIn && currentUser) {
-                 const users = JSON.parse(localStorage.getItem("users") || "{}");
-                 if (users[currentUser]) {
-                     if (!users[currentUser].dailyFocusData) {
-                         users[currentUser].dailyFocusData = {};
-                     }
-                     users[currentUser].dailyFocusData[todayStr] = dailyFocusData[todayStr];
-                     localStorage.setItem("users", JSON.stringify(users));
-                 }
-             }
+        if (isSignedIn && currentUser) {
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          users[currentUser].streakDays = streakDays
+          users[currentUser].mysteryBoxCount = mysteryBoxCount
+          users[currentUser].activePowerUps = activePowerUps
+          localStorage.setItem("users", JSON.stringify(users))
         }
 
+        const sidebarStreak = document.getElementById("sidebarStreak")
+        if (sidebarStreak) sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
+      }
 
-      // --- MODIFIED loadSavedState ---
+      function checkMysteryBoxMilestone() {
+        if (streakDays > 0 && streakDays % MYSTERY_BOX_STREAK_INTERVAL === 0) {
+          mysteryBoxCount++
+          showMysteryBoxPopup()
+          saveState()
+        }
+      }
+
+      function showMysteryBoxPopup() {
+        const popup = document.getElementById("mysteryBoxPopup")
+        const rewardText = document.getElementById("mysteryRewardText")
+        if (!popup || !rewardText) return
+
+        rewardText.textContent = `You earned a Focus Mystery Box! (${mysteryBoxCount} available)`
+        popup.style.display = "block"
+      }
+
+      function openMysteryBox() {
+        if (mysteryBoxCount <= 0) return
+
+        const popup = document.getElementById("mysteryBoxPopup")
+        const rewardText = document.getElementById("mysteryRewardText")
+        if (!popup || !rewardText) return
+
+        const reward = mysteryBoxRewards[Math.floor(Math.random() * mysteryBoxRewards.length)]
+        let rewardValue = reward.value instanceof Function ? reward.value() : reward.value
+
+        switch (reward.type) {
+          case "points":
+            points += rewardValue
+            break
+          case "doublePoints":
+            activePowerUps.doublePoints.active = true
+            activePowerUps.doublePoints.expiry = Date.now() + rewardValue
+            setTimeout(() => {
+              activePowerUps.doublePoints.active = false
+              saveState()
+              alert("Double Points power-up has expired!")
+            }, rewardValue)
+            break
+          case "streakShield":
+            activePowerUps.streakShield.active = true
+            activePowerUps.streakShield.used = false
+            activePowerUps.streakShield.expiry = Date.now() + STREAK_SHIELD_DURATION
+            setTimeout(() => {
+              activePowerUps.streakShield.active = false
+              saveState()
+              alert("Streak Shield has expired!")
+            }, STREAK_SHIELD_DURATION)
+            break
+        }
+
+        rewardText.textContent = `Reward: ${reward.message(rewardValue)}`
+        mysteryBoxCount--
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+        saveState()
+
+        setTimeout(() => {
+          if (mysteryBoxCount > 0) showMysteryBoxPopup()
+          else popup.style.display = "none"
+        }, 2000)
+      }
+
+      function applyPowerUps(pointsEarned) {
+        if (activePowerUps.doublePoints.active && Date.now() < activePowerUps.doublePoints.expiry) {
+          return pointsEarned * 2
+        }
+        return pointsEarned
+      }
+
+      function showStreakShieldDialog() {
+        const dialog = document.getElementById("streakShieldDialog")
+        if (!dialog) return
+        if (points < STREAK_SHIELD_COST) {
+          alert("Not enough XP! You need 800 XP to buy a Streak Shield.")
+          return
+        }
+        dialog.style.display = "block"
+      }
+
+      function handleStreakShieldConfirmation(choice) {
+        const dialog = document.getElementById("streakShieldDialog")
+        if (!dialog) return
+
+        dialog.style.display = "none"
+        if (choice === "yes") {
+          points -= STREAK_SHIELD_COST
+          activePowerUps.streakShield.active = true
+          activePowerUps.streakShield.used = false
+          activePowerUps.streakShield.expiry = Date.now() + STREAK_SHIELD_DURATION
+          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          alert("Streak Shield activated for 1 week!")
+          saveState()
+          setTimeout(() => {
+            activePowerUps.streakShield.active = false
+            saveState()
+            alert("Your Streak Shield has expired!")
+          }, STREAK_SHIELD_DURATION)
+        }
+      }
+
+      function showDoublePointsDialog() {
+        const dialog = document.getElementById("doublePointsDialog")
+        if (!dialog) return
+        if (points < DOUBLE_POINTS_COST) {
+          alert("Not enough XP! You need 800 XP to buy Double Points Power-Up.")
+          return
+        }
+        dialog.style.display = "block"
+      }
+
+      function handleDoublePointsConfirmation(choice) {
+        const dialog = document.getElementById("doublePointsDialog")
+        if (!dialog) return
+
+        dialog.style.display = "none"
+        if (choice === "yes") {
+          points -= DOUBLE_POINTS_COST
+          activePowerUps.doublePoints.active = true
+          activePowerUps.doublePoints.expiry = Date.now() + DOUBLE_POINTS_DURATION
+          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          alert("Double Points Power-Up activated for 24 hours!")
+          saveState()
+          setTimeout(() => {
+            activePowerUps.doublePoints.active = false
+            saveState()
+            alert("Your Double Points Power-Up has expired!")
+          }, DOUBLE_POINTS_DURATION)
+        }
+      }
+
+      // Pomodoro functions
+      function showPomodoroOverlay() {
+        const overlay = document.getElementById("pomodoroOverlay")
+        if (!overlay) return
+        
+        // Reset pomodoro timer to 60 minutes
+        pomodoroTimeRemaining = 60 * 60
+        updatePomodoroDisplay()
+        
+        overlay.style.display = "flex"
+        document.getElementById("pomodoroStatus").textContent = "Ready to begin"
+      }
+
+      function startPomodoro() {
+        if (isPomodoroActive) return
+        
+        isPomodoroActive = true
+        pomodoroStartTime = Date.now()
+        document.getElementById("pomodoroStatus").textContent = "Focus in progress..."
+        
+        pomodoroInterval = setInterval(() => {
+          pomodoroTimeRemaining--
+          updatePomodoroDisplay()
+          
+          if (pomodoroTimeRemaining <= 0) {
+            completePomodoroSession()
+          }
+        }, 1000)
+      }
+
+      function resetPomodoro() {
+        clearInterval(pomodoroInterval)
+        isPomodoroActive = false
+        pomodoroTimeRemaining = 60 * 60
+        pomodoroStartTime = null
+        updatePomodoroDisplay()
+        document.getElementById("pomodoroStatus").textContent = "Timer reset"
+      }
+
+      function closePomodoroOverlay() {
+        const overlay = document.getElementById("pomodoroOverlay")
+        if (!overlay) return
+        
+        if (isPomodoroActive) {
+          if (confirm("Pomodoro session in progress. Are you sure you want to exit?")) {
+            clearInterval(pomodoroInterval)
+            isPomodoroActive = false
+            overlay.style.display = "none"
+            
+            // Ensure all menu buttons are clickable after closing
+            setTimeout(() => {
+              reattachEventListeners()
+            }, 100)
+          }
+        } else {
+          overlay.style.display = "none"
+          
+          // Ensure all menu buttons are clickable after closing
+          setTimeout(() => {
+            reattachEventListeners()
+          }, 100)
+        }
+      }
+
+      // Function to reattach event listeners after pomodoro closes
+      function reattachEventListeners() {
+        document.getElementById("streakShieldBtn").onclick = showStreakShieldDialog
+        document.getElementById("doublePointsBtn").onclick = showDoublePointsDialog
+        document.getElementById("audioStoreBtn").onclick = showAudioTracksStore
+        document.getElementById("quietPomodoroBtn").onclick = showPomodoroOverlay
+        document.getElementById("logoutBtn").onclick = logout
+      }
+
+      function updatePomodoroDisplay() {
+        const timerElement = document.getElementById("pomodoroTimer")
+        if (!timerElement) return
+        
+        const minutes = Math.floor(pomodoroTimeRemaining / 60)
+        const seconds = pomodoroTimeRemaining % 60
+        
+        timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+      }
+
+      function completePomodoroSession() {
+        clearInterval(pomodoroInterval)
+        isPomodoroActive = false
+        
+        // Play completion sound
+        const audio = document.getElementById("pomodoroCompleteAudio")
+        if (audio) audio.play().catch(err => console.error("Pomodoro audio error:", err))
+        
+        // Calculate points (1 point per minute)
+        const minutesCompleted = 60 - Math.floor(pomodoroTimeRemaining / 60)
+        const pointsEarned = applyPowerUps(minutesCompleted)
+        points += pointsEarned
+        
+        document.getElementById("pomodoroStatus").textContent = `Completed! Earned ${pointsEarned} XP`
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+        
+        saveState()
+        checkLevelUp()
+      }
+
+      // Reminder feature functions
+      function startReminderTimer() {
+        const inputForm = document.getElementById("inputForm")
+        if (inputForm.style.display !== "block") {
+          stopReminderTimer()
+          timeOnInputForm = 0
+          return
+        }
+
+        reminderInterval = setInterval(() => {
+          timeOnInputForm += reminderIntervalTime
+          if (timeOnInputForm >= reminderThreshold) {
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification("Check Your To-Do List!", {
+                body: "Hey hero, don't forget to review your quests!",
+                icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
+              })
+            } else if ("Notification" in window && Notification.permission !== "denied") {
+              Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                  new Notification("Check Your To-Do List!", {
+                    body: "Hey hero, don't forget to review your quests!",
+                    icon: "https://img.icons8.com/ios-filled/50/ffffff/checklist.png",
+                  })
+                } else {
+                  alert("Reminder: Check your to-do list!")
+                }
+              })
+            } else {
+              alert("Reminder: Check your to-do list!")
+            }
+          }
+        }, reminderIntervalTime)
+      }
+
+      function stopReminderTimer() {
+        if (reminderInterval) {
+          clearInterval(reminderInterval)
+          reminderInterval = null
+        }
+      }
+
+      // Task deadline functions
+      function showDeadlineDialog(taskElement) {
+        const dialog = document.getElementById("deadlineDialog")
+        if (!dialog) return
+        
+        currentTaskForDeadline = taskElement
+        
+        // Set default date to tomorrow
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const dateInput = document.getElementById("deadlineDate")
+        dateInput.value = tomorrow.toISOString().split('T')[0]
+        
+        // Set default time to current time
+        const timeInput = document.getElementById("deadlineTime")
+        const now = new Date()
+        timeInput.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+        
+        dialog.style.display = "block"
+      }
+
+      function handleDeadlineConfirmation(choice) {
+        const dialog = document.getElementById("deadlineDialog")
+        if (!dialog || !currentTaskForDeadline) return
+
+        dialog.style.display = "none"
+        
+        if (choice === "yes") {
+          const dateInput = document.getElementById("deadlineDate").value
+          const timeInput = document.getElementById("deadlineTime").value
+          const difficultySelect = document.getElementById("taskDifficulty")
+          const points = difficultySelect.value
+          
+          const deadlineDate = new Date(`${dateInput}T${timeInput}`)
+          
+          // Add deadline info to the task
+          const deadlineInfo = document.createElement("span")
+          deadlineInfo.className = "deadline-info"
+          deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
+          
+          const pointsInfo = document.createElement("span")
+          pointsInfo.className = "points-info"
+          pointsInfo.textContent = `+${points}pts`
+          
+          // Remove existing deadline info if any
+          const existingDeadline = currentTaskForDeadline.querySelector(".deadline-info")
+          if (existingDeadline) existingDeadline.remove()
+          
+          const existingPoints = currentTaskForDeadline.querySelector(".points-info")
+          if (existingPoints) existingPoints.remove()
+          
+          currentTaskForDeadline.appendChild(deadlineInfo)
+          currentTaskForDeadline.appendChild(pointsInfo)
+          
+          // Store deadline in task data
+          const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(currentTaskForDeadline)
+          if (taskIndex !== -1 && tasks[taskIndex]) {
+            tasks[taskIndex].deadline = deadlineDate.getTime()
+            tasks[taskIndex].points = parseInt(points)
+            saveTasks()
+          }
+        }
+        
+        currentTaskForDeadline = null
+      }
+
+      function checkTaskDeadlines() {
+        const now = Date.now()
+        let tasksUpdated = false
+        
+        tasks.forEach((task, index) => {
+          // Skip tasks without deadlines or already completed
+          if (!task.deadline || task.deadlineChecked) return
+          
+          if (now > task.deadline) {
+            // Deadline passed
+            if (task.completed) {
+              // Task was completed on time
+              const earnedPoints = task.points || 50
+              points += applyPowerUps(earnedPoints)
+              alert(`Task "${task.text}" completed on time! +${earnedPoints} XP`)
+            } else {
+              // Task was not completed on time
+              const lostPoints = Math.floor((task.points || 50) / 2)
+              alert(`Task "${task.text}" deadline missed! -${lostPoints} XP`)
+              points = Math.max(0, points - lostPoints)
+            }
+            
+            // Mark as checked so we don't process it again
+            tasks[index].deadlineChecked = true
+            tasksUpdated = true
+            
+            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          }
+        })
+        
+        if (tasksUpdated) {
+          saveTasks()
+          saveState()
+        }
+      }
+
+      // Audio tracks store functions
+      function showAudioTracksStore() {
+        const store = document.getElementById("audioTracksStore")
+        const tracksList = document.getElementById("audioTracksList")
+        if (!store || !tracksList) return
+        
+        tracksList.innerHTML = ""
+        
+        premiumLofiTracks.forEach(track => {
+          const trackItem = document.createElement("div")
+          trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`
+          
+          const trackName = document.createElement("div")
+          trackName.className = "track-name"
+          trackName.textContent = track.name
+          
+          const unlockBtn = document.createElement("button")
+          unlockBtn.className = "unlock-track-btn"
+          
+          if (track.unlocked) {
+            unlockBtn.textContent = "UNLOCKED"
+            unlockBtn.disabled = true
+          } else {
+            unlockBtn.textContent = `UNLOCK (${track.cost} XP)`
+            unlockBtn.disabled = points < track.cost
+            unlockBtn.onclick = () => unlockAudioTrack(track.id)
+          }
+          
+          trackItem.appendChild(trackName)
+          trackItem.appendChild(unlockBtn)
+          tracksList.appendChild(trackItem)
+        })
+        
+        store.style.display = "block"
+      }
+
+      function closeAudioTracksStore() {
+        const store = document.getElementById("audioTracksStore")
+        if (store) store.style.display = "none"
+      }
+
+      function unlockAudioTrack(trackId) {
+        const track = premiumLofiTracks.find(t => t.id === trackId)
+        if (!track || track.unlocked || points < track.cost) return
+        
+        // Deduct points and unlock the track
+        points -= track.cost
+        track.unlocked = true
+        
+        // Add to lofi songs if not already there
+        if (!lofiSongs.includes(track.url)) {
+          lofiSongs.push(track.url)
+        }
+        
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+        alert(`Successfully unlocked "${track.name}"!`)
+        
+        // Update the store display
+        showAudioTracksStore()
+        saveState()
+      }
+
+      // Session complete dialog
+      function showSessionCompleteDialog() {
+        const dialog = document.getElementById("sessionCompleteDialog")
+        if (!dialog) return
+        dialog.style.display = "block"
+      }
+
+      function handleSessionContinue(choice) {
+        const dialog = document.getElementById("sessionCompleteDialog")
+        if (!dialog) return
+        
+        dialog.style.display = "none"
+        
+        if (choice === "continue") {
+          // Award bonus points
+          points += applyPowerUps(100)
+          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          
+          // Start a new focus session
+          startTimer(focusDuration, "Focus Time")
+        } else {
+          // End the session
+          endFocusSession()
+        }
+        
+        saveState()
+      }
+
       function loadSavedState() {
         try {
-          // Load general state
-          const savedState = localStorage.getItem("focusModeState");
-          let state = {};
+          const savedState = localStorage.getItem("focusModeState")
           if (savedState) {
-              state = JSON.parse(savedState);
-              // Load basic state variables
-              videoIds = state.videoIds || [];
-              currentVideoIndex = state.currentVideoIndex || 0;
-              distractionCount = state.distractionCount || 0; // Local session distraction
-              points = state.points || 0;
-              timerMode = state.timerMode || "Focus Time";
-              timerRemaining = state.timerRemaining || focusDuration / 1000;
-              isFocusModeActive = state.isFocusModeActive || false; // If YT focus was active
-              isSignedIn = state.isSignedIn || false;
-              currentUser = state.currentUser || null;
-              completedVideos = new Set(state.completedVideos || []);
-              allVideosCompleted = state.allVideosCompleted || false;
-              totalFocusTime = state.totalFocusTime || 0; // Overall stats
-              totalDistractions = state.totalDistractions || 0; // Overall stats
-              totalVideosWatched = state.totalVideosWatched || 0; // Overall stats
-              streakDays = state.streakDays || 0;
-              lastFocusDate = state.lastFocusDate || null; // Get last focus date from state
-              mysteryBoxCount = state.mysteryBoxCount || 0;
-              activePowerUps = state.activePowerUps || {
-                  doublePoints: { active: false, expiry: null },
-                  streakShield: { active: false, used: false, expiry: null },
-              };
-              premiumLofiTracks.forEach(track => { // Load premium track state
-                  const saved = state.premiumLofiTracks?.find(t => t.id === track.id);
-                  if(saved) track.unlocked = saved.unlocked;
+            const progressBar = document.getElementById("progressBar")
+            if (progressBar) progressBar.style.display = "none"
+
+            const state = JSON.parse(savedState)
+            videoIds = state.videoIds || []
+            currentVideoIndex = state.currentVideoIndex || 0
+            distractionCount = state.distractionCount || 0
+            points = state.points || 0
+            timerMode = state.timerMode || "Focus Time"
+            timerRemaining = state.timerRemaining || focusDuration / 1000
+            isFocusModeActive = state.isFocusModeActive || false
+            isSignedIn = state.isSignedIn || false
+            currentUser = state.currentUser || null
+            completedVideos = new Set(state.completedVideos || [])
+            allVideosCompleted = state.allVideosCompleted || false
+            totalFocusTime = state.totalFocusTime || 0
+            totalDistractions = state.totalDistractions || 0
+            totalVideosWatched = state.totalVideosWatched || 0
+            streakDays = state.streakDays || 0
+            lastFocusDate = state.lastFocusDate || null
+            mysteryBoxCount = state.mysteryBoxCount || 0
+            activePowerUps = state.activePowerUps || {
+              doublePoints: { active: false, expiry: null },
+              streakShield: { active: false, used: false, expiry: null },
+            }
+            
+            // Load premium tracks state
+            if (state.premiumLofiTracks) {
+              state.premiumLofiTracks.forEach(savedTrack => {
+                const track = premiumLofiTracks.find(t => t.id === savedTrack.id)
+                if (track) {
+                  track.unlocked = savedTrack.unlocked
                   if (track.unlocked && !lofiSongs.includes(track.url)) {
-                    lofiSongs.push(track.url);
+                    lofiSongs.push(track.url)
                   }
-              });
-              dailyFocusData = state.dailyFocusData || {}; // Load daily data from state
-              currentPage = state.currentPage || (isSignedIn ? 'homePage' : 'landingPage'); // Restore last page
-          }
-
-          // Load user-specific data if signed in
-          if (isSignedIn && currentUser) {
-              const users = JSON.parse(localStorage.getItem("users") || "{}");
-              const userData = users[currentUser];
-              if (userData) {
-                  // Override general state with potentially more up-to-date user data
-                  points = userData.points || points;
-                  totalFocusTime = userData.totalFocusTime || totalFocusTime;
-                  totalDistractions = userData.totalDistractions || totalDistractions;
-                  totalVideosWatched = userData.totalVideosWatched || totalVideosWatched;
-                  tasks = userData.tasks || [];
-                  streakDays = userData.streakDays || streakDays;
-                  lastFocusDate = userData.lastFocusDate || lastFocusDate; // Get user's last focus date
-                  mysteryBoxCount = userData.mysteryBoxCount || mysteryBoxCount;
-                  activePowerUps = userData.activePowerUps || activePowerUps;
-                  dailyFocusData = userData.dailyFocusData || dailyFocusData; // Load user's daily data
-
-                  premiumLofiTracks.forEach(track => {
-                     const savedUserTrack = userData.premiumLofiTracks?.find(t => t.id === track.id);
-                     if(savedUserTrack) track.unlocked = savedUserTrack.unlocked;
-                      if (track.unlocked && !lofiSongs.includes(track.url)) {
-                         lofiSongs.push(track.url);
-                      }
-                  });
-              } else {
-                  // User data not found, might indicate an issue, log out?
-                  console.warn("User data not found for logged-in user:", currentUser);
-                  logout(); // Force logout if user data is missing
-                  return; // Stop further processing
-              }
-          } else {
-              // Not signed in, ensure defaults
-              isSignedIn = false;
-              currentUser = null;
-              // Keep points etc. from general state if needed for guest session, or reset them:
-              // points = 0; totalFocusTime = 0; ... tasks = []; streakDays = 0;
-              currentPage = 'landingPage';
-          }
-
-          console.log("Loaded State - Signed In:", isSignedIn, "User:", currentUser, "Page:", currentPage, "Streak:", streakDays, "Last Focus:", lastFocusDate);
-
-          // Update UI based on loaded state
-          document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
-          updateAchievementLevel(); // Update level display (if visible)
-          updateStreak(); // Update streak display (top bar tooltip)
-          updateSidebarDashboard(); // Update sidebar info
-          restoreTasks(); // Load tasks into UI
-
-           // Determine initial page view
-           if (isFocusModeActive && videoIds.length > 0) {
-               // Resume YouTube focus session
-               showPage('watchLecturesPage'); // Show the container
-               document.getElementById('lectureInputSection').style.display = 'none'; // Hide input
-               document.getElementById('player').style.display = 'block'; // Show player
-               document.getElementById('restartBtn').style.display = 'block';
-               document.getElementById('pdfToggle').style.display = 'block';
-               document.getElementById('timerDisplay').style.display = 'block'; // Show timer
-
-               loadYouTubeAPI()
-                   .then(() => {
-                       setupYouTubePlayer(); // Re-setup player instance
-                       startTimer(timerRemaining * 1000, timerMode); // Resume timer
-                       // player might need to seek to the right position if YT remembers it
-                   })
-                   .catch((err) => console.error("YouTube API load failed on resume:", err));
-           } else {
-               // Not in active YT focus mode, show the determined page
-                showPage(currentPage); // Show the correct page (home, landing, etc.)
-                // If watch page, ensure inputs are visible and player is hidden
-                if (currentPage === 'watchLecturesPage') {
-                    document.getElementById('lectureInputSection').style.display = 'block';
-                    document.getElementById('player').style.display = 'none';
-                    restoreUrlInputs(); // Restore URLs in the input fields
                 }
-                 populatePlaylistSelect(); // Populate playlist dropdown
-           }
+              })
+            }
 
-
-          if (isSignedIn) {
-              startReminderTimer(); // Start reminder if logged in and on home/watch page
-              if (mysteryBoxCount > 0) showMysteryBoxPopup();
+            updateAnalytics()
+            updateAchievementLevel()
+            updateStreak()
+            if (isSignedIn && currentUser) {
+              document.getElementById("landingPage").style.display = "none"
+              document.getElementById("signinForm").style.display = "none"
+              document.getElementById("inputForm").style.display = "block"
+              document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+              document.getElementById("clockDisplay").style.display = "block"
+              document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
+              document.getElementById("lofiPlayer").style.display = "block"
+              restoreUrlInputs()
+              populatePlaylistSelect()
+              restoreTasks()
+              startReminderTimer()
+              if (mysteryBoxCount > 0) showMysteryBoxPopup()
+            }
+            if (videoIds.length > 0) {
+              document.getElementById("inputForm").style.display = "none"
+              document.getElementById("player").style.display = "block"
+              document.getElementById("restartBtn").style.display = "block"
+              document.getElementById("pdfToggle").style.display = "block"
+              document.getElementById("clockDisplay").style.display = "none"
+              document.getElementById("sitesBox").style.display = "none"
+              document.getElementById("lofiPlayer").style.display = "none"
+              stopReminderTimer()
+              loadYouTubeAPI()
+                .then(() => {
+                  setupYouTubePlayer()
+                  if (isFocusModeActive) startTimer(timerRemaining * 1000, timerMode)
+                })
+                .catch((err) => console.error("YouTube API load failed:", err))
+            }
+          } else {
+            document.getElementById("landingPage").style.display = "block"
+            document.getElementById("signinForm").style.display = "none"
+            document.getElementById("inputForm").style.display = "none"
+            document.getElementById("clockDisplay").style.display = "none"
+            document.getElementById("sitesBox").style.display = "none"
+            document.getElementById("lofiPlayer").style.display = "none"
+            stopReminderTimer()
+            updateAnalytics()
+            updateAchievementLevel()
+            updateStreak()
+            restoreTasks()
           }
-
         } catch (err) {
-          console.error("Load saved state error:", err);
-          // Attempt to gracefully recover or reset
-          localStorage.removeItem("focusModeState");
-          logout(); // Force logout/reset on error
+          console.error("Load saved state error:", err)
         }
       }
 
-      // --- MODIFIED saveState ---
+      function redirectToPYQs() {
+        window.open("https://room.examgoal.com/", "_blank")
+      }
+
+      function showSignIn() {
+        document.getElementById("landingPage").style.display = "none"
+        document.getElementById("signinForm").style.display = "block"
+        document.getElementById("inputForm").style.display = "none"
+        document.getElementById("clockDisplay").style.display = "none"
+        document.getElementById("sitesBox").style.display = "none"
+        document.getElementById("lofiPlayer").style.display = "none"
+        stopReminderTimer()
+      }
+
+      function signIn() {
+        try {
+          const username = document.getElementById("username").value
+          const password = document.getElementById("password").value
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          if (users[username] && users[username].password === password) {
+            isSignedIn = true
+            currentUser = username
+            points = users[username].points || 0
+            totalFocusTime = users[username].totalFocusTime || 0
+            totalDistractions = users[username].totalDistractions || 0
+            totalVideosWatched = users[username].totalVideosWatched || 0
+            tasks = users[username].tasks || []
+            streakDays = users[username].streakDays || 0
+            mysteryBoxCount = users[username].mysteryBoxCount || 0
+            activePowerUps = users[username].activePowerUps || {
+              doublePoints: { active: false, expiry: null },
+              streakShield: { active: false, used: false, expiry: null },
+            }
+            
+            // Load premium tracks
+            if (users[username].premiumLofiTracks) {
+              users[username].premiumLofiTracks.forEach(savedTrack => {
+                const track = premiumLofiTracks.find(t => t.id === savedTrack.id)
+                if (track) {
+                  track.unlocked = savedTrack.unlocked
+                  if (track.unlocked && !lofiSongs.includes(track.url)) {
+                    lofiSongs.push(track.url)
+                  }
+                }
+              })
+            }
+            
+            document.getElementById("landingPage").style.display = "none"
+            document.getElementById("signinForm").style.display = "none"
+            document.getElementById("inputForm").style.display = "block"
+            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+            document.getElementById("clockDisplay").style.display = "block"
+            document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
+            document.getElementById("lofiPlayer").style.display = "block"
+            updateAnalytics()
+            updateAchievementLevel()
+            updateStreak()
+            saveState()
+            populatePlaylistSelect()
+            restoreTasks()
+            startReminderTimer()
+            if (mysteryBoxCount > 0) showMysteryBoxPopup()
+            updateSidebarDashboard()
+          } else alert("Invalid username or password")
+        } catch (err) {
+          console.error("Sign-in error:", err)
+          alert("Error during sign-in. Please try again.")
+        }
+      }
+
+      function createAccount() {
+        try {
+          const username = document.getElementById("username").value
+          const password = document.getElementById("password").value
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          if (users[username]) alert("Username already exists")
+          else if (username && password) {
+            users[username] = {
+              password,
+              points: 0,
+              totalFocusTime: 0,
+              totalDistractions: 0,
+              totalVideosWatched: 0,
+              tasks: [],
+              streakDays: 0,
+              mysteryBoxCount: 0,
+              activePowerUps: {
+                doublePoints: { active: false, expiry: null },
+                streakShield: { active: false, used: false, expiry: null },
+              },
+              premiumLofiTracks: premiumLofiTracks.map(track => ({
+                id: track.id,
+                unlocked: false
+              }))
+            }
+            localStorage.setItem("users", JSON.stringify(users))
+            isSignedIn = true
+            currentUser = username
+            points = 0
+            totalFocusTime = 0
+            totalDistractions = 0
+            totalVideosWatched = 0
+            tasks = []
+            streakDays = 0
+            mysteryBoxCount = 0
+            activePowerUps = {
+              doublePoints: { active: false, expiry: null },
+              streakShield: { active: false, used: false, expiry: null },
+            }
+            document.getElementById("landingPage").style.display = "none"
+            document.getElementById("signinForm").style.display = "none"
+            document.getElementById("inputForm").style.display = "block"
+            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+            document.getElementById("clockDisplay").style.display = "block"
+            document.getElementById("sitesBox").style.display = "none" // Keep Allied Realms hidden on input page
+            document.getElementById("lofiPlayer").style.display = "block"
+            updateAnalytics()
+            updateAchievementLevel()
+            updateStreak()
+            saveState()
+            populatePlaylistSelect()
+            restoreTasks()
+            startReminderTimer()
+            updateSidebarDashboard()
+          } else alert("Please enter a username and password")
+        } catch (err) {
+          console.error("Account creation error:", err)
+          alert("Error creating account. Please try again.")
+        }
+      }
+
+      function addUrlInput() {
+        const urlInputs = document.getElementById("urlInputs")
+        if (!urlInputs) return
+
+        const container = document.createElement("div")
+        container.className = "url-container"
+        const newInput = document.createElement("input")
+        newInput.type = "text"
+        newInput.className = "youtube-url"
+        newInput.placeholder = "YouTube URL (Videos or Live Streams)"
+        const removeBtn = document.createElement("button")
+        removeBtn.textContent = "X"
+        removeBtn.onclick = () => {
+          if (urlInputs.children.length > 1) urlInputs.removeChild(container)
+        }
+        container.appendChild(newInput)
+        container.appendChild(removeBtn)
+        urlInputs.appendChild(container)
+      }
+
+      function restoreUrlInputs() {
+        const urlInputs = document.getElementById("urlInputs")
+        if (!urlInputs) return
+
+        urlInputs.innerHTML = ""
+        videoIds.forEach((id, index) => {
+          const container = document.createElement("div")
+          container.className = "url-container"
+          const input = document.createElement("input")
+          input.type = "text"
+          input.className = "youtube-url"
+          input.placeholder = "YouTube URL (Videos or Live Streams)"
+          input.value = `https://www.youtube.com/watch?v=${id}`
+          container.appendChild(input)
+          if (index > 0) {
+            const removeBtn = document.createElement("button")
+            removeBtn.textContent = "X"
+            removeBtn.onclick = () => {
+              if (urlInputs.children.length > 1) urlInputs.removeChild(container)
+            }
+            container.appendChild(removeBtn)
+          }
+          urlInputs.appendChild(container)
+        })
+        if (videoIds.length === 0) {
+          const container = document.createElement("div")
+          container.className = "url-container"
+          const input = document.createElement("input")
+          input.type = "text"
+          input.className = "youtube-url"
+          input.placeholder = "YouTube URL (Videos or Live Streams)"
+          input.required = true
+          container.appendChild(input)
+          urlInputs.appendChild(container)
+        }
+      }
+
+      function addTaskLine() {
+        const tasksDiv = document.getElementById("tasks")
+        if (!tasksDiv) return null
+
+        const container = document.createElement("div")
+        container.className = "task-line"
+        const checkbox = document.createElement("input")
+        checkbox.type = "checkbox"
+        checkbox.className = "task-check"
+        checkbox.onchange = () => saveTasks()
+        const input = document.createElement("input")
+        input.type = "text"
+        input.className = "task-text"
+        input.placeholder = "Write a task..."
+        input.onkeydown = (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault()
+            const newInput = addTaskLine()
+            if (newInput) newInput.focus()
+          }
+        }
+        input.onchange = () => saveTasks()
+        
+        const deadlineBtn = document.createElement("button")
+        deadlineBtn.className = "set-deadline"
+        deadlineBtn.textContent = "⏰"
+        deadlineBtn.onclick = () => showDeadlineDialog(container)
+        
+        const removeBtn = document.createElement("span")
+        removeBtn.className = "remove-task"
+        removeBtn.textContent = "x"
+        removeBtn.onclick = () => removeTask(removeBtn)
+        
+        container.appendChild(checkbox)
+        container.appendChild(input)
+        container.appendChild(deadlineBtn)
+        container.appendChild(removeBtn)
+        tasksDiv.appendChild(container)
+        return input
+      }
+
+      function removeTask(element) {
+        const tasksDiv = document.getElementById("tasks")
+        if (!tasksDiv || !element || !element.parentElement) return
+
+        if (tasksDiv.children.length > 1) {
+          tasksDiv.removeChild(element.parentElement)
+          saveTasks()
+        }
+      }
+
+      function restoreTasks() {
+        const tasksDiv = document.getElementById("tasks")
+        if (!tasksDiv) return
+
+        tasksDiv.innerHTML = ""
+        if (tasks.length === 0) addTaskLine()
+        else {
+          tasks.forEach((task) => {
+            const container = document.createElement("div")
+            container.className = "task-line"
+            
+            const checkbox = document.createElement("input")
+            checkbox.type = "checkbox"
+            checkbox.className = "task-check"
+            checkbox.checked = task.completed
+            checkbox.onchange = () => saveTasks()
+            
+            const input = document.createElement("input")
+            input.type = "text"
+            input.className = "task-text"
+            input.value = task.text
+            input.placeholder = "Write a task..."
+            input.onchange = () => saveTasks()
+            
+            const deadlineBtn = document.createElement("button")
+            deadlineBtn.className = "set-deadline"
+            deadlineBtn.textContent = "⏰"
+            deadlineBtn.onclick = () => showDeadlineDialog(container)
+            
+            const removeBtn = document.createElement("span")
+            removeBtn.className = "remove-task"
+            removeBtn.textContent = "x"
+            removeBtn.onclick = () => removeTask(removeBtn)
+            
+            container.appendChild(checkbox)
+            container.appendChild(input)
+            container.appendChild(deadlineBtn)
+            container.appendChild(removeBtn)
+            
+            // Add deadline info if exists
+            if (task.deadline) {
+              const deadlineDate = new Date(task.deadline)
+              const deadlineInfo = document.createElement("span")
+              deadlineInfo.className = "deadline-info"
+              deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
+              container.appendChild(deadlineInfo)
+              
+              const pointsInfo = document.createElement("span")
+              pointsInfo.className = "points-info"
+              pointsInfo.textContent = `+${task.points || 50}pts`
+              container.appendChild(pointsInfo)
+            }
+            
+            tasksDiv.appendChild(container)
+          })
+        }
+        
+        // Check for any passed deadlines
+        checkTaskDeadlines()
+      }
+
+      function saveTasks() {
+        const taskLines = document.querySelectorAll(".task-line")
+        if (!taskLines.length) return
+
+        tasks = Array.from(taskLines)
+          .map((line) => {
+            const checkbox = line.querySelector(".task-check")
+            const input = line.querySelector(".task-text")
+            const deadlineInfo = line.querySelector(".deadline-info")
+            const pointsInfo = line.querySelector(".points-info")
+            
+            // Get existing task to preserve deadline if it exists
+            const taskIndex = Array.from(document.querySelectorAll(".task-line")).indexOf(line)
+            const existingTask = tasks[taskIndex] || {}
+            
+            return {
+              text: input ? input.value.trim() : "",
+              completed: checkbox ? checkbox.checked : false,
+              deadline: existingTask.deadline || null,
+              points: existingTask.points || null,
+              deadlineChecked: existingTask.deadlineChecked || false
+            }
+          })
+          .filter((task) => task.text !== "")
+        localStorage.setItem("tasks", JSON.stringify(tasks))
+        if (isSignedIn && currentUser) {
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          users[currentUser].tasks = tasks
+          localStorage.setItem("users", JSON.stringify(users))
+        }
+      }
+
+      function toggleTodo() {
+        const todoList = document.getElementById("todoList")
+        if (!todoList) return
+        todoList.style.display = todoList.style.display === "block" ? "none" : "block"
+      }
+
+      function extractVideoId(url) {
+        try {
+          let videoId = null
+          const urlObj = new URL(url)
+          const hostname = urlObj.hostname.toLowerCase()
+          const pathname = urlObj.pathname
+
+          if (hostname.includes("youtube.com")) {
+            if (pathname.startsWith("/watch")) videoId = urlObj.searchParams.get("v")
+            else if (pathname.startsWith("/live")) videoId = pathname.split("/live/")[1]?.split("/")[0] || pathname.split("/live/")[1]
+          } else if (hostname.includes("youtu.be")) videoId = pathname.substring(1)
+
+          if (videoId && videoId.length === 11) return videoId
+          throw new Error("Invalid YouTube URL")
+        } catch (e) {
+          console.error("Invalid URL:", url, e)
+          return null
+        }
+      }
+
+      function startPlayback() {
+        try {
+          const urlInputs = document.querySelectorAll(".youtube-url")
+          if (!urlInputs.length) return
+
+          const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
+          if (!urls.length) {
+            alert("Please enter at least one YouTube URL.")
+            return
+          }
+
+          videoIds = urls.map((url) => extractVideoId(url)).filter((id) => id)
+          if (videoIds.length === 0) {
+            alert("No valid YouTube URLs provided.")
+            return
+          }
+
+          document.getElementById("inputForm").style.display = "none"
+          document.getElementById("player").style.display = "block"
+          document.getElementById("restartBtn").style.display = "block"
+          document.getElementById("pdfToggle").style.display = "block"
+          document.getElementById("clockDisplay").style.display = "none"
+          document.getElementById("sitesBox").style.display = "none"
+          document.getElementById("lofiPlayer").style.display = "none"
+          stopReminderTimer()
+
+          loadYouTubeAPI()
+            .then(() => {
+              setupYouTubePlayer()
+              startTimer(focusDuration, "Focus Time")
+              saveState()
+              // Go fullscreen when focus mode starts
+              requestFullscreen(document.documentElement)
+            })
+            .catch((err) => {
+              console.error("YouTube API load failed:", err)
+              alert("Failed to load YouTube player. Please try again.")
+            })
+        } catch (err) {
+          console.error("Start playback error:", err)
+          alert("An error occurred while starting playback.")
+        }
+      }
+
+      // Function to request fullscreen
+      function requestFullscreen(element) {
+        if (element.requestFullscreen) {
+          element.requestFullscreen().catch(err => {
+            console.log("Fullscreen request failed:", err)
+          })
+        } else if (element.mozRequestFullScreen) { // Firefox
+          element.mozRequestFullScreen()
+        } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
+          element.webkitRequestFullscreen()
+        } else if (element.msRequestFullscreen) { // IE/Edge
+          element.msRequestFullscreen()
+        }
+      }
+
+      // Function to exit fullscreen
+      function exitFullscreen() {
+        if (document.exitFullscreen) {
+          document.exitFullscreen()
+        } else if (document.mozCancelFullScreen) { // Firefox
+          document.mozCancelFullScreen()
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+          document.webkitExitFullscreen()
+        } else if (document.msExitFullscreen) { // IE/Edge
+          document.msExitFullscreen()
+        }
+      }
+
+      function loadYouTubeAPI() {
+        return new Promise((resolve, reject) => {
+          if (isYouTubeAPILoaded) resolve()
+          else {
+            const tag = document.createElement("script")
+            tag.src = "https://www.youtube.com/iframe_api"
+            tag.onload = () => {
+              window.onYouTubeIframeAPIReady = () => {
+                isYouTubeAPILoaded = true
+                resolve()
+              }
+            }
+            tag.onerror = () => reject(new Error("Failed to load YouTube API"))
+            document.head.appendChild(tag)
+          }
+        })
+      }
+
+      function setupYouTubePlayer() {
+        if (!videoIds.length) return
+
+        const playerDiv = document.getElementById("player")
+        if (!playerDiv) return
+
+        player = new YT.Player("player", {
+          height: "100%",
+          width: "100%",
+          videoId: videoIds[currentVideoIndex],
+          playerVars: {
+            autoplay: 1,
+            controls: 1,
+            modestbranding: 1,
+            rel: 0,
+            showinfo: 0,
+          },
+          events: {
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange,
+          },
+        })
+
+        setupVideoSidebar()
+      }
+
+      function onPlayerReady(event) {
+        event.target.playVideo()
+      }
+
+      function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+          completedVideos.add(videoIds[currentVideoIndex])
+          totalVideosWatched++
+          points += applyPowerUps(50) // Base 50 points per video, doubled if power-up active
+          document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+          checkLevelUp()
+          saveState()
+          updateAnalytics()
+
+          currentVideoIndex++
+          if (currentVideoIndex < videoIds.length) {
+            player.loadVideoById(videoIds[currentVideoIndex])
+          } else {
+            allVideosCompleted = true
+            endFocusSession()
+          }
+        }
+      }
+
+      function setupVideoSidebar() {
+        const sidebar = document.getElementById("videoSidebar")
+        if (!sidebar) return
+
+        sidebar.innerHTML = ''
+        videoIds.forEach((id, index) => {
+          const thumbnail = document.createElement("img")
+          thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`
+          thumbnail.className = "thumbnail"
+          thumbnail.onclick = () => {
+            currentVideoIndex = index
+            player.loadVideoById(videoIds[currentVideoIndex])
+          }
+          sidebar.appendChild(thumbnail)
+        })
+        sidebar.style.right = "-320px"
+      }
+
+      // Add keyboard shortcut for toggling sidebar
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 't' || e.key === 'T') {
+          toggleVideoSidebar()
+        }
+      })
+
+      function startTimer(duration, mode) {
+        const timerDisplay = document.getElementById("timerDisplay")
+        const progressFill = document.getElementById("progressFill")
+        const progressBar = document.getElementById("progressBar")
+        if (!timerDisplay || !progressFill || !progressBar) return
+
+        isFocusModeActive = true
+        timerMode = mode
+        let timeRemaining = duration / 1000
+        timerRemaining = timeRemaining
+        progressBar.style.display = "block"
+        const totalDuration = duration / 1000
+
+        updateStreak()
+
+        clearInterval(countdownInterval)
+        countdownInterval = setInterval(() => {
+          const minutes = Math.floor(timeRemaining / 60)
+          const seconds = Math.floor(timeRemaining % 60)
+          timerDisplay.querySelector("#timerText").textContent = `${timerMode}: ${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+          const progress = ((totalDuration - timeRemaining) / totalDuration) * 100
+          progressFill.style.width = `${progress}%`
+
+          if (mode === "Focus Time") totalFocusTime += 1
+          timeRemaining--
+          timerRemaining = timeRemaining
+
+          if (timeRemaining < 0) {
+            clearInterval(countdownInterval)
+            progressBar.style.display = "none"
+            if (mode === "Focus Time") {
+              points += applyPowerUps(100) // Base 100 points per focus session, doubled if power-up active
+              document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`
+              checkLevelUp()
+              
+              // Show session complete dialog instead of automatically starting break
+              showSessionCompleteDialog()
+              playFocusAudio()
+            } else if (mode === "Break Time") {
+              startTimer(secondBreakDuration, "Short Break")
+            } else {
+              startTimer(focusDuration, "Focus Time")
+            }
+            saveState()
+          }
+        }, 1000)
+      }
+
+      function checkLevelUp() {
+        const currentLevel = getAchievementLevel(previousPoints)
+        const newLevel = getAchievementLevel(points)
+        if (newLevel.points > currentLevel.points) showAchievementOverlay(newLevel.level)
+        previousPoints = points
+        updateAchievementLevel()
+      }
+
+      function playFocusAudio() {
+        const audio = document.getElementById("focusAudio")
+        if (audio) audio.play().catch((err) => console.error("Audio play error:", err))
+      }
+
+      function endFocusSession() {
+        clearInterval(countdownInterval)
+        isFocusModeActive = false
+        const timerDisplay = document.getElementById("timerDisplay")
+        const progressBar = document.getElementById("progressBar")
+        if (timerDisplay && progressBar) {
+          timerDisplay.querySelector("#timerText").textContent = "Focus Complete!"
+          progressBar.style.display = "none"
+        }
+        // Exit fullscreen when session ends
+        exitFullscreen()
+        saveState()
+      }
+
+      function restartSession() {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
+        dialog.style.display = "block"
+      }
+
+      function handleRestartConfirmation(choice) {
+        const dialog = document.getElementById("confirmationDialog")
+        if (!dialog) return
+
+        dialog.style.display = "none"
+        if (choice === "yes") {
+          clearInterval(countdownInterval)
+          isFocusModeActive = false
+          videoIds = []
+          currentVideoIndex = 0
+          completedVideos.clear()
+          allVideosCompleted = false
+          if (player) player.destroy()
+          document.getElementById("player").style.display = "none"
+          document.getElementById("restartBtn").style.display = "none"
+          document.getElementById("pdfToggle").style.display = "none"
+          document.getElementById("videoSidebar").style.right = "-320px"
+          document.getElementById("inputForm").style.display = "block"
+          document.getElementById("clockDisplay").style.display = "block"
+          document.getElementById("sitesBox").style.display = "none"
+          document.getElementById("lofiPlayer").style.display = "block"
+          const progressBar = document.getElementById("progressBar")
+          if (progressBar) progressBar.style.display = "none"
+          // Exit fullscreen when restarting
+          exitFullscreen()
+          restoreUrlInputs()
+          saveState()
+          startReminderTimer()
+        }
+      }
+
+      function toggleVideoSidebar() {
+        const sidebar = document.getElementById("videoSidebar")
+        if (!sidebar) return
+        sidebar.style.right = sidebar.style.right === "0px" ? "-320px" : "0px"
+      }
+
+      function updateAnalytics() {
+        document.getElementById("totalFocusTime").textContent = Math.floor(totalFocusTime / 60)
+        document.getElementById("totalDistractions").textContent = totalDistractions
+        document.getElementById("totalVideosWatched").textContent = totalVideosWatched
+      }
+
+      function toggleAnalytics() {
+        const analytics = document.getElementById("analytics")
+        if (!analytics) return
+        analytics.style.display = analytics.style.display === "block" ? "none" : "block"
+      }
+
+      function savePlaylist() {
+        const playlistName = document.getElementById("playlistName").value.trim()
+        const urlInputs = document.querySelectorAll(".youtube-url")
+        if (!playlistName || !urlInputs.length) {
+          alert("Please enter a playlist name and at least one URL.")
+          return
+        }
+
+        const urls = Array.from(urlInputs).map((input) => input.value.trim()).filter((url) => url)
+        const videoIdsForPlaylist = urls.map((url) => extractVideoId(url)).filter((id) => id)
+        if (videoIdsForPlaylist.length === 0) {
+          alert("No valid YouTube URLs to save.")
+          return
+        }
+
+        playlists = playlists.filter((p) => p.name !== playlistName)
+        playlists.push({ name: playlistName, videoIds: videoIdsForPlaylist })
+        localStorage.setItem("playlists", JSON.stringify(playlists))
+        populatePlaylistSelect()
+        document.getElementById("playlistName").value = ""
+      }
+
+      function removePlaylist() {
+        const playlistSelect = document.getElementById("playlistSelect")
+        const selectedName = playlistSelect.value
+        if (!selectedName) {
+          alert("Please select a playlist to remove.")
+          return
+        }
+
+        playlists = playlists.filter((p) => p.name !== selectedName)
+        localStorage.setItem("playlists", JSON.stringify(playlists))
+        populatePlaylistSelect()
+        restoreUrlInputs()
+      }
+
+      function populatePlaylistSelect() {
+        const playlistSelect = document.getElementById("playlistSelect")
+        if (!playlistSelect) return
+
+        playlistSelect.innerHTML = '<option value="">Select a Playlist</option>'
+        playlists.forEach((playlist) => {
+          const option = document.createElement("option")
+          option.value = playlist.name
+          option.textContent = playlist.name
+          playlistSelect.appendChild(option)
+        })
+
+        playlistSelect.onchange = () => {
+          const selectedName = playlistSelect.value
+          if (selectedName) {
+            const selectedPlaylist = playlists.find((p) => p.name === selectedName)
+            if (selectedPlaylist) {
+              videoIds = selectedPlaylist.videoIds
+              restoreUrlInputs()
+            }
+          }
+        }
+      }
+
+      function togglePDFViewer() {
+        const pdfViewer = document.getElementById("pdfViewer")
+        if (!pdfViewer) return
+        pdfViewer.style.display = pdfViewer.style.display === "block" ? "none" : "block"
+      }
+
+      function handlePDFUpload(event) {
+        const file = event.target.files[0]
+        if (!file || file.type !== "application/pdf") {
+          alert("Please upload a valid PDF file.")
+          return
+        }
+
+        const pdfFrame = document.getElementById("pdfFrame")
+        if (!pdfFrame) return
+
+        const url = URL.createObjectURL(file)
+        pdfFrame.src = url
+        document.getElementById("pdfViewer").style.display = "block"
+      }
+
+      function toggleAIPopup() {
+        const aiPopup = document.getElementById("aiPopup")
+        if (!aiPopup) return
+        aiPopup.style.display = aiPopup.style.display === "block" ? "none" : "block"
+      }
+
       function saveState() {
         const state = {
-          // --- Keep existing properties ---
           videoIds,
           currentVideoIndex,
-          // distractionCount, // Maybe don't save local session distraction?
+          distractionCount,
           points,
           timerMode,
           timerRemaining,
@@ -1265,498 +2923,207 @@
           completedVideos: Array.from(completedVideos),
           allVideosCompleted,
           totalFocusTime,
-          totalDistractions, // Save overall distractions
+          totalDistractions,
           totalVideosWatched,
           streakDays,
-          lastFocusDate: localStorage.getItem("lastFocusDate"), // Get current saved date
+          lastFocusDate: localStorage.getItem("lastFocusDate"),
           mysteryBoxCount,
           activePowerUps,
-          premiumLofiTracks: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })), // Save only necessary track info
-          // --- Add new properties ---
-          currentPage: (isFocusModeActive ? 'watchLecturesPage' : currentPage), // Save current page, override if YT focus active
-          dailyFocusData // Save daily focus data
-        };
-        localStorage.setItem("focusModeState", JSON.stringify(state));
-        // console.log("Saved State:", state);
+          premiumLofiTracks
+        }
+        localStorage.setItem("focusModeState", JSON.stringify(state))
 
-
-        // Save critical parts to user data immediately
         if (isSignedIn && currentUser) {
-          const users = JSON.parse(localStorage.getItem("users") || "{}");
-          if (users[currentUser]) {
-             users[currentUser].points = points;
-             users[currentUser].totalFocusTime = totalFocusTime;
-             users[currentUser].totalDistractions = totalDistractions;
-             users[currentUser].totalVideosWatched = totalVideosWatched;
-             users[currentUser].tasks = tasks;
-             users[currentUser].streakDays = streakDays;
-             users[currentUser].lastFocusDate = localStorage.getItem("lastFocusDate");
-             users[currentUser].mysteryBoxCount = mysteryBoxCount;
-             users[currentUser].activePowerUps = activePowerUps;
-             users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
-             users[currentUser].dailyFocusData = dailyFocusData;
-             localStorage.setItem("users", JSON.stringify(users));
-          }
+          const users = JSON.parse(localStorage.getItem("users") || "{}")
+          users[currentUser].points = points
+          users[currentUser].totalFocusTime = totalFocusTime
+          users[currentUser].totalDistractions = totalDistractions
+          users[currentUser].totalVideosWatched = totalVideosWatched
+          users[currentUser].tasks = tasks
+          users[currentUser].streakDays = streakDays
+          users[currentUser].mysteryBoxCount = mysteryBoxCount
+          users[currentUser].activePowerUps = activePowerUps
+          users[currentUser].premiumLofiTracks = premiumLofiTracks
+          localStorage.setItem("users", JSON.stringify(users))
         }
       }
 
-      // --- MODIFIED signIn / createAccount ---
-      function signIn() {
-          try {
-              // ... (get username/password)
-              const users = JSON.parse(localStorage.getItem("users") || "{}");
-              if (users[username] && users[username].password === password) {
-                  isSignedIn = true;
-                  currentUser = username;
-                  // Load user data into current variables
-                  points = users[username].points || 0;
-                  totalFocusTime = users[username].totalFocusTime || 0;
-                  totalDistractions = users[username].totalDistractions || 0;
-                  totalVideosWatched = users[username].totalVideosWatched || 0;
-                  tasks = users[username].tasks || [];
-                  streakDays = users[username].streakDays || 0;
-                  lastFocusDate = users[username].lastFocusDate || null;
-                  mysteryBoxCount = users[username].mysteryBoxCount || 0;
-                  activePowerUps = users[username].activePowerUps || { /* default */ };
-                  dailyFocusData = users[username].dailyFocusData || {};
-                  // Load premium tracks...
-                  premiumLofiTracks.forEach(track => {
-                     const savedUserTrack = users[username].premiumLofiTracks?.find(t => t.id === track.id);
-                     if(savedUserTrack) track.unlocked = savedUserTrack.unlocked;
-                      if (track.unlocked && !lofiSongs.includes(track.url)) {
-                         lofiSongs.push(track.url);
-                      }
-                  });
+      function updateSidebarDashboard() {
+        const sidebarUsername = document.getElementById("sidebarUsername")
+        const sidebarLevel = document.getElementById("sidebarLevel")
+        const sidebarXP = document.getElementById("sidebarXP")
+        const sidebarStreak = document.getElementById("sidebarStreak")
+        if (!sidebarUsername || !sidebarLevel || !sidebarXP || !sidebarStreak) return
 
-                  console.log("Sign In successful. User:", currentUser, "Streak:", streakDays, "Last Focus:", lastFocusDate);
-
-                  document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
-                  updateAchievementLevel();
-                  updateStreak(); // Important: call updateStreak AFTER loading data
-                  updateSidebarDashboard();
-                  restoreTasks();
-                  populatePlaylistSelect(); // Populate playlist for watch page
-                  saveState(); // Save the logged-in state
-                  showPage('homePage'); // Show home page after login
-                  startReminderTimer();
-                  if (mysteryBoxCount > 0) showMysteryBoxPopup();
-
-              } else {
-                  alert("Invalid username or password");
-              }
-          } catch (err) {
-              console.error("Sign-in error:", err);
-              alert("Error during sign-in.");
-          }
+        sidebarUsername.textContent = currentUser || "Guest"
+        const level = getAchievementLevel(points)
+        sidebarLevel.textContent = level.level
+        sidebarXP.textContent = points
+        sidebarStreak.textContent = `${streakDays} day${streakDays === 1 ? "" : "s"}`
       }
 
-      function createAccount() {
-           try {
-              // ... (get username/password)
-               const users = JSON.parse(localStorage.getItem("users") || "{}");
-               if (users[username]) { /*...*/ }
-               else if (username && password) {
-                    // Set initial user data
-                    users[username] = {
-                       password,
-                       points: 0,
-                       totalFocusTime: 0,
-                       totalDistractions: 0,
-                       totalVideosWatched: 0,
-                       tasks: [],
-                       streakDays: 0,
-                       lastFocusDate: null, // Initialize last focus date
-                       mysteryBoxCount: 0,
-                       activePowerUps: { /* default */ },
-                       premiumLofiTracks: premiumLofiTracks.map(track => ({ id: track.id, unlocked: false })),
-                       dailyFocusData: {} // Initialize daily data
-                    };
-                    localStorage.setItem("users", JSON.stringify(users));
-
-                    // Set current state variables
-                    isSignedIn = true;
-                    currentUser = username;
-                    points = 0;
-                    totalFocusTime = 0;
-                    totalDistractions = 0;
-                    totalVideosWatched = 0;
-                    tasks = [];
-                    streakDays = 0;
-                    lastFocusDate = null;
-                    mysteryBoxCount = 0;
-                    activePowerUps = { /* default */ };
-                    dailyFocusData = {};
-                     premiumLofiTracks.forEach(track => track.unlocked = false); // Ensure tracks are locked
-
-                    console.log("Account Created. User:", currentUser);
-
-                    document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
-                    updateAchievementLevel();
-                    updateStreak();
-                    updateSidebarDashboard();
-                    restoreTasks();
-                    populatePlaylistSelect();
-                    saveState();
-                    showPage('homePage'); // Show home page after creation
-                    startReminderTimer();
-
-               } else { /* alert */ }
-           } catch (err) {
-                console.error("Account creation error:", err);
-                alert("Error creating account.");
-           }
+      function logout() {
+        isSignedIn = false
+        currentUser = null
+        points = 0
+        totalFocusTime = 0
+        totalDistractions = 0
+        totalVideosWatched = 0
+        tasks = []
+        streakDays = 0
+        mysteryBoxCount = 0
+        activePowerUps = {
+          doublePoints: { active: false, expiry: null },
+          streakShield: { active: false, used: false, expiry: null },
+        }
+        videoIds = []
+        currentVideoIndex = 0
+        completedVideos.clear()
+        allVideosCompleted = false
+        clearInterval(countdownInterval)
+        isFocusModeActive = false
+        if (player) player.destroy()
+        document.getElementById("player").style.display = "none"
+        document.getElementById("restartBtn").style.display = "none"
+        document.getElementById("pdfToggle").style.display = "none"
+        document.getElementById("videoSidebar").style.right = "-320px"
+        document.getElementById("inputForm").style.display = "none"
+        document.getElementById("landingPage").style.display = "block"
+        document.getElementById("clockDisplay").style.display = "none"
+        document.getElementById("sitesBox").style.display = "none"
+        document.getElementById("lofiPlayer").style.display = "none"
+        document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`
+        const progressBar = document.getElementById("progressBar")
+        if (progressBar) progressBar.style.display = "none"
+        saveState()
+        stopReminderTimer()
+        updateAnalytics()
+        updateAchievementLevel()
+        updateSidebarDashboard()
       }
 
-      // --- MODIFIED startPlayback ---
-      function startPlayback() {
-        try {
-          // Get URLs from inputs inside #watchLecturesPage
-          const urlInputs = document.querySelectorAll("#watchLecturesPage .youtube-url");
-          // ... (rest of URL extraction logic) ...
-
-          if (videoIds.length === 0) {
-            alert("No valid YouTube URLs provided in the Watch Lectures section.");
-            return;
-          }
-
-          // Hide input section, show player section
-          document.getElementById('lectureInputSection').style.display = 'none';
-          document.getElementById('player').style.display = 'block';
-          document.getElementById('restartBtn').style.display = 'block';
-          document.getElementById('pdfToggle').style.display = 'block';
-          document.getElementById('timerDisplay').style.display = 'block'; // Show timer only now
-          // Keep lofi/chatbot visible? Yes.
-
-          stopReminderTimer(); // Stop reminders during YT focus
-
-          loadYouTubeAPI()
-            .then(() => {
-              setupYouTubePlayer(); // This uses global 'player' variable
-              startTimer(focusDuration, "Focus Time"); // Start the focus timer
-              saveState(); // Save that we are starting playback
-              requestFullscreen(document.documentElement);
-            })
-            .catch((err) => {
-              console.error("YouTube API load failed:", err);
-              alert("Failed to load YouTube player.");
-              // Revert UI changes if API fails
-              document.getElementById('lectureInputSection').style.display = 'block';
-              document.getElementById('player').style.display = 'none';
-              document.getElementById('restartBtn').style.display = 'none';
-              document.getElementById('pdfToggle').style.display = 'none';
-              document.getElementById('timerDisplay').style.display = 'none';
-            });
-        } catch (err) {
-          console.error("Start playback error:", err);
-          alert("An error occurred starting playback.");
-        }
-      }
-
-      // --- MODIFIED restartSession ---
-      function restartSession() { // Renamed from showConfirmationDialog
-        const dialog = document.getElementById("confirmationDialog");
-        if (!dialog) return;
-        dialog.style.display = "block";
-      }
-
-      function handleRestartConfirmation(choice) { // Renamed from handleConfirmation
-        const dialog = document.getElementById("confirmationDialog");
-        if (!dialog) return;
-        dialog.style.display = "none";
-
-        if (choice === "yes") {
-          clearInterval(countdownInterval);
-          isFocusModeActive = false;
-          // videoIds = []; // Don't clear videoIds, user might want to restart same list later
-          // currentVideoIndex = 0;
-          // completedVideos.clear();
-          // allVideosCompleted = false;
-          if (player) {
-              // player.stopVideo(); // Stop video before destroying
-              player.destroy();
-              player = null; // Ensure player object is cleared
-          }
-
-          // Reset UI elements specific to watchLecturesPage playback
-          document.getElementById('player').style.display = 'none';
-          document.getElementById('restartBtn').style.display = 'none';
-          document.getElementById('pdfToggle').style.display = 'none';
-          document.getElementById('timerDisplay').style.display = 'none';
-          const progressBar = document.getElementById("progressBar");
-          if (progressBar) progressBar.style.display = "none";
-          document.getElementById('videoSidebar').style.right = "-320px";
-
-          // Show the input section again on the watch page
-          document.getElementById('lectureInputSection').style.display = 'block';
-
-          exitFullscreen();
-          // restoreUrlInputs(); // Restore URLs in inputs if they were cleared
-
-          // Navigate back to home page
-          showPage('homePage');
-
-          saveState(); // Save the state after ending the session
-          startReminderTimer(); // Restart reminders now that YT focus ended
-        }
-      }
-
-       // --- MODIFIED startTimer ---
-       function startTimer(duration, mode) {
-           // ... (existing timer setup) ...
-           timerRemaining = duration / 1000; // Ensure timerRemaining is set correctly
-           progressBar.style.display = "block";
-
-           updateStreak(); // Check/update streak when a timer starts
-
-           clearInterval(countdownInterval);
-           countdownInterval = setInterval(() => {
-               // ... (existing time display and progress bar logic) ...
-
-               // Update total focus time and potentially points per second/minute
-               if (mode === "Focus Time") {
-                   totalFocusTime += 1;
-                   // Optional: Award tiny points per second/minute
-                   // if (timerRemaining % 60 === 0) { // Award per minute
-                   //    let minutePoints = applyPowerUps(1);
-                   //    points += minutePoints;
-                   //    updateDailyData(minutePoints); // Update daily data
-                   //    document.getElementById('pointsDisplay').innerHTML = ...;
-                   // }
-               }
-               timeRemaining--;
-               timerRemaining = timeRemaining; // Update global timerRemaining for saving state
-
-               if (timeRemaining < 0) {
-                   clearInterval(countdownInterval);
-                   progressBar.style.display = "none";
-
-                   let pointsEarned = 0; // Track points for this interval completion
-
-                   if (mode === "Focus Time") {
-                       pointsEarned = applyPowerUps(100); // Points for completing focus block
-                       playFocusAudio();
-                       showSessionCompleteDialog(); // Show continue/end dialog
-                   } else if (mode === "Break Time") {
-                       pointsEarned = applyPowerUps(20); // Small points for completing break
-                       startTimer(secondBreakDuration, "Short Break");
-                   } else { // Short Break finished
-                       pointsEarned = applyPowerUps(10); // Small points for completing short break
-                       startTimer(focusDuration, "Focus Time"); // Loop back to focus
-                   }
-
-                   if (pointsEarned > 0) {
-                       points += pointsEarned;
-                       updateDailyData(pointsEarned); // Update daily data when points are awarded
-                       document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
-                       checkLevelUp();
-                   }
-
-                   saveState(); // Save state after timer transition
-               }
-           }, 1000);
-       }
-
-        // --- MODIFIED completePomodoroSession ---
-        function completePomodoroSession() {
-            clearInterval(pomodoroInterval);
-            isPomodoroActive = false;
-
-            const audio = document.getElementById("pomodoroCompleteAudio");
-            if (audio) audio.play().catch(err => console.error("Pomodoro audio error:", err));
-
-            const minutesCompleted = 60; // Assume full 60 mins for simplicity now
-            const pointsEarned = applyPowerUps(minutesCompleted); // 1 point per minute base
-            points += pointsEarned;
-            updateDailyData(pointsEarned); // Update daily data
-
-            document.getElementById("pomodoroStatus").textContent = `Completed! Earned ${pointsEarned} XP`;
-            document.getElementById("pointsDisplay").innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: ${points}`;
-
-            saveState();
-            checkLevelUp();
-            updateStreak(); // Check streak after Pomodoro completion
-        }
-
-
-        // --- MODIFIED logout ---
-        function logout() {
-           // Reset state variables
-           isSignedIn = false;
-           currentUser = null;
-           points = 0;
-           totalFocusTime = 0;
-           totalDistractions = 0;
-           totalVideosWatched = 0;
-           tasks = [];
-           streakDays = 0;
-           lastFocusDate = null;
-           mysteryBoxCount = 0;
-           activePowerUps = { /* default */ };
-           videoIds = [];
-           currentVideoIndex = 0;
-           completedVideos.clear();
-           allVideosCompleted = false;
-           dailyFocusData = {};
-            premiumLofiTracks.forEach(track => track.unlocked = false); // Reset unlocked tracks
-
-           clearInterval(countdownInterval); // Clear YT timer
-           isFocusModeActive = false;
-           clearInterval(pomodoroInterval); // Clear Pomodoro timer
-           isPomodoroActive = false;
-
-           if (player) {
-               try { player.destroy(); } catch (e) {}
-               player = null;
-           }
-
-           // Reset UI elements
-           document.getElementById('pointsDisplay').innerHTML = `<span style="color: #8e2de2;">⭐</span> XP: 0`;
-           const progressBar = document.getElementById("progressBar");
-           if (progressBar) progressBar.style.display = "none";
-           document.getElementById('timerDisplay').style.display = 'none';
-           document.getElementById('restartBtn').style.display = 'none';
-            document.getElementById('pdfToggle').style.display = 'none';
-           document.getElementById('videoSidebar').style.right = "-320px";
-           document.getElementById('topNavBar').style.display = 'none'; // Hide top bar
-
-           // Clear potential sensitive info from inputs
-           document.getElementById('username').value = '';
-           document.getElementById('password').value = '';
-           // restoreUrlInputs(); // Clear URL inputs
-
-           saveState(); // Save the logged-out state (clears most things)
-           stopReminderTimer();
-           // updateAnalytics(); // Analytics are likely part of modals now
-           updateAchievementLevel(); // Reset level display (if visible)
-           updateSidebarDashboard(); // Reset sidebar info
-
-           // Navigate to landing page
-           showPage('landingPage');
-           exitFullscreen(); // Ensure fullscreen is exited
-        }
-
-       // --- Event Listeners Setup ---
-       function setupEventListeners() {
-            document.querySelectorAll("button[data-action]").forEach((btn) => {
-              btn.addEventListener("click", () => {
-                const action = btn.getAttribute("data-action");
-                switch (action) {
-                  case "show-signin": showPage('signinForm'); break;
-                  case "show-landing": showPage('landingPage'); break;
-                  case "github": window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank"); break;
-                  case "sign-in": signIn(); break;
-                  case "create-account": createAccount(); break;
-                  case "add-url": addUrlInput(); break; // Ensure this targets #watchLecturesPage
-                  case "start-playback": startPlayback(); break;
-                  case "save-playlist": savePlaylist(); break; // Ensure this targets #watchLecturesPage inputs
-                  case "remove-playlist": removePlaylist(); break; // Ensure this targets #watchLecturesPage inputs
-                  case "add-task": addTaskLine(); break; // For ToDo list
-                  case "save-tasks": saveTasks(); break; // For ToDo list
-                }
-              });
-            });
-
-             // Sidebar Navigation Buttons
-             document.querySelectorAll('.game-sidebar button[data-page]').forEach(button => {
-                 button.addEventListener('click', () => showPage(button.dataset.page));
-             });
-
-             // Top Bar Buttons
-             document.getElementById("profileBtn").addEventListener("click", () => toggleProfilePage(true));
-             // document.getElementById("settingsBtn").addEventListener("click", () => {/* Show settings */});
-             // Streak button might not need a click action, just tooltip
-
-             // Sidebar Action Buttons
-             document.getElementById("sidebarTodoBtn").addEventListener("click", () => toggleTodo(true));
-             document.getElementById("sidebarStatsBtn").addEventListener("click", () => toggleStatsPage(true));
-             document.getElementById("quietPomodoroBtn").addEventListener("click", showPomodoroOverlay);
-             document.getElementById("streakShieldBtn").addEventListener("click", showStreakShieldDialog);
-             document.getElementById("doublePointsBtn").addEventListener("click", showDoublePointsDialog);
-             document.getElementById("audioStoreBtn").addEventListener("click", showAudioTracksStore);
-             document.getElementById("logoutBtn").addEventListener("click", logout);
-
-             // Playback Control Buttons (specific page)
-             document.getElementById("restartBtn").addEventListener("click", restartSession); // Show confirmation
-             document.getElementById("pdfToggle").addEventListener("click", () => togglePDFViewer(true));
-
-
-             // Dialog Confirmation Buttons
-             document.getElementById("confirmBtn").addEventListener("click", () => handleRestartConfirmation("yes"));
-             document.getElementById("cancelBtn").addEventListener("click", () => handleRestartConfirmation("no"));
-             document.getElementById("streakShieldConfirmBtn").addEventListener("click", () => handleStreakShieldConfirmation("yes"));
-             document.getElementById("streakShieldCancelBtn").addEventListener("click", () => handleStreakShieldConfirmation("no"));
-             document.getElementById("doublePointsConfirmBtn").addEventListener("click", () => handleDoublePointsConfirmation("yes"));
-             document.getElementById("doublePointsCancelBtn").addEventListener("click", () => handleDoublePointsConfirmation("no"));
-             document.getElementById("deadlineConfirmBtn").addEventListener("click", () => handleDeadlineConfirmation("yes"));
-             document.getElementById("deadlineCancelBtn").addEventListener("click", () => handleDeadlineConfirmation("no"));
-             document.getElementById("sessionContinueBtn").addEventListener("click", () => handleSessionContinue("continue"));
-             document.getElementById("sessionEndBtn").addEventListener("click", () => handleSessionContinue("end"));
-
-
-             // Other Global Buttons/Toggles
-             document.getElementById("closeAudioStore").addEventListener("click", closeAudioTracksStore);
-             document.getElementById("pdfInput").addEventListener("change", handlePDFUpload);
-             document.getElementById("fireBox").addEventListener("click", toggleAIPopup);
-             document.getElementById("openMysteryBox").addEventListener("click", openMysteryBox);
-
-             // Pomodoro Controls
-             document.getElementById("pomodoroStartBtn").addEventListener("click", startPomodoro);
-             document.getElementById("pomodoroResetBtn").addEventListener("click", resetPomodoro);
-             document.getElementById("pomodoroCloseBtn").addEventListener("click", closePomodoroOverlay);
-
-             // Lofi Controls
-             document.getElementById("lofiPlay").addEventListener("click", playLofi);
-             document.getElementById("lofiPause").addEventListener("click", pauseLofi);
-             document.getElementById("lofiPrev").addEventListener("click", prevLofi);
-             document.getElementById("lofiNext").addEventListener("click", nextLofi);
-
-             // Timer Dragging (Keep as is)
-              const timerDisplay = document.getElementById("timerDisplay");
-              let isDragging = false; let currentX; let currentY; let xOffset = 0; let yOffset = 0;
-              timerDisplay.addEventListener("mousedown", (e) => { isDragging = true; currentX = e.clientX - xOffset; currentY = e.clientY - yOffset; });
-              document.addEventListener("mousemove", (e) => { if (isDragging) { e.preventDefault(); xOffset = e.clientX - currentX; yOffset = e.clientY - currentY; timerDisplay.style.left = `${xOffset}px`; timerDisplay.style.top = `${yOffset}px`; }});
-              document.addEventListener("mouseup", () => { isDragging = false; });
-
-             // Visibility Change Listener (Keep as is, maybe add pomodoro pause?)
-              document.addEventListener("visibilitychange", () => {
-                 if (document.hidden && (isFocusModeActive /* || isPomodoroActive */) ) { // Pause Pomodoro too? Decide behavior.
-                    distractionCount++; // Local session count
-                    totalDistractions++; // Global count
-                    updateDailyData(-5); // Penalize distractions slightly
-                    pauseLofi();
-                     // Maybe pause timers?
-                     // if (isFocusModeActive) clearInterval(countdownInterval);
-                     // if (isPomodoroActive) clearInterval(pomodoroInterval);
-                    saveState();
-                 } else if (!document.hidden && (isFocusModeActive /* || isPomodoroActive */) ) {
-                    playLofi();
-                    // Maybe resume timers? Requires storing time elapsed during pause.
-                 }
-              });
-
-               // Initial Task Line for ToDo
-               if (document.getElementById('tasks') && document.getElementById('tasks').children.length === 0) {
-                   addTaskLine();
-               }
-        }
-
-
-      // --- Initialization ---
       document.addEventListener("DOMContentLoaded", () => {
-        initAudio();
-        loadSavedState(); // Load state first to determine starting page
-        setInterval(updateClock, 1000); // Start clock updates
-        setupEventListeners(); // Attach all listeners
-        setInterval(checkTaskDeadlines, 60000); // Check deadlines periodically
-      });
+        initAudio()
+        loadSavedState()
+        setInterval(updateClock, 1000)
 
-      // --- Make utility functions globally accessible if needed by inline HTML onclick ---
-      window.toggleProfilePage = toggleProfilePage;
-      window.toggleStatsPage = toggleStatsPage;
-      window.toggleTodo = toggleTodo; // Ensure this works globally
-      window.togglePDFViewer = togglePDFViewer; // Ensure this works globally
+        document.querySelectorAll("button[data-action]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const action = btn.getAttribute("data-action")
+            switch (action) {
+              case "start-game":
+                showSignIn()
+                break
+              case "github":
+                window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank")
+                break
+              case "sign-in":
+                signIn()
+                break
+              case "create-account":
+                createAccount()
+                break
+              case "add-url":
+                addUrlInput()
+                break
+              case "start-playback":
+                startPlayback()
+                break
+              case "save-playlist":
+                savePlaylist()
+                break
+              case "remove-playlist":
+                removePlaylist()
+                break
+              case "save-tasks":
+                saveTasks()
+                break
+            }
+          })
+        })
 
-    })();
+        document.getElementById("restartBtn").addEventListener("click", restartSession)
+        document.getElementById("confirmBtn").addEventListener("click", () => handleRestartConfirmation("yes"))
+        document.getElementById("cancelBtn").addEventListener("click", () => handleRestartConfirmation("no"))
+        document.getElementById("sitesBox").addEventListener("click", toggleSitesPopup)
+        document.getElementById("closeSitesPopup").addEventListener("click", closeSitesPopup)
+        document.getElementById("lofiPlay").addEventListener("click", playLofi)
+        document.getElementById("lofiPause").addEventListener("click", pauseLofi)
+        document.getElementById("lofiPrev").addEventListener("click", prevLofi)
+        document.getElementById("lofiNext").addEventListener("click", nextLofi)
+        document.getElementById("statsBtn").addEventListener("click", toggleAnalytics)
+        document.getElementById("todoBtn").addEventListener("click", toggleTodo)
+        document.getElementById("pyqBtn").addEventListener("click", redirectToPYQs)
+        document.getElementById("pdfToggle").addEventListener("click", togglePDFViewer)
+        document.getElementById("pdfInput").addEventListener("change", handlePDFUpload)
+        document.getElementById("fireBox").addEventListener("click", toggleAIPopup)
+        document.getElementById("streakShieldBtn").addEventListener("click", showStreakShieldDialog)
+        document
+          .getElementById("streakShieldConfirmBtn")
+          .addEventListener("click", () => handleStreakShieldConfirmation("yes"))
+        document
+          .getElementById("streakShieldCancelBtn")
+          .addEventListener("click", () => handleStreakShieldConfirmation("no"))
+        document.getElementById("doublePointsBtn").addEventListener("click", showDoublePointsDialog)
+        document
+          .getElementById("doublePointsConfirmBtn")
+          .addEventListener("click", () => handleDoublePointsConfirmation("yes"))
+        document
+          .getElementById("doublePointsCancelBtn")
+          .addEventListener("click", () => handleDoublePointsConfirmation("no"))
+        document.getElementById("logoutBtn").addEventListener("click", logout)
+        document.getElementById("openMysteryBox").addEventListener("click", openMysteryBox)
+        document.getElementById("deadlineConfirmBtn").addEventListener("click", () => handleDeadlineConfirmation("yes"))
+        document.getElementById("deadlineCancelBtn").addEventListener("click", () => handleDeadlineConfirmation("no"))
+        document.getElementById("sessionContinueBtn").addEventListener("click", () => handleSessionContinue("continue"))
+        document.getElementById("sessionEndBtn").addEventListener("click", () => handleSessionContinue("end"))
+        document.getElementById("audioStoreBtn").addEventListener("click", showAudioTracksStore)
+        document.getElementById("closeAudioStore").addEventListener("click", closeAudioTracksStore)
+        document.getElementById("quietPomodoroBtn").addEventListener("click", showPomodoroOverlay)
+        document.getElementById("pomodoroStartBtn").addEventListener("click", startPomodoro)
+        document.getElementById("pomodoroResetBtn").addEventListener("click", resetPomodoro)
+        document.getElementById("pomodoroCloseBtn").addEventListener("click", closePomodoroOverlay)
+
+        const timerDisplay = document.getElementById("timerDisplay")
+        let isDragging = false
+        let currentX
+        let currentY
+        let xOffset = 0
+        let yOffset = 0
+
+        timerDisplay.addEventListener("mousedown", (e) => {
+          isDragging = true
+          currentX = e.clientX - xOffset
+          currentY = e.clientY - yOffset
+        })
+
+        document.addEventListener("mousemove", (e) => {
+          if (isDragging) {
+            e.preventDefault()
+            xOffset = e.clientX - currentX
+            yOffset = e.clientY - currentY
+            timerDisplay.style.left = `${xOffset}px`
+            timerDisplay.style.top = `${yOffset}px`
+          }
+        })
+
+        document.addEventListener("mouseup", () => {
+          isDragging = false
+        })
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && isFocusModeActive) {
+            distractionCount++
+            totalDistractions++
+            pauseLofi()
+            saveState()
+          } else if (!document.hidden && isFocusModeActive) playLofi()
+        })
+        
+        // Check task deadlines periodically
+        setInterval(checkTaskDeadlines, 60000) // Check every minute
+      })
+    })()
   </script>
 </body>
 </html>
