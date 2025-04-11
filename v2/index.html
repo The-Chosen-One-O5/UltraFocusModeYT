@@ -513,10 +513,15 @@
         }
         .url-container button:hover:not(:disabled) { background: #c82333; box-shadow: 1px 1px 0 rgba(167, 29, 42, 0.8); }
 
-         #youtubeInputContainer button[data-action="add-url"] {
-             font-size: 12px; padding: 8px 15px; margin-bottom: 15px; pointer-events: auto;
-             display: block; margin-left: auto; margin-right: auto; max-width: 200px;
-         }
+        #youtubeInputContainer button[data-action="add-url"] {
+    font-size: 12px;
+    padding: 8px 15px;
+    margin-bottom: 15px; /* Keep vertical spacing */
+    pointer-events: auto;
+    /* display: inline-block; /* This is likely the default from the base button style, so it might not be needed */
+    /* No margin-left/right: auto needed */
+    /* No max-width needed for centering via text-align */
+        }
 
         #playlistManagement {
             display: flex; gap: 10px; justify-content: center; align-items: center;
