@@ -339,9 +339,6 @@
         }
 
         #navLogo {
-            /* font-family: 'Press Start 2P', cursive; */
-            /* font-size: 18px; */
-            /* color: var(--text); */
             text-decoration: none;
             white-space: nowrap;
             display: flex; /* Allow vertical centering of image */
@@ -354,7 +351,6 @@
              object-fit: contain; /* Ensure image fits well */
              filter: brightness(0.9) saturate(1.2); /* Optional: Adjust image appearance */
          }
-        /* #navLogo span { color: var(--secondary); } */ /* Removed as text is replaced */
 
         #navClockContainer {
             font-family: 'Roboto Mono', monospace;
@@ -514,13 +510,10 @@
         .url-container button:hover:not(:disabled) { background: #c82333; box-shadow: 1px 1px 0 rgba(167, 29, 42, 0.8); }
 
         #youtubeInputContainer button[data-action="add-url"] {
-    font-size: 12px;
-    padding: 8px 15px;
-    margin-bottom: 15px; /* Keep vertical spacing */
-    pointer-events: auto;
-    /* display: inline-block; /* This is likely the default from the base button style, so it might not be needed */
-    /* No margin-left/right: auto needed */
-    /* No max-width needed for centering via text-align */
+            font-size: 12px;
+            padding: 8px 15px;
+            margin-bottom: 15px; /* Keep vertical spacing */
+            pointer-events: auto;
         }
 
         #playlistManagement {
@@ -679,6 +672,8 @@
         #aiPopup iframe { width: 100%; height: 100%; border: none; border-radius: 5px; }
         .dialog-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; z-index: 105; display: none; pointer-events: auto; padding: 15px; }
         .dialog-box { background: var(--bg-medium); padding: 25px 30px; border: 3px solid var(--accent); box-shadow: 0 0 30px rgba(255, 69, 0, 0.5); border-radius: 10px; text-align: center; pointer-events: auto; font-family: 'Roboto Mono', monospace; max-width: 450px; width: 90%; }
+        .dialog-box.warning { border-color: var(--danger); box-shadow: 0 0 30px rgba(220, 53, 69, 0.6); }
+        .dialog-box.warning h3 { color: var(--danger); }
         .dialog-box h3 { color: var(--accent); font-size: 20px; margin-bottom: 15px; font-family: 'Press Start 2P', cursive; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .dialog-box h3 i { font-size: 18px; }
         .dialog-box p { font-size: 16px; margin-bottom: 25px; color: var(--text); line-height: 1.5; }
@@ -806,7 +801,7 @@
         <div id="pomodoroOverlay" class="dialog-overlay"> <div id="pomodoroContainer"> <h3><i class="fas fa-brain"></i> POMODORO</h3> <p>Earn 1 XP per minute.</p> <div id="pomodoroTimer">60:00</div> <div id="pomodoroStatus">Ready</div> <div id="pomodoroControls"> <button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button> <button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button> <button id="pomodoroCloseBtn"><i class="fas fa-times"></i> CLOSE</button> </div> </div> </div>
 
         <!-- Audio Elements -->
-        <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3"></audio>
+        <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio> <!-- Added loop attribute -->
         <audio id="lofiAudio" preload="metadata" loop></audio>
         <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
         <audio id="levelUpAudio" preload="none" src="https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1"></audio>
@@ -834,11 +829,16 @@
             let currentLofiIndex = 0; let currentTaskForDeadline = null;
             let isSidebarOpen = false; let isVideoSidebarOpen = false;
             let pomodoroInterval; let pomodoroTimeRemaining = 60 * 60; let isPomodoroActive = false;
+            let pomodoroDistractionCount = 0; // <-- New state for pomodoro distractions
             let mysteryBoxCount = 0;
             let activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, };
             const STREAK_SHIELD_COST = 800; const STREAK_SHIELD_DURATION = 7 * 24 * 60 * 60 * 1000;
             const DOUBLE_POINTS_COST = 800; const DOUBLE_POINTS_DURATION = 24 * 60 * 60 * 1000;
             const MYSTERY_BOX_STREAK_INTERVAL = 14;
+            const POMODORO_DISTRACTION_PENALTY = 20; // <-- Penalty per distraction
+            const POMODORO_MAJOR_PENALTY_THRESHOLD = 5; // <-- Distraction count for major penalty
+            const POMODORO_MAJOR_PENALTY_AMOUNT = 400; // <-- Major penalty amount
+            const POMODORO_WARNING_THRESHOLD = 4; // <-- Distraction count for warning
             const mysteryBoxRewards = [ { type: "points", value: () => Math.floor(Math.random() * 451) + 50, message: (val) => `+${val} XP` }, { type: "doublePoints", value: DOUBLE_POINTS_DURATION, message: () => "Double XP (24h)" }, { type: "streakShield", value: STREAK_SHIELD_DURATION, message: () => "Streak Shield (1w)" }, { type: "lofiTrack", message: () => "Unlock Lofi Track" }, ];
             const baseLofiSongs = [ "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1", "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1", "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1", ];
             let premiumLofiTracks = [ { id: "track1", name: "Celestial", url: "https://www.dropbox.com/scl/fi/3xkks3j4tcmnloz46o03m/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=6w97eurecqph68b8f2r7zn5pf&st=epeucz72&dl=1", unlocked: false, cost: 150 }, { id: "track2", name: "Midnight", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=ui3kdsq5&dl=1", unlocked: false, cost: 150 }, { id: "track3", name: "Rainy", url: "https://www.dropbox.com/scl/fi/iaouozc1osse7h5ea9lon/thunder-chosic.com.mp3?rlkey=o7u0rarnh4kk657qhmcgyiolz&st=2r9f625j&dl=1", unlocked: false, cost: 200 }, { id: "track4", name: "Dark Academia ✨", url: "https://www.dropbox.com/scl/fi/6gbti0c7ka2e3lc1kj895/Toxic-Drunker-a-playlist-to-romanticize-studying-physics-dark-academia-playlist.mp3?rlkey=xfo51y00j6tbuozey81c5cfub&st=lvu3uvvp&dl=1", unlocked: false, cost: 1000 }, { id: "track5", name: "Aria Math", url: "https://www.dropbox.com/scl/fi/nqgmray2um9mjtm9stjk9/aria_math_credit_to_c4.mp3?rlkey=99e4kgsulvy1k738piy17iiye&st=uj9t230p&dl=1", unlocked: false, cost: 800 }, { id: "track6", name: "Apollo 11", url: "https://www.dropbox.com/scl/fi/6gl1bhdz9pe8ymjyh0jgd/RevenantEntertainment-kataruma-dont-worry-ill-always-be-here-for-you.mp3?rlkey=ntodkwanh7by2r2nyuw7cht1x&st=mbs2fozn&dl=1", unlocked: false, cost: 800 }, { id: "track7", name: "Aatma rama lofi", url: "https://www.dropbox.com/scl/fi/55vg6j03lwhlmi4eoqual/Aatma-Rama-_-Raghu-X-Stereo-India.mp3?rlkey=25klv8ao9wtg63wq65ol33oub&st=w68o3ka6&dl=1", unlocked: false, cost: 500 }, { id: "track8", name: "The greatest song ever made 👾", url: "https://www.dropbox.com/scl/fi/hrbitky0j4l92zya0gvrg/If-You-re-A-Gamer-This-Song-FOUND-You-4.mp3?rlkey=4kevn083g6iz20bcmh5o6kizw&st=jp2zojra&dl=1", unlocked: false, cost: 1000 } ];
@@ -901,7 +901,7 @@
 
             function updateHomePageInfo() { if (homeUsernameSpan) homeUsernameSpan.textContent = currentUser || "Hero"; updateDateTimeDisplay(); updateFocusStatus(); }
             function updateDateTimeDisplay() { const dateEl = dateTimeDisplaySpan; if (!dateEl) return; const now = new Date(); const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; dateEl.textContent = `${now.toLocaleDateString(undefined, optionsDate)}`; }
-            function updateFocusStatus() { if (!focusStatusSpan) return; const incompleteTasks = tasks.filter(task => !task.completed).length; if (isFocusModeActive) { focusStatusSpan.textContent = `Focusing on ${timerMode}...`; focusStatusSpan.style.color = 'var(--success)'; } else if (incompleteTasks > 0) { focusStatusSpan.textContent = `${incompleteTasks} quest${incompleteTasks > 1 ? 's' : ''} remaining!`; focusStatusSpan.style.color = 'var(--accent-alt)'; } else if (tasks.length > 0) { focusStatusSpan.textContent = "All quests complete!"; focusStatusSpan.style.color = 'var(--success)'; } else { focusStatusSpan.textContent = "Ready to add quests?"; focusStatusSpan.style.color = 'var(--text-dim)'; } }
+            function updateFocusStatus() { if (!focusStatusSpan) return; const incompleteTasks = tasks.filter(task => !task.completed).length; if (isFocusModeActive) { focusStatusSpan.textContent = `Focusing on ${timerMode}...`; focusStatusSpan.style.color = 'var(--success)'; } else if (isPomodoroActive) { focusStatusSpan.textContent = `Pomodoro active!`; focusStatusSpan.style.color = 'var(--success)'; } else if (incompleteTasks > 0) { focusStatusSpan.textContent = `${incompleteTasks} quest${incompleteTasks > 1 ? 's' : ''} remaining!`; focusStatusSpan.style.color = 'var(--accent-alt)'; } else if (tasks.length > 0) { focusStatusSpan.textContent = "All quests complete!"; focusStatusSpan.style.color = 'var(--success)'; } else { focusStatusSpan.textContent = "Ready to add quests?"; focusStatusSpan.style.color = 'var(--text-dim)'; } }
             function displayRandomMotivation() { const quoteElement = document.getElementById('motivationQuote'); if (quoteElement) { const randomIndex = Math.floor(Math.random() * motivationalQuotes.length); quoteElement.textContent = `"${motivationalQuotes[randomIndex]}"`; } }
 
             function displayProfileInfo() {
@@ -920,7 +920,7 @@
                 if (!focusTimeEl || !distractionsEl || !videosEl || !streakEl) { console.error("Stats elements missing!"); return; }
                 const hours = Math.floor(totalFocusTime / 3600); const minutes = Math.floor((totalFocusTime % 3600) / 60); let focusTimeString = ""; if (hours > 0) focusTimeString += `${hours}h `; focusTimeString += `${minutes}m`; if(hours === 0 && minutes === 0) focusTimeString = "0m";
                 focusTimeEl.textContent = focusTimeString;
-                distractionsEl.textContent = totalDistractions;
+                distractionsEl.textContent = totalDistractions; // This is total across all sessions
                 videosEl.textContent = totalVideosWatched;
                 streakEl.textContent = `${streakDays} day${streakDays === 1 ? '' : 's'}`;
                 const calendarGrid = document.getElementById('calendarGrid'); if (calendarGrid) { calendarGrid.innerHTML = '<i>Calendar planned.</i>'; }
@@ -942,7 +942,10 @@
                      console.warn("Lofi audio init failed.");
                      document.querySelectorAll('#lofiPlayer button').forEach(btn => btn.disabled = true);
                  }
-                 if (focusAudioElement) { focusAudioElement.loop = true; focusAudioElement.load(); /* Preload */ }
+                 if (focusAudioElement) {
+                     focusAudioElement.loop = true; // Ensure loop is set
+                     focusAudioElement.load(); /* Preload */
+                 }
                  else { console.error("Focus audio element missing!"); }
             }
 
@@ -971,12 +974,23 @@
             function showAudioTracksStore() { const store = document.getElementById("audioTracksStore"); const tracksList = document.getElementById("audioTracksList"); if (!store || !tracksList) return; tracksList.innerHTML = ""; premiumLofiTracks.sort((a, b) => a.name.localeCompare(b.name)); premiumLofiTracks.forEach(track => { const trackItem = document.createElement("div"); trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`; const trackInfo = document.createElement("div"); trackInfo.className = "track-info"; const trackName = document.createElement("div"); trackName.className = "track-name"; trackName.textContent = track.name; const trackCost = document.createElement("div"); trackCost.className = "track-cost"; trackCost.textContent = track.unlocked ? "Owned" : `${track.cost} XP`; trackInfo.appendChild(trackName); trackInfo.appendChild(trackCost); const unlockBtn = document.createElement("button"); unlockBtn.className = "unlock-track-btn"; unlockBtn.dataset.trackId = track.id; if (track.unlocked) { unlockBtn.textContent = "✓ OWNED"; unlockBtn.disabled = true; unlockBtn.classList.add('unlocked'); } else { unlockBtn.textContent = "UNLOCK"; unlockBtn.disabled = points < track.cost; unlockBtn.onclick = () => unlockAudioTrack(track.id); } trackItem.appendChild(trackInfo); trackItem.appendChild(unlockBtn); tracksList.appendChild(trackItem); }); store.style.display = "flex"; }
             function closeAudioTracksStore() { const store = document.getElementById("audioTracksStore"); if (store) store.style.display = "none"; }
             function unlockAudioTrack(trackId) { const track = premiumLofiTracks.find(t => t.id === trackId); if (!track || track.unlocked || points < track.cost) return; points -= track.cost; track.unlocked = true; updateAvailableLofiTracks(); if (pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Unlocked!", `"${track.name}" available!`, false); playSound('achievementAudio'); showAudioTracksStore(); saveState(); checkLevelUp(); }
-            function showPomodoroOverlay() { clearInterval(pomodoroInterval); isPomodoroActive = false; pomodoroTimeRemaining = 60 * 60; updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Ready"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; const overlay = document.getElementById("pomodoroOverlay"); if (overlay) overlay.style.display = "flex"; }
-            function startPomodoro() { if (isPomodoroActive) return; isPomodoroActive = true; const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing..."; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false; pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000); }
-            function resetPomodoro() { clearInterval(pomodoroInterval); isPomodoroActive = false; pomodoroTimeRemaining = 60 * 60; updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Reset"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; }
-            function closePomodoroOverlay() { const overlay = document.getElementById("pomodoroOverlay"); if (!overlay) return; if (isPomodoroActive) { showConfirmation( "Exit?", "Session active. Stop?", true, () => { clearInterval(pomodoroInterval); isPomodoroActive = false; saveState(); overlay.style.display = "none"; }, () => {} ); } else { overlay.style.display = "none"; } }
+            function showPomodoroOverlay() { clearInterval(pomodoroInterval); isPomodoroActive = false; pomodoroTimeRemaining = 60 * 60; pomodoroDistractionCount = 0; // Reset count when showing
+            updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Ready"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; const overlay = document.getElementById("pomodoroOverlay"); if (overlay) overlay.style.display = "flex"; }
+            function startPomodoro() { if (isPomodoroActive) return; isPomodoroActive = true; pomodoroDistractionCount = 0; // Reset count on start
+            const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing..."; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false;
+            requestFullscreen(document.documentElement); // Enter fullscreen
+            pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000); }
+            function resetPomodoro() { clearInterval(pomodoroInterval); isPomodoroActive = false; pomodoroTimeRemaining = 60 * 60; pomodoroDistractionCount = 0; // Reset count
+            updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Reset"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; exitFullscreen(); // Exit fullscreen
+            }
+            function closePomodoroOverlay() { const overlay = document.getElementById("pomodoroOverlay"); if (!overlay) return; if (isPomodoroActive) { showConfirmation( "Exit?", "Pomodoro session active. Stop?", true, () => { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); // Exit fullscreen
+            saveState(); overlay.style.display = "none"; }, () => {} ); } else { exitFullscreen(); // Exit fullscreen
+            overlay.style.display = "none"; } }
             function updatePomodoroDisplay() { const timerElement = document.getElementById("pomodoroTimer"); if (!timerElement) return; const minutes = Math.floor(pomodoroTimeRemaining / 60); const seconds = pomodoroTimeRemaining % 60; timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`; }
-            function completePomodoroSession() { clearInterval(pomodoroInterval); isPomodoroActive = false; playSound("pomodoroCompleteAudio"); if (pomodoroTimeRemaining === 0) { const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; } const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = `Complete!`; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; saveState(); checkLevelUp(); }
+            function completePomodoroSession() { clearInterval(pomodoroInterval); isPomodoroActive = false; playSound("pomodoroCompleteAudio"); if (pomodoroTimeRemaining === 0) { // Only grant point if timer naturally finished
+            const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; } const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = `Complete! Distractions: ${pomodoroDistractionCount}`; // Show distractions
+            const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; exitFullscreen(); // Exit fullscreen
+            saveState(); checkLevelUp(); }
             function toggleTodo() { if (!todoListPopup) return; const isVisible = todoListPopup.style.display === "flex"; if (isVisible) { saveTasks(); todoListPopup.style.display = "none"; } else { restoreTasks(); todoListPopup.style.display = "flex"; } }
             function addTaskLine(taskData = { text: "", completed: false, deadline: null, points: null }) { if (!tasksContainer) return null; const line = document.createElement("div"); line.className = "task-line"; const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.className = "task-check"; checkbox.checked = taskData.completed; checkbox.onchange = handleTaskCompletionChange; const input = document.createElement("input"); input.type = "text"; input.className = "task-text"; input.placeholder = "Add quest..."; input.value = taskData.text; input.readOnly = taskData.completed; input.onkeydown = handleTaskInputKeydown; input.onchange = () => { line.dataset.text = input.value; }; line.dataset.text = taskData.text; line.dataset.completed = taskData.completed; if(taskData.deadline) line.dataset.deadline = taskData.deadline; if(taskData.points) line.dataset.points = taskData.points; if(taskData.deadlineChecked) line.dataset.deadlineChecked = taskData.deadlineChecked; const buttonsContainer = document.createElement('div'); buttonsContainer.className = 'task-buttons'; const deadlineBtn = document.createElement("button"); deadlineBtn.className = "set-deadline"; deadlineBtn.innerHTML = '<i class="fas fa-stopwatch"></i>'; deadlineBtn.title = "Deadline"; deadlineBtn.onclick = () => showDeadlineDialog(line); deadlineBtn.disabled = taskData.completed; const removeBtn = document.createElement("button"); removeBtn.className = "remove-task"; removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove"; removeBtn.onclick = () => removeTask(line); buttonsContainer.appendChild(deadlineBtn); buttonsContainer.appendChild(removeBtn); line.appendChild(checkbox); line.appendChild(input); line.appendChild(buttonsContainer); updateTaskDeadlineDisplay(line, taskData.deadline, taskData.points); tasksContainer.appendChild(line); if (taskData.completed) { line.style.opacity = '0.7'; } return input; }
             function handleTaskInputKeydown(event) { if (event.key === "Enter") { event.preventDefault(); const currentInput = event.target; const currentLine = currentInput.closest('.task-line'); if (currentLine) currentLine.dataset.text = currentInput.value; const allLines = tasksContainer?.querySelectorAll('.task-line'); if (!allLines) return; if (currentLine === allLines[allLines.length - 1]) { const newFocusTarget = addTaskLine(); if (newFocusTarget) newFocusTarget.focus(); } else { let nextLine = currentLine.nextElementSibling; while (nextLine && !nextLine.classList.contains('task-line')) { nextLine = nextLine.nextElementSibling; } if (nextLine) { const nextInput = nextLine.querySelector('.task-text'); if (nextInput) nextInput.focus(); } else { const newFocusTarget = addTaskLine(); if (newFocusTarget) newFocusTarget.focus(); } } } }
@@ -1030,7 +1044,7 @@
             function showSignInForm() { showView('signinForm'); if(usernameInput) usernameInput.value = ''; if(passwordInput) passwordInput.value = ''; }
             function signIn() { if(!usernameInput || !passwordInput) return; const username = usernameInput.value.trim(); const password = passwordInput.value; if (!username || !password) { showConfirmation("Missing", "Enter Name & Code.", false); return; } try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if (users[username] && users[username].password === password) { isSignedIn = true; currentUser = username; points = users[username].points || 0; previousPoints = points; totalFocusTime = users[username].totalFocusTime || 0; totalDistractions = users[username].totalDistractions || 0; totalVideosWatched = users[username].totalVideosWatched || 0; tasks = users[username].tasks || []; streakDays = users[username].streakDays || 0; lastFocusDate = users[username].lastFocusDate || null; mysteryBoxCount = users[username].mysteryBoxCount || 0; activePowerUps = users[username].activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = users[username].playlists || []; const savedTracks = users[username].premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks(); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); showView('homePage'); restoreTasks(); checkExpiredPowerups(); console.log(`Signed in: ${currentUser}.`); } else { showConfirmation("Login Failed", "Invalid credentials.", false); isSignedIn = false; currentUser = null; } } catch (err) { console.error("Sign-in error:", err); showConfirmation("Sign-in Error", "Error during sign-in.", false); } }
             function createAccount() { if(!usernameInput || !passwordInput) return; const username = usernameInput.value.trim(); const password = passwordInput.value; if (!username || !password) { showConfirmation("Missing", "Enter Name & Code.", false); return; } if (password.length < 4) { showConfirmation("Weak Code", "Code needs 4+ chars.", false); return; } try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if (users[username]) { showConfirmation("Taken", "Name registered.", false); } else { users[username] = { password: password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0, tasks: [], streakDays: 0, lastFocusDate: null, mysteryBoxCount: 0, activePowerUps: { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }, playlists: [], premiumLofiTracks: premiumLofiTracks.map(track => ({ id: track.id, unlocked: false })) }; localStorage.setItem("users", JSON.stringify(users)); isSignedIn = true; currentUser = username; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); showView('homePage'); restoreTasks(); console.log(`Created: ${currentUser}.`); showConfirmation("Success!", `Welcome, ${currentUser}!`, false); } } catch (err) { console.error("Creation error:", err); showConfirmation("Creation Error", "Error creating.", false); } }
-            function logout() { showConfirmation( "Logout?", "Log out?", true, () => { console.log(`Logging out ${currentUser}`); isSignedIn = false; currentUser = null; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); if(isFocusModeActive) { clearInterval(countdownInterval); isFocusModeActive = false; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; } if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`; updateAchievementLevel(); updateStreakDisplay(); populatePlaylistSelect(); restoreTasks(); if(timerDisplay) timerDisplay.style.display = 'none'; showView('landingPage'); }, () => {} ); }
+            function logout() { showConfirmation( "Logout?", "Log out?", true, () => { console.log(`Logging out ${currentUser}`); isSignedIn = false; currentUser = null; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); if(isFocusModeActive) { clearInterval(countdownInterval); isFocusModeActive = false; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; } if (isPomodoroActive) { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); } if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`; updateAchievementLevel(); updateStreakDisplay(); populatePlaylistSelect(); restoreTasks(); if(timerDisplay) timerDisplay.style.display = 'none'; showView('landingPage'); }, () => {} ); }
             function addUrlInput() { if (!urlInputsContainer) return; const container = document.createElement("div"); container.className = "url-container"; const newInput = document.createElement("input"); newInput.type = "text"; newInput.className = "youtube-url"; newInput.placeholder = "Another YouTube URL"; const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { newInput.value = ''; } }; container.appendChild(newInput); container.appendChild(removeBtn); urlInputsContainer.appendChild(container); newInput.focus(); }
             function restoreUrlInputs(ids = []) { if (!urlInputsContainer) return; urlInputsContainer.innerHTML = ''; if (ids.length === 0) { addUrlInput(); const firstRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if(firstRemoveBtn) firstRemoveBtn.remove(); } else { ids.forEach((id, index) => { const container = document.createElement("div"); container.className = "url-container"; const input = document.createElement("input"); input.type = "text"; input.className = "youtube-url"; input.placeholder = "YouTube URL"; input.value = id ? `https://www.youtube.com/watch?v=${id}` : ''; container.appendChild(input); if (index > 0 || ids.length > 1) { const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { input.value = ''; } }; container.appendChild(removeBtn); } urlInputsContainer.appendChild(container); }); if (ids.length === 1) { const singleRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if(singleRemoveBtn) singleRemoveBtn.remove(); } } }
             function savePlaylist() { if (!playlistNameInput || !urlInputsContainer) return; const name = playlistNameInput.value.trim(); if (!name) { showConfirmation("Missing", "Enter name.", false); return; } const urlElements = urlInputsContainer.querySelectorAll(".youtube-url"); const currentVideoIds = Array.from(urlElements).map(input => extractVideoId(input.value)).filter(id => id); if (currentVideoIds.length === 0) { showConfirmation("No Videos", "Add URLs.", false); return; } const existingIndex = playlists.findIndex(p => p.name === name); if (existingIndex !== -1) { showConfirmation( "Overwrite?", `Overwrite "${name}"?`, true, () => { playlists[existingIndex] = { name: name, videoIds: currentVideoIds }; savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `"${name}" updated.`, false); }, () => {} ); } else { playlists.push({ name: name, videoIds: currentVideoIds }); savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `"${name}" saved.`, false); } }
@@ -1042,12 +1056,16 @@
             function saveState() {
                  if (!isSignedIn || !currentUser) return;
                  const stateToSave = {
+                      // YT Focus Session State
                       videoIds: isFocusModeActive ? videoIds : [], currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0, timerMode: isFocusModeActive ? timerMode : "Focus Time", timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000, isFocusModeActive: isFocusModeActive, completedVideos: isFocusModeActive ? Array.from(completedVideos) : [], allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
+                      // Pomodoro State (only if active)
+                      isPomodoroActive: isPomodoroActive, pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (60 * 60), pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
+                      // General User State
                       points: points, totalFocusTime: totalFocusTime, totalDistractions: totalDistractions, totalVideosWatched: totalVideosWatched, streakDays: streakDays, lastFocusDate: lastFocusDate, mysteryBoxCount: mysteryBoxCount, activePowerUps: activePowerUps, premiumLofiTrackState: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })),
                       currentView: currentView, isSignedIn: isSignedIn, currentUser: currentUser
                  };
                  try {
-                      localStorage.setItem("focusModeState_v3", JSON.stringify(stateToSave));
+                      localStorage.setItem("focusModeState_v4", JSON.stringify(stateToSave)); // Incremented version
                       const users = JSON.parse(localStorage.getItem("users") || "{}");
                       if (users[currentUser]) {
                            users[currentUser].points = points; users[currentUser].totalFocusTime = totalFocusTime; users[currentUser].totalDistractions = totalDistractions; users[currentUser].totalVideosWatched = totalVideosWatched; users[currentUser].streakDays = streakDays; users[currentUser].lastFocusDate = lastFocusDate; users[currentUser].mysteryBoxCount = mysteryBoxCount; users[currentUser].activePowerUps = activePowerUps; users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
@@ -1057,38 +1075,90 @@
             }
 
             function loadSavedState() {
-                console.log("Loading state...");
+                console.log("Loading state (v4)...");
                 let loadedState = null;
                 try {
-                    loadedState = JSON.parse(localStorage.getItem("focusModeState_v3") || "{}");
-                } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v3"); loadedState = {}; }
+                    loadedState = JSON.parse(localStorage.getItem("focusModeState_v4") || "{}");
+                    // Clear older versions if found
+                    localStorage.removeItem("focusModeState_v3");
+                } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v4"); loadedState = {}; }
 
                 if (loadedState.isSignedIn && loadedState.currentUser) {
                      console.log("Attempting restore for:", loadedState.currentUser);
                      const users = JSON.parse(localStorage.getItem("users") || "{}");
                      if (users[loadedState.currentUser]) {
                          const userData = users[loadedState.currentUser];
+                         // Restore basic user data
                          isSignedIn = true; currentUser = loadedState.currentUser; points = userData.points || 0; previousPoints = points; totalFocusTime = userData.totalFocusTime || 0; totalDistractions = userData.totalDistractions || 0; totalVideosWatched = userData.totalVideosWatched || 0; tasks = userData.tasks || []; streakDays = userData.streakDays || 0; lastFocusDate = userData.lastFocusDate || null; mysteryBoxCount = userData.mysteryBoxCount || 0; activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = userData.playlists || []; const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
                          if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); restoreTasks(); checkExpiredPowerups();
 
+                         // Check for YT Focus Session restore
                          if (loadedState.isFocusModeActive && loadedState.videoIds && loadedState.videoIds.length > 0 && loadedState.currentView === 'youtubeLecturePage') {
-                             console.log("Restoring active focus session...");
+                             console.log("Restoring active YouTube focus session...");
                              isFocusModeActive = true; videoIds = loadedState.videoIds; currentVideoIndex = loadedState.currentVideoIndex || 0; timerMode = loadedState.timerMode || "Focus Time"; timerRemaining = loadedState.timerRemaining || (focusDuration / 1000); completedVideos = new Set(loadedState.completedVideos || []); allVideosCompleted = loadedState.allVideosCompleted || false;
                              loadYouTubeAPI().then(() => { showView('youtubeLecturePage'); setTimeout(() => { console.log("Re-init player."); setupYouTubePlayer(); startTimer(timerRemaining * 1000, timerMode); }, 100); }).catch(err => { console.error("YT API load fail on restore:", err); isFocusModeActive = false; showView('homePage'); });
-                         } else { isFocusModeActive = false; showView(loadedState.currentView || 'homePage'); }
+                         }
+                         // Check for Pomodoro Session restore
+                         else if (loadedState.isPomodoroActive && loadedState.currentView === 'homePage') { // Assuming Pomodoro runs on home/overlay
+                             console.log("Restoring active Pomodoro session...");
+                             isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (60 * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0;
+                             showPomodoroOverlay(); // Show the overlay first
+                             // Manually update display elements before starting interval
+                             updatePomodoroDisplay();
+                             const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing...";
+                             const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true;
+                             const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false;
+                             requestFullscreen(document.documentElement); // Re-enter fullscreen if restored
+                             // Restart interval
+                             pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
+                         } else {
+                             // No active YT or Pomodoro session, just show the last view
+                             isFocusModeActive = false;
+                             isPomodoroActive = false;
+                             showView(loadedState.currentView || 'homePage');
+                         }
                          console.log("Session restored for", currentUser);
                          return;
-                     } else { console.warn("User data mismatch:", loadedState.currentUser); localStorage.removeItem("focusModeState_v3"); }
+                     } else { console.warn("User data mismatch:", loadedState.currentUser); localStorage.removeItem("focusModeState_v4"); }
                 }
-                console.log("No active session found. Showing landing.");
+                console.log("No active session found or error. Showing landing.");
                 showView('landingPage'); updateClock(); initAudio(); updateAchievementLevel(); updateStreakDisplay();
             }
 
 
             function checkExpiredPowerups() { let stateChanged = false; const now = Date.now(); if (activePowerUps.doublePoints.active && activePowerUps.doublePoints.expiry && now > activePowerUps.doublePoints.expiry) { console.log("Double XP expired."); activePowerUps.doublePoints.active = false; activePowerUps.doublePoints.expiry = null; stateChanged = true; } if (activePowerUps.streakShield.active && activePowerUps.streakShield.expiry && now > activePowerUps.streakShield.expiry) { console.log("Shield expired."); activePowerUps.streakShield.active = false; activePowerUps.streakShield.expiry = null; activePowerUps.streakShield.used = false; stateChanged = true; } if (stateChanged) { saveState(); } }
-            function requestFullscreen(element) { try { if (element.requestFullscreen) element.requestFullscreen(); else if (element.mozRequestFullScreen) element.mozRequestFullScreen(); else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen(); else if (element.msRequestFullscreen) element.msRequestFullscreen(); } catch(e){ console.warn("Fullscreen fail:", e.message)} }
-            function exitFullscreen() { try { if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) { if (document.exitFullscreen) document.exitFullscreen(); else if (document.mozCancelFullScreen) document.mozCancelFullScreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); else if (document.msExitFullscreen) document.msExitFullscreen(); } } catch(e){ console.warn("Exit fullscreen fail:", e.message)} }
-            function showConfirmation(title, message, isCancellable = false, onConfirm = () => {}, onCancel = () => {}) { const dialog = document.getElementById("confirmationDialog"); const titleEl = dialog?.querySelector("h3"); const messageEl = dialog?.querySelector("p"); const confirmBtn = document.getElementById("confirmBtn"); const cancelBtn = document.getElementById("cancelBtn"); if (!dialog || !titleEl || !messageEl || !confirmBtn || !cancelBtn) { console.error("Confirm dialog missing."); return; } titleEl.innerHTML = `<i class="fas ${isCancellable ? 'fa-question-circle' : 'fa-info-circle'}"></i> ${title}`; messageEl.textContent = message; cancelBtn.style.display = isCancellable ? "inline-block" : "none"; const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); const newCancelBtn = cancelBtn.cloneNode(true); cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn); newConfirmBtn.textContent = isCancellable ? "YES" : "OK"; newConfirmBtn.onclick = () => { dialog.style.display = 'none'; onConfirm(); }; if (isCancellable) { newCancelBtn.onclick = () => { dialog.style.display = 'none'; onCancel(); }; } dialog.style.display = "flex"; }
+            function requestFullscreen(element) { try { if (element.requestFullscreen) element.requestFullscreen().catch(err => console.warn("FS Req Catch:", err.message)); else if (element.mozRequestFullScreen) element.mozRequestFullScreen(); else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen(); else if (element.msRequestFullscreen) element.msRequestFullscreen(); } catch(e){ console.warn("Fullscreen fail:", e.message)} }
+            function exitFullscreen() { try { if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) { if (document.exitFullscreen) document.exitFullscreen().catch(err => console.warn("FS Exit Catch:", err.message)); else if (document.mozCancelFullScreen) document.mozCancelFullScreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); else if (document.msExitFullscreen) document.msExitFullscreen(); } } catch(e){ console.warn("Exit fullscreen fail:", e.message)} }
+            // Enhanced showConfirmation to optionally add a CSS class for styling (e.g., warning)
+            function showConfirmation(title, message, isCancellable = false, onConfirm = () => {}, onCancel = () => {}, dialogClass = '') {
+                 const dialog = document.getElementById("confirmationDialog");
+                 const dialogBox = dialog?.querySelector(".dialog-box");
+                 const titleEl = dialog?.querySelector("h3");
+                 const messageEl = dialog?.querySelector("p");
+                 const confirmBtn = document.getElementById("confirmBtn");
+                 const cancelBtn = document.getElementById("cancelBtn");
+                 if (!dialog || !dialogBox || !titleEl || !messageEl || !confirmBtn || !cancelBtn) { console.error("Confirm dialog missing elements."); return; }
+
+                 // Reset classes and set new one if provided
+                 dialogBox.className = 'dialog-box'; // Reset to base class
+                 if (dialogClass) { dialogBox.classList.add(dialogClass); }
+
+                 titleEl.innerHTML = `<i class="fas ${isCancellable ? 'fa-question-circle' : (dialogClass === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle')}"></i> ${title}`;
+                 messageEl.textContent = message;
+                 cancelBtn.style.display = isCancellable ? "inline-block" : "none";
+
+                 // Clone buttons to remove old listeners
+                 const newConfirmBtn = confirmBtn.cloneNode(true);
+                 confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+                 const newCancelBtn = cancelBtn.cloneNode(true);
+                 cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+                 newConfirmBtn.textContent = isCancellable ? "YES" : "OK";
+                 newConfirmBtn.onclick = () => { dialog.style.display = 'none'; onConfirm(); };
+                 if (isCancellable) { newCancelBtn.onclick = () => { dialog.style.display = 'none'; onCancel(); }; }
+
+                 dialog.style.display = "flex";
+             }
 
             // --- Event Listener Setup ---
             function setupEventListeners() {
@@ -1126,39 +1196,70 @@
                 if(fireBox) fireBox.addEventListener('click', toggleAIPopup);
                 if (timerDisplay) { let isDragging = false; let initialX, initialY; timerDisplay.addEventListener("mousedown", (e) => { if (e.target.tagName === 'BUTTON') return; isDragging = true; initialX = e.clientX - timerDisplay.offsetLeft; initialY = e.clientY - timerDisplay.offsetTop; timerDisplay.style.cursor = 'grabbing'; e.preventDefault(); }); document.addEventListener("mousemove", (e) => { if (isDragging) { e.preventDefault(); let currentX = e.clientX - initialX; let currentY = e.clientY - initialY; const maxX = window.innerWidth - timerDisplay.offsetWidth - 10; const maxY = window.innerHeight - timerDisplay.offsetHeight - 10; currentX = Math.max(10, Math.min(currentX, maxX)); currentY = Math.max(65, Math.min(currentY, maxY)); timerDisplay.style.left = `${currentX}px`; timerDisplay.style.top = `${currentY}px`; } }); document.addEventListener("mouseup", () => { if (isDragging) { isDragging = false; timerDisplay.style.cursor = 'move'; } }); }
 
-                 // Visibility Change Listener for Distraction Audio
+                 // Visibility Change Listener for Distraction Audio (Updated for Pomodoro)
                  document.addEventListener("visibilitychange", () => {
-                     if (isFocusModeActive && currentView === 'youtubeLecturePage') {
-                         if (document.hidden) {
-                             pauseLofi();
-                             if (focusAudioElement && focusAudioElement.readyState >= 2) { // Check canplay or higher
-                                 focusAudioElement.play().catch(e => console.warn("Focus audio play fail:", e.message));
-                             } else if (focusAudioElement) { focusAudioElement.load(); }
-                             totalDistractions++;
-                             console.log("Tab hidden. Distractions:", totalDistractions);
-                             // Update stats display immediately if visible (unlikely but possible)
-                             if(currentView === 'focusStats') displayFocusStatsInfo();
-                             saveState();
-                         } else {
-                             if (focusAudioElement && !focusAudioElement.paused) {
-                                 focusAudioElement.pause();
-                                 focusAudioElement.currentTime = 0;
+                     const isHidden = document.hidden;
+
+                     if (isHidden) {
+                        // Tab hidden logic
+                        pauseLofi(); // Always pause lofi when hidden
+
+                        if (isFocusModeActive && currentView === 'youtubeLecturePage') {
+                            // YouTube session distraction
+                            if (focusAudioElement && focusAudioElement.readyState >= 2) {
+                                focusAudioElement.play().catch(e => console.warn("Focus audio play fail (YT):", e.message));
+                            } else if (focusAudioElement) { focusAudioElement.load(); }
+                            totalDistractions++; // Increment global counter
+                            console.log("Tab hidden (YT). Global Distractions:", totalDistractions);
+                            saveState();
+                        } else if (isPomodoroActive) {
+                            // Pomodoro session distraction
+                            pomodoroDistractionCount++;
+                            totalDistractions++; // Increment global counter too
+                            points = Math.max(0, points - POMODORO_DISTRACTION_PENALTY);
+                             if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+
+                            console.log(`Tab hidden (Pomodoro). Session Distractions: ${pomodoroDistractionCount}, Global: ${totalDistractions}. Penalty: -${POMODORO_DISTRACTION_PENALTY}`);
+                            showConfirmation("Distraction!", `Pomodoro Focus Lost! -${POMODORO_DISTRACTION_PENALTY} XP. Distractions: ${pomodoroDistractionCount}`, false);
+
+                             // Check for warning and major penalty
+                             if (pomodoroDistractionCount === POMODORO_WARNING_THRESHOLD) {
+                                 showConfirmation("⚠️ WARNING!", `Next distraction: -${POMODORO_MAJOR_PENALTY_AMOUNT} XP penalty!`, false, undefined, undefined, 'warning'); // Use warning style
+                             } else if (pomodoroDistractionCount >= POMODORO_MAJOR_PENALTY_THRESHOLD) {
+                                 points = Math.max(0, points - POMODORO_MAJOR_PENALTY_AMOUNT);
+                                 if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                                 showConfirmation("🚨 Major Penalty!", `Distraction limit exceeded! -${POMODORO_MAJOR_PENALTY_AMOUNT} XP!`, false, undefined, undefined, 'warning'); // Use warning style
                              }
-                             playLofi();
-                             console.log("Tab visible.");
-                         }
+
+                            if (focusAudioElement && focusAudioElement.readyState >= 2) {
+                                focusAudioElement.play().catch(e => console.warn("Focus audio play fail (Pomo):", e.message));
+                            } else if (focusAudioElement) { focusAudioElement.load(); }
+
+                            saveState(); // Save state after penalties
+                            checkLevelUp(); // Check if points change triggered level change (unlikely down)
+                        }
+
                      } else {
-                         if (focusAudioElement && !focusAudioElement.paused) {
-                             focusAudioElement.pause();
-                             focusAudioElement.currentTime = 0;
+                        // Tab visible logic
+                        if (focusAudioElement && !focusAudioElement.paused) {
+                            focusAudioElement.pause();
+                            focusAudioElement.currentTime = 0; // Reset audio position
+                        }
+
+                        if ((isFocusModeActive && currentView === 'youtubeLecturePage') || isPomodoroActive) {
+                            playLofi(); // Resume lofi only if a focus session is active
+                             console.log("Tab visible.");
+                             // Optional: Show a small "back on track" message, maybe less intrusive
+                             // showConfirmation("Focus Restored", "Back on track!", false);
                          }
                      }
                  });
+
                  window.addEventListener('beforeunload', () => { if (isSignedIn && currentUser) { saveState(); console.log("State saved before unload."); } });
                 console.log("Event listeners ready.");
             }
 
-                        // --- Initialization ---
+            // --- Initialization ---
             document.addEventListener("DOMContentLoaded", () => {
                 console.log("DOM Loaded.");
                  // Cache DOM elements first
