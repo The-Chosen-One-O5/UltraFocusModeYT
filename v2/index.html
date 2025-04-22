@@ -1013,65 +1013,105 @@
             function nextLofi() { if (!lofiAudio || availableLofiSongs.length <= 1) return; currentLofiIndex = (currentLofiIndex + 1) % availableLofiSongs.length; lofiAudio.src = availableLofiSongs[currentLofiIndex]; lofiAudio.load(); playLofi(); }
             function prevLofi() { if (!lofiAudio || availableLofiSongs.length <= 1) return; currentLofiIndex = (currentLofiIndex - 1 + availableLofiSongs.length) % availableLofiSongs.length; lofiAudio.src = availableLofiSongs[currentLofiIndex]; lofiAudio.load(); playLofi(); }
 
-            // --- Modified Streak Logic ---
+            // --- Modified Streak Logic (REFINED) ---
             function updateStreak() {
                 if (!isSignedIn) return;
+
                 const today = new Date().toDateString(); // e.g., "Thu Aug 15 2024"
+                console.log(`[Streak Check] START - User: ${currentUser}, Current Streak: ${streakDays}, Last Saved Focus Date: ${lastFocusDate}, Today is: ${today}`);
 
-                // --- Streak Fix: Don't run if already checked today ---
-                if (lastFocusDate === today) {
-                    console.log("Streak already checked/updated today.");
-                    // Still log focus time if a session happened
-                    logDailyFocus();
-                    return;
-                }
+                let needsSave = false; // Flag to check if we need to save state later
 
-                let streakIncremented = false;
-                if (lastFocusDate) {
-                    const last = new Date(lastFocusDate);
-                    const todayDate = new Date(today);
-                    const diffTime = todayDate - last;
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                // --- Primary Logic: Check if this is the first focus session *today* ---
+                if (lastFocusDate !== today) {
+                    // It's either the very first session ever, or the first session on a new day.
+                    console.log("[Streak Check] First check for today. Evaluating streak...");
 
-                    console.log(`Streak check: Today: ${today}, Last: ${lastFocusDate}, DiffDays: ${diffDays}`);
+                    if (lastFocusDate) {
+                        // User has focused before, check the gap.
+                        const last = new Date(lastFocusDate);
+                        const todayDate = new Date(today);
+                        // Ensure we compare date parts only, ignoring time within the day
+                        last.setHours(0, 0, 0, 0);
+                        todayDate.setHours(0, 0, 0, 0);
 
-                    if (diffDays === 1) {
-                        streakDays++;
-                        streakIncremented = true;
-                        checkMysteryBoxMilestone();
-                        console.log("Streak incremented:", streakDays);
-                    } else if (diffDays > 1) {
-                        if (activePowerUps.streakShield.active && Date.now() < activePowerUps.streakShield.expiry && !activePowerUps.streakShield.used) {
-                            activePowerUps.streakShield.used = true;
-                            showConfirmation("Shield Used!", "Streak Shield protected your focus streak!", false);
-                            console.log("Streak Shield used to protect streak.");
-                            // Keep current streakDays
-                        } else {
-                            console.log("Streak broken. Resetting to 1.");
-                            streakDays = 1; // Reset to 1 for today's focus
-                            activePowerUps.streakShield.used = false; // Reset shield use status if broken
+                        const diffTime = todayDate - last;
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // Calculate difference in full days
+
+                        console.log(`[Streak Check] Date diff calculated. DiffDays: ${diffDays}`);
+
+                        if (diffDays === 1) {
+                            // Consecutive day
+                            streakDays++;
+                            needsSave = true;
+                            checkMysteryBoxMilestone();
+                            console.log("[Streak Check] Streak incremented to:", streakDays);
+                        } else if (diffDays > 1) {
+                            // Missed one or more days
+                            console.log("[Streak Check] Missed days detected.");
+                            if (activePowerUps.streakShield.active && Date.now() < activePowerUps.streakShield.expiry && !activePowerUps.streakShield.used) {
+                                // Use the shield
+                                activePowerUps.streakShield.used = true;
+                                needsSave = true; // Shield state changed
+                                showConfirmation("Shield Used!", "Streak Shield protected your focus streak!", false);
+                                console.log("[Streak Check] Streak Shield used. Streak maintained at:", streakDays);
+                                // Streak count doesn't change, but shield state did.
+                            } else {
+                                // No shield or shield expired/used - Reset streak
+                                console.log("[Streak Check] No active/usable shield. Streak broken. Resetting to 1.");
+                                streakDays = 1; // Start new streak from today
+                                if (activePowerUps.streakShield.active) activePowerUps.streakShield.used = false; // Reset shield status
+                                needsSave = true;
+                            }
+                        } else if (diffDays < 0) {
+                            // Date anomaly (lastFocusDate is in the future?) - Reset
+                            console.warn("[Streak Check] Date anomaly (lastFocusDate in future?). Resetting streak to 1.");
+                            streakDays = 1;
+                            needsSave = true;
                         }
-                         streakIncremented = true; // Mark as "updated" for today
-                    } else if (diffDays < 0) {
-                        console.warn("Date anomaly detected (lastFocusDate in future?). Resetting streak.");
-                        streakDays = 1; // Reset streak if date is weird
-                        streakIncremented = true;
+                         // If diffDays === 0, it means lastFocusDate was yesterday according to setHours(0,0,0,0),
+                         // but today.toDateString() !== lastFocusDate.toDateString(). This shouldn't really happen
+                         // with toDateString comparison unless timezones are causing issues across midnight.
+                         // Resetting to 1 is safer if this state occurs.
+                         else if (diffDays === 0 && lastFocusDate !== today){
+                              console.warn("[Streak Check] Potential timezone/midnight issue detected. Resetting streak to 1.");
+                              streakDays = 1;
+                              needsSave = true;
+                         }
+
+                    } else {
+                        // This is the very first focus session ever for this user.
+                        streakDays = 1;
+                        needsSave = true;
+                        console.log("[Streak Check] First focus session ever, starting streak at 1.");
                     }
-                    // If diffDays === 0, it means the last focus was earlier today - handled by the initial check.
+
+                    // IMPORTANT: Update lastFocusDate to today *because* it was the first check of the day.
+                    console.log(`[Streak Check] Updating lastFocusDate to ${today}.`);
+                    lastFocusDate = today;
+                    needsSave = true; // Need to save the new date
+
                 } else {
-                    // First focus session ever recorded for this user
-                    streakDays = 1;
-                    streakIncremented = true;
-                    console.log("First focus session, starting streak at 1.");
+                    // It's not the first session today. Streak/Date remains unchanged.
+                    console.log("[Streak Check] Already focused today. Streak/Date not modified.");
                 }
 
-                // Only update lastFocusDate if the streak was potentially modified (i.e., first focus today)
-                if (streakIncremented || !lastFocusDate) {
-                    lastFocusDate = today;
-                    logDailyFocus(); // Log focus time when the date is updated
-                    updateStreakDisplay();
-                    saveState(); // Save state after updating streak and date
+                // --- Post-Check Actions ---
+
+                // Always log the focus time accumulated *before* this new session started.
+                // This ensures focus time from the *previous* session gets logged correctly.
+                logDailyFocus();
+
+                // Update the UI display for the streak if it might have changed
+                updateStreakDisplay();
+
+                // Save state ONLY if streak, shield status, or lastFocusDate was modified.
+                if (needsSave) {
+                    console.log("[Streak Check] Saving state due to changes.");
+                    saveState();
                 }
+
+                console.log(`[Streak Check] END - User: ${currentUser}, Current Streak: ${streakDays}, Last Focus Date Updated To: ${lastFocusDate}`);
             }
 
             // --- New Function to Log Daily Focus Time ---
