@@ -36,6 +36,10 @@
             --danger: #dc3545; /* Red */
             --info: #17a2b8; /* Teal */
             --warning: #ffc107; /* Yellow */
+            --calendar-focus-low: rgba(65, 105, 225, 0.2);
+            --calendar-focus-medium: rgba(65, 105, 225, 0.5);
+            --calendar-focus-high: rgba(65, 105, 225, 0.8);
+            --calendar-today-border: var(--accent);
         }
 
         html {
@@ -297,8 +301,8 @@
         select {
             display: block;
             width: 100%;
-            max-width: 350px;
-            margin: 15px auto;
+            /* Removed max-width: 350px here to allow parent control */
+            margin: 15px auto; /* Default margin */
             padding: 12px 15px;
             border-radius: 4px;
             font-size: 16px;
@@ -346,7 +350,7 @@
             height: 100%; /* Take full nav height */
         }
         #navLogo img { /* Style for the logo image */
-             height: 40px; /* Adjust height as needed */
+             height: 50px; /* << INCREASED LOGO SIZE */
              width: auto; /* Maintain aspect ratio */
              object-fit: contain; /* Ensure image fits well */
              filter: brightness(0.9) saturate(1.2); /* Optional: Adjust image appearance */
@@ -486,28 +490,37 @@
             width: 95%;
             margin: 0 auto 20px auto;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-             text-align: center;
-             pointer-events: auto;
-             display: block; /* Show input section initially */
+            text-align: center;
+            pointer-events: auto;
+            display: block; /* Show input section initially */
         }
          #youtubeInputContainer .subtitle {
             font-size: 18px; color: var(--text-dim); margin-bottom: 20px;
             font-family: 'Roboto Mono', monospace;
         }
 
+        /* --- Positioning Fix for URL Input Area --- */
         #urlInputs {
-            margin-bottom: 15px;
+            margin: 0 auto 15px auto; /* Center the block */
+            max-width: 450px; /* Control max width */
+            width: 100%; /* Take available space up to max-width */
             pointer-events: auto;
         }
         .url-container {
             display: flex; align-items: center; margin-bottom: 10px; gap: 10px;
         }
-        .url-container input { margin: 0; flex-grow: 1; pointer-events: auto; }
+        /* --- Override general input margin within URL container --- */
+        .url-container input {
+            margin: 0; /* Remove default auto margin */
+            flex-grow: 1; pointer-events: auto;
+            max-width: none; /* Remove max-width from input itself */
+        }
         .url-container button {
             padding: 8px 12px; margin: 0; background: var(--danger); font-size: 12px;
             box-shadow: 2px 2px 0 rgba(167, 29, 42, 0.8); min-width: 35px; pointer-events: auto;
+            flex-shrink: 0; /* Prevent button from shrinking */
         }
-        .url-container button:hover:not(:disabled) { background: #c82333; box-shadow: 1px 1px 0 rgba(167, 29, 42, 0.8); }
+        /* --- End Positioning Fix --- */
 
         #youtubeInputContainer button[data-action="add-url"] {
             font-size: 12px;
@@ -614,11 +627,12 @@
 
         /* Focus Stats Page Styles */
         #focusStats { /* Changed ID */
-            justify-content: center; align-items: center;
+            justify-content: flex-start; /* Align content to top */
+            align-items: center;
         }
          #focusStatsContainer {
              background-color: rgba(26, 26, 46, 0.8); padding: 30px; border-radius: 12px;
-             border: 1px solid var(--primary); max-width: 700px; width: 90%;
+             border: 1px solid var(--primary); max-width: 800px; width: 90%; /* Increased max-width */
              box-shadow: 0 5px 20px rgba(0,0,0,0.3); pointer-events: auto;
          }
          #focusStatsContainer h3 { text-align: center; font-family: 'Press Start 2P', cursive; font-size: 20px; color: var(--secondary); margin-bottom: 30px; }
@@ -629,9 +643,24 @@
           .stat-item .value.streak { color: var(--accent); }
           .stat-item .value.videos { color: var(--secondary); }
           .stat-item .value.distractions { color: var(--warning); }
+
+         /* --- Calendar Styles --- */
          #focusCalendar { margin-top: 30px; background: var(--bg-light); padding: 20px; border-radius: 8px; border: 1px solid var(--primary-dark); }
-          #focusCalendar h4 { text-align: center; margin-bottom: 15px; color: var(--text-dim); }
-           #calendarGrid { min-height: 150px; display: flex; justify-content: center; align-items: center; color: var(--text-dim); font-style: italic; }
+         #calendarHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+         #calendarHeader h4 { margin: 0; color: var(--text-dim); flex-grow: 1; text-align: center; font-size: 16px; }
+         #calendarHeader button { background: var(--primary); box-shadow: 2px 2px 0 var(--primary-dark); padding: 5px 10px; font-size: 12px; margin: 0; min-width: 40px; }
+         #calendarHeader button:hover:not(:disabled) { background: var(--secondary); box-shadow: 1px 1px 0 var(--primary-dark); }
+         #calendarGrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+         .calendar-day { aspect-ratio: 1 / 1; background-color: var(--bg-medium); border-radius: 3px; display: flex; justify-content: center; align-items: center; font-size: 12px; color: var(--text-dim); position: relative; border: 1px solid transparent; cursor: default; transition: background-color 0.2s; }
+         .calendar-day.other-month { opacity: 0.4; pointer-events: none; }
+         .calendar-day.has-focus { background-color: var(--calendar-focus-low); color: var(--text); }
+         .calendar-day.focus-medium { background-color: var(--calendar-focus-medium); }
+         .calendar-day.focus-high { background-color: var(--calendar-focus-high); }
+         .calendar-day.today { border: 1px solid var(--calendar-today-border); }
+         .calendar-day .tooltip { visibility: hidden; width: 120px; background-color: var(--bg-dark); color: var(--text); text-align: center; border-radius: 4px; padding: 5px 0; position: absolute; z-index: 1; bottom: 115%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; font-size: 11px; pointer-events: none; }
+         .calendar-day:hover .tooltip { visibility: visible; opacity: 0.95; }
+         /* --- End Calendar Styles --- */
+
            #focusStats button[data-action="show-view"] { /* Target button inside focusStats view */
                 margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;
             }
@@ -683,7 +712,7 @@
         #confirmBtn:hover:not(:disabled), #streakShieldConfirmBtn:hover:not(:disabled), #doublePointsConfirmBtn:hover:not(:disabled), #deadlineConfirmBtn:hover:not(:disabled), #sessionContinueBtn:hover:not(:disabled), #openMysteryBox:hover:not(:disabled) { background: var(--accent-alt); box-shadow: 2px 2px 0 #b33000; }
         #cancelBtn, #streakShieldCancelBtn, #doublePointsCancelBtn, #deadlineCancelBtn, #sessionEndBtn, #closeAudioStore, #closeMysteryBoxBtn { background: var(--bg-light); box-shadow: 3px 3px 0 var(--bg-medium); }
         #cancelBtn:hover:not(:disabled), #streakShieldCancelBtn:hover:not(:disabled), #doublePointsCancelBtn:hover:not(:disabled), #deadlineCancelBtn:hover:not(:disabled), #sessionEndBtn:hover:not(:disabled), #closeAudioStore:hover:not(:disabled), #closeMysteryBoxBtn:hover:not(:disabled) { background: var(--bg-medium); box-shadow: 2px 2px 0 var(--bg-medium); }
-        #deadlineDialog input, #deadlineDialog select { margin: 15px auto; }
+        #deadlineDialog input, #deadlineDialog select { margin: 15px auto; max-width: 300px; /* Ensure these dont stretch too much */ }
         #mysteryBoxPopup .dialog-box { border-color: var(--gold); box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
         #mysteryBoxPopup h3 { color: var(--gold); }
         #mysteryRewardText { font-weight: bold; color: var(--accent-alt); min-height: 40px;}
@@ -711,7 +740,7 @@
         .task-line input[type="checkbox"]:checked { background: var(--secondary); border-color: var(--secondary); }
         .task-line input[type="checkbox"]:checked::after { content: "✔"; position: absolute; color: var(--text); font-size: 14px; font-weight: bold; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .task-line input[type="checkbox"]:hover { border-color: var(--secondary); }
-        .task-line input[type="text"] { flex-grow: 1; font-size: 15px; font-family: 'Roboto Mono', monospace; color: var(--text); background: transparent; border: none; border-bottom: 1px solid transparent; padding: 5px 0; outline: none; box-shadow: none; margin: 0; pointer-events: auto; z-index: 11; transition: border-color 0.2s; }
+        .task-line input[type="text"] { flex-grow: 1; font-size: 15px; font-family: 'Roboto Mono', monospace; color: var(--text); background: transparent; border: none; border-bottom: 1px solid transparent; padding: 5px 0; outline: none; box-shadow: none; margin: 0; pointer-events: auto; z-index: 11; transition: border-color 0.2s; max-width: none; /* Override general input max-width */ }
         .task-line input[type="text"]:focus { border-bottom: 1px solid var(--secondary); box-shadow: none; }
         .task-line input[type="text"][readonly] { text-decoration: line-through; color: var(--text-dim); }
         .task-line .task-buttons { display: flex; align-items: center; margin-left: 10px; flex-shrink: 0; pointer-events: auto; }
@@ -740,8 +769,26 @@
         #pomodoroCloseBtn:hover:not(:disabled) { background: var(--bg-medium); box-shadow: 2px 2px 0 var(--bg-medium);}
 
         /* Responsive Adjustments */
-        @media (max-width: 800px) { body { font-size: 14px; } .title { font-size: 22px; margin-bottom: 20px;} .subtitle { font-size: 16px; margin-bottom: 25px; } button { padding: 8px 18px; font-size: 12px; margin: 5px 5px 12px; } #landingPageContainer, #signinFormContainer { padding: 30px 20px; } #features { gap: 15px; } .feature { width: 180px; padding: 15px; } .feature i { font-size: 24px; } .feature p { font-size: 14px; } input[type="text"], input[type="password"], input[type="date"], input[type="time"], select { padding: 10px 12px; font-size: 14px; } #topNavBar { height: 50px; padding: 0 15px; } #navLogo img { height: 35px; } #navClockContainer { font-size: 14px; margin: 0 10px; } #navButtons { gap: 15px; } #navStreakDisplay { font-size: 13px; padding: 4px 8px; } #navProfileBtn { font-size: 22px; } .page-view { padding: 15px; } #welcomeMessage { font-size: 20px; } #dateTimeDisplay { font-size: 16px; } #focusStatus { font-size: 18px; margin-bottom: 30px; } #motivationQuote { font-size: 16px; } #youtubeInputContainer { padding: 15px 20px; } #youtubeInputContainer .subtitle { font-size: 16px; } #timerDisplay { top: 60px; font-size: 14px; padding: 8px 12px; } #progressBar { width: 150px; height: 6px; } #pointsDisplay { top: 60px; font-size: 14px; padding: 6px 10px; } #achievementLevel { top: 105px; font-size: 12px; padding: 5px 8px; } #youtubeLecturePageControls { top: 60px; } #restartBtn, #videoSidebarToggleBtn { padding: 6px 10px; font-size: 10px; } #videoSidebarToggleBtn { top: 110px; font-size: 16px; } #videoSidebar { width: 250px; right: -270px; top: 50px; height: calc(100vh - 50px); } #lofiPlayer { padding: 10px; } #lofiPlayer button { padding: 5px 10px; font-size: 12px; min-width: 30px;} #fireBox { width: 45px; height: 45px; font-size: 22px; } #aiPopup { width: 90%; max-width: 300px; height: 400px; bottom: 65px; } .dialog-box { padding: 20px; } .dialog-box h3 { font-size: 18px; } .dialog-box p { font-size: 14px; margin-bottom: 20px; } .dialog-box button { padding: 8px 20px; font-size: 12px; } #pomodoroContainer { padding: 20px; } #pomodoroTimer { font-size: 60px; margin: 20px 0;} #pomodoroControls { gap: 15px; margin-top: 25px;} #pomodoroControls button { padding: 10px 20px; font-size: 14px; } #profileContainer { padding: 30px; } #profileIcon { font-size: 50px; width: 80px; height: 80px; line-height: 80px;} #profileUsername { font-size: 20px; } .profile-stat { font-size: 16px; } #focusStatsContainer { padding: 20px; } #focusStatsContainer h3 { font-size: 18px; margin-bottom: 25px; } .stat-item .value { font-size: 20px; } #todoList { max-width: 90%; } .task-line input[type="text"] { font-size: 14px; } .task-line .task-buttons { margin-left: 5px;} .task-line .set-deadline, .task-line .remove-task { font-size: 14px; padding: 3px;} .task-line .deadline-info, .task-line .points-info { font-size: 10px; margin-left: 4px;} .sidebar-trigger { left: -25px; } .game-sidebar.open + .sidebar-trigger { left: 240px; } }
-         @media (max-width: 480px) { .title { font-size: 18px; } .subtitle { font-size: 14px; } #navLogo { display: none; } #navClockContainer { flex-grow: 1; text-align: left; margin-left: -10px;} #topNavBar { padding: 0 10px; } #navButtons { gap: 10px; } #navStreakDisplay { font-size: 12px; padding: 3px 6px; } #navProfileBtn { font-size: 20px; } #welcomeMessage { font-size: 18px; } #dateTimeDisplay { font-size: 14px; } #focusStatus { font-size: 16px; margin-bottom: 25px; padding: 8px;} #motivationQuote { font-size: 14px; } #youtubeInputContainer { padding: 10px 15px; } #youtubeInputContainer .subtitle { font-size: 14px; } .url-container { flex-direction: column; align-items: stretch; gap: 5px; } .url-container button { width: 100%; margin-top: 5px; } #playlistManagement { flex-direction: column; gap: 8px; align-items: stretch;} #playlistManagement select, #playlistManagement input { max-width: 100%; } #timerDisplay { font-size: 12px; padding: 6px 8px; } #progressBar { width: 120px; } #pointsDisplay { font-size: 12px; padding: 5px 8px; } #achievementLevel { font-size: 10px; padding: 4px 6px; top: 100px;} #videoSidebar { width: 200px; right: -220px; padding: 15px; } .game-sidebar.open + .sidebar-trigger { left: 200px; } #pomodoroTimer { font-size: 48px; } #pomodoroControls { gap: 10px; } #pomodoroControls button { padding: 8px 15px; font-size: 12px; } .dialog-box button { padding: 8px 15px; } .sidebar-trigger { width: 20px; height: 80px; font-size: 12px;} .game-sidebar { width: 200px; left: -220px; padding-top: 60px;} .sidebar-section { padding: 10px 15px; } .sidebar-section h3 { font-size: 14px; margin-bottom: 10px;} .sidebar-section a, .sidebar-section button { padding: 8px 10px; font-size: 13px; gap: 8px;} .sidebar-section button i, .sidebar-section a i { width: 16px; } #todoList { max-width: 95%; padding: 15px;} #todoList h3 { font-size: 16px;} .task-line { padding: 6px 8px;} .task-line input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px;} .task-line input[type="text"] { font-size: 13px;} }
+        @media (max-width: 800px) {
+            body { font-size: 14px; } .title { font-size: 22px; margin-bottom: 20px;} .subtitle { font-size: 16px; margin-bottom: 25px; } button { padding: 8px 18px; font-size: 12px; margin: 5px 5px 12px; } #landingPageContainer, #signinFormContainer { padding: 30px 20px; } #features { gap: 15px; } .feature { width: 180px; padding: 15px; } .feature i { font-size: 24px; } .feature p { font-size: 14px; }
+            input[type="text"], input[type="password"], input[type="date"], input[type="time"], select { padding: 10px 12px; font-size: 14px; }
+            #topNavBar { height: 50px; padding: 0 15px; }
+            #navLogo img { height: 40px; /* Adjusted logo size for medium screens */ }
+            #navClockContainer { font-size: 14px; margin: 0 10px; } #navButtons { gap: 15px; } #navStreakDisplay { font-size: 13px; padding: 4px 8px; } #navProfileBtn { font-size: 22px; } .page-view { padding: 15px; } #welcomeMessage { font-size: 20px; } #dateTimeDisplay { font-size: 16px; } #focusStatus { font-size: 18px; margin-bottom: 30px; } #motivationQuote { font-size: 16px; }
+            #urlInputs { max-width: 90%; /* Adjust centering */ }
+            #youtubeInputContainer { padding: 15px 20px; } #youtubeInputContainer .subtitle { font-size: 16px; } #timerDisplay { top: 60px; font-size: 14px; padding: 8px 12px; } #progressBar { width: 150px; height: 6px; } #pointsDisplay { top: 60px; font-size: 14px; padding: 6px 10px; } #achievementLevel { top: 105px; font-size: 12px; padding: 5px 8px; } #youtubeLecturePageControls { top: 60px; } #restartBtn, #videoSidebarToggleBtn { padding: 6px 10px; font-size: 10px; } #videoSidebarToggleBtn { top: 110px; font-size: 16px; } #videoSidebar { width: 250px; right: -270px; top: 50px; height: calc(100vh - 50px); } #lofiPlayer { padding: 10px; } #lofiPlayer button { padding: 5px 10px; font-size: 12px; min-width: 30px;} #fireBox { width: 45px; height: 45px; font-size: 22px; } #aiPopup { width: 90%; max-width: 300px; height: 400px; bottom: 65px; } .dialog-box { padding: 20px; } .dialog-box h3 { font-size: 18px; } .dialog-box p { font-size: 14px; margin-bottom: 20px; } .dialog-box button { padding: 8px 20px; font-size: 12px; } #pomodoroContainer { padding: 20px; } #pomodoroTimer { font-size: 60px; margin: 20px 0;} #pomodoroControls { gap: 15px; margin-top: 25px;} #pomodoroControls button { padding: 10px 20px; font-size: 14px; } #profileContainer { padding: 30px; } #profileIcon { font-size: 50px; width: 80px; height: 80px; line-height: 80px;} #profileUsername { font-size: 20px; } .profile-stat { font-size: 16px; } #focusStatsContainer { padding: 20px; max-width: 95%; } #focusStatsContainer h3 { font-size: 18px; margin-bottom: 25px; } .stat-item .value { font-size: 20px; } #todoList { max-width: 90%; } .task-line input[type="text"] { font-size: 14px; } .task-line .task-buttons { margin-left: 5px;} .task-line .set-deadline, .task-line .remove-task { font-size: 14px; padding: 3px;} .task-line .deadline-info, .task-line .points-info { font-size: 10px; margin-left: 4px;} .sidebar-trigger { left: 0px; /* Adjusted for consistency */ } .game-sidebar.open + .sidebar-trigger { left: 240px; }
+            #calendarHeader h4 { font-size: 14px; } #calendarHeader button { padding: 4px 8px; font-size: 10px; } .calendar-day { font-size: 10px; }
+         }
+         @media (max-width: 480px) {
+            .title { font-size: 18px; } .subtitle { font-size: 14px; }
+            #navLogo { display: none; }
+            #navClockContainer { flex-grow: 1; text-align: left; margin-left: 0px;}
+            #topNavBar { padding: 0 10px; } #navButtons { gap: 10px; } #navStreakDisplay { font-size: 12px; padding: 3px 6px; } #navProfileBtn { font-size: 20px; } #welcomeMessage { font-size: 18px; } #dateTimeDisplay { font-size: 14px; } #focusStatus { font-size: 16px; margin-bottom: 25px; padding: 8px;} #motivationQuote { font-size: 14px; } #youtubeInputContainer { padding: 10px 15px; } #youtubeInputContainer .subtitle { font-size: 14px; }
+            #urlInputs { max-width: 95%; } /* Adjust centering */
+            .url-container { flex-direction: column; align-items: stretch; gap: 5px; } .url-container button { width: 100%; margin-top: 5px; } #playlistManagement { flex-direction: column; gap: 8px; align-items: stretch;} #playlistManagement select, #playlistManagement input { max-width: 100%; } #timerDisplay { font-size: 12px; padding: 6px 8px; } #progressBar { width: 120px; } #pointsDisplay { font-size: 12px; padding: 5px 8px; } #achievementLevel { font-size: 10px; padding: 4px 6px; top: 100px;} #videoSidebar { width: 200px; right: -220px; padding: 15px; } #videoSidebar.open { right: 0; } /* Ensure open works */
+            .game-sidebar.open + .sidebar-trigger { left: 200px; } #pomodoroTimer { font-size: 48px; } #pomodoroControls { gap: 10px; } #pomodoroControls button { padding: 8px 15px; font-size: 12px; } .dialog-box button { padding: 8px 15px; } .sidebar-trigger { width: 20px; height: 80px; font-size: 12px; left: 0px; /* Ensure correct initial pos */ } .game-sidebar { width: 200px; left: -220px; padding-top: 60px;} .sidebar-section { padding: 10px 15px; } .sidebar-section h3 { font-size: 14px; margin-bottom: 10px;} .sidebar-section a, .sidebar-section button { padding: 8px 10px; font-size: 13px; gap: 8px;} .sidebar-section button i, .sidebar-section a i { width: 16px; } #todoList { max-width: 95%; padding: 15px;} #todoList h3 { font-size: 16px;} .task-line { padding: 6px 8px;} .task-line input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px;} .task-line input[type="text"] { font-size: 13px;}
+            #calendarGrid { gap: 3px; } .calendar-day { font-size: 9px; }
+         }
 
     </style>
     <!-- Include Google Fonts -->
@@ -763,7 +810,7 @@
         <nav id="topNavBar">
              <!-- Logo Image -->
             <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
-                <img src="logo.png" alt="Quest for Focus Logo">
+                <img src="logo.png" alt="Quest for Focus Logo"> <!-- Ensure logo.png exists -->
             </a>
             <div id="navClockContainer"> <span id="navClockTime">00:00:00</span> <span id="navClockPeriod">AM</span> </div>
             <div id="navButtons">
@@ -776,9 +823,9 @@
         <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div> <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button> <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button> <div id="features"> <div class="feature"> <i class="fas fa-ban"></i> <p>Ad-Free Zone<br>Focus!</p> </div> <div class="feature"> <i class="fas fa-moon"></i> <p>Dark Mode<br>Easy on eyes</p> </div> <div class="feature"> <i class="fas fa-gamepad"></i> <p>Gamified<br>Level up!</p> </div> </div> </div> </div>
         <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
         <div id="homePage" class="page-view"> <div id="homePageContent"> <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div> <div id="dateTimeDisplay">Loading...</div> <div id="focusStatus">Ready to focus?</div> <div id="motivationQuote">"Loading motivation..."</div> </div> </div>
-        <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playlist</option> </select> <div id="urlInputs"> <div class="url-container"> <input type="text" class="youtube-url" placeholder="YouTube URL" required /> </div> </div> <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button> <div id="playlistManagement"> <input type="text" id="playlistName" placeholder="Save As..." /> <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button> <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button> </div> <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button> </div> <div id="playerContainer"> <div id="player"></div> </div> <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button> <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div> <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div> </div>
+        <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playlist</option> </select> <div id="urlInputs"> <div class="url-container"> <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Playlist)" required /> </div> </div> <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button> <div id="playlistManagement"> <input type="text" id="playlistName" placeholder="Save As..." /> <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button> <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button> </div> <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button> </div> <div id="playerContainer"> <div id="player"></div> </div> <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button> <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div> <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div> </div>
         <div id="profile" class="page-view"> <div id="profileContainer"> <div id="profileIcon"><i class="fas fa-user-shield"></i></div> <div id="profileUsername">Hero Name</div> <div class="profile-stat">Level: <span id="profileLevel" class="level">Mortal</span></div> <div class="profile-stat">XP: <span id="profileXP" class="xp">0</span></div> <div class="profile-stat">Streak: <span id="profileStreak" class="streak">0 days</span></div> <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
-        <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <span class="label"><i class="fas fa-stopwatch"></i> Focus Time</span> <span id="statsTotalFocusTime" class="value">0m</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-eye-slash"></i> Distractions</span> <span id="statsTotalDistractions" class="value distractions">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-film"></i> Videos Done</span> <span id="statsTotalVideosWatched" class="value videos">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-fire"></i> Current Streak</span> <span id="statsCurrentStreak" class="value streak">0 days</span> </div> </div> <div id="focusCalendar"> <h4><i class="fas fa-calendar-alt"></i> Calendar (Soon)</h4> <div id="calendarGrid"> Calendar planned. </div> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
+        <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <span class="label"><i class="fas fa-stopwatch"></i> Focus Time</span> <span id="statsTotalFocusTime" class="value">0m</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-eye-slash"></i> Distractions</span> <span id="statsTotalDistractions" class="value distractions">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-film"></i> Videos Done</span> <span id="statsTotalVideosWatched" class="value videos">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-fire"></i> Current Streak</span> <span id="statsCurrentStreak" class="value streak">0 days</span> </div> </div> <div id="focusCalendar"> <div id="calendarHeader"> <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button> <h4 id="calendarMonthYear"><i class="fas fa-calendar-alt"></i> Calendar</h4> <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button> </div> <div id="calendarGrid"> <!-- Calendar grid will be generated here --> </div> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
 
         <!-- == Shared Components == -->
         <div class="sidebar-trigger" title="Open Menu">MENU</div>
@@ -846,6 +893,11 @@
             const achievementLevels = [ { points: 0, level: "Mortal", color: "white" }, { points: 1000, level: "Soldier", color: "#4169E1" }, { points: 2000, level: "Knight", color: "#e0e0ff", glow: true }, { points: 3000, level: "KING", color: "#ff8c00", glow: true }, { points: 4000, level: "GIGACHAD", color: "#ff4500", glow: true }, { points: 5000, level: "Demigod", color: "gold", glow: true }, { points: 6000, level: "Titan", color: "gold", glow: true, box: true }, { points: 7000, level: "Immortal", color: "gold", glow: true, box: true, boxGlow: true }, { points: 8000, level: "Celestial", color: "#00BFFF", glow: true, box: true, boxGlow: true }, { points: 9000, level: "Divine", color: "rainbow" }, { points: 10000, level: "Omnipotent", color: "rainbow", glow: true }, ];
             const motivationalQuotes = [ "Focus is key.", "Step by step.", "Progress > perfection.", "You got this!", "Stay sharp.", "Embrace challenge." ];
 
+            // --- NEW Calendar State ---
+            let dailyFocusData = {}; // Stores { 'YYYY-MM-DD': { focusTime: seconds, distractions: count } }
+            let currentSessionFocusTime = 0; // Tracks focus time within the current YT or Pomodoro session
+            let calendarCurrentDate = new Date(); // Tracks the month/year displayed in the calendar
+
             // --- DOM References ---
             let topNavBar, landingPage, signinForm, homePage, youtubeLecturePage, profilePage, focusStatsPage;
             let playerContainer, playerDiv, timerDisplay, timerText, progressBar, progressFill, pointsDisplay;
@@ -856,6 +908,7 @@
             let confirmationDialog, streakShieldDialog, doublePointsDialog, deadlineDialog, sessionCompleteDialog, mysteryBoxPopup, audioTracksStore, pomodoroOverlay;
             let gameSidebar, sidebarTrigger;
             let navClockTime, navClockPeriod, navStreakDisplay, videoSidebarToggleBtn, navProfileBtn;
+            let calendarGrid, calendarMonthYear, prevMonthBtn, nextMonthBtn; // Calendar elements
 
 
             // --- Core Functions ---
@@ -894,7 +947,7 @@
                 // View Specific Updates
                 if (viewId === 'homePage') { updateHomePageInfo(); displayRandomMotivation(); }
                 else if (viewId === 'profile') { displayProfileInfo(); }
-                else if (viewId === 'focusStats') { displayFocusStatsInfo(); }
+                else if (viewId === 'focusStats') { displayFocusStatsInfo(); showCalendar(); /* Show calendar when view loads */ }
 
                 closeSidebar(); saveState();
             }
@@ -923,7 +976,7 @@
                 distractionsEl.textContent = totalDistractions; // This is total across all sessions
                 videosEl.textContent = totalVideosWatched;
                 streakEl.textContent = `${streakDays} day${streakDays === 1 ? '' : 's'}`;
-                const calendarGrid = document.getElementById('calendarGrid'); if (calendarGrid) { calendarGrid.innerHTML = '<i>Calendar planned.</i>'; }
+                // Calendar is updated separately by showCalendar()
             }
 
             function initAudio() {
@@ -959,7 +1012,90 @@
             function pauseLofi() { if (!lofiAudio) return; lofiAudio.pause(); if (document.getElementById('lofiPlay')) document.getElementById('lofiPlay').style.display = 'inline-block'; if (document.getElementById('lofiPause')) document.getElementById('lofiPause').style.display = 'none'; }
             function nextLofi() { if (!lofiAudio || availableLofiSongs.length <= 1) return; currentLofiIndex = (currentLofiIndex + 1) % availableLofiSongs.length; lofiAudio.src = availableLofiSongs[currentLofiIndex]; lofiAudio.load(); playLofi(); }
             function prevLofi() { if (!lofiAudio || availableLofiSongs.length <= 1) return; currentLofiIndex = (currentLofiIndex - 1 + availableLofiSongs.length) % availableLofiSongs.length; lofiAudio.src = availableLofiSongs[currentLofiIndex]; lofiAudio.load(); playLofi(); }
-            function updateStreak() { if (!isSignedIn) return; const today = new Date().toDateString(); if (lastFocusDate) { const last = new Date(lastFocusDate); const todayDate = new Date(today); const diffTime = todayDate - last; const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); if (diffDays === 1) { streakDays++; checkMysteryBoxMilestone(); console.log("Streak++:", streakDays); } else if (diffDays > 1) { if (activePowerUps.streakShield.active && Date.now() < activePowerUps.streakShield.expiry && !activePowerUps.streakShield.used) { activePowerUps.streakShield.used = true; showConfirmation("Shield Used!", "Shield protected streak!", false); console.log("Shield used."); } else { console.log("Streak broken."); streakDays = 1; activePowerUps.streakShield.used = false; } } else if (diffDays !== 0) { console.warn("Date anomaly:", diffDays); streakDays = 1; } } else { streakDays = 1; console.log("First streak day."); } lastFocusDate = today; updateStreakDisplay(); saveState(); }
+
+            // --- Modified Streak Logic ---
+            function updateStreak() {
+                if (!isSignedIn) return;
+                const today = new Date().toDateString(); // e.g., "Thu Aug 15 2024"
+
+                // --- Streak Fix: Don't run if already checked today ---
+                if (lastFocusDate === today) {
+                    console.log("Streak already checked/updated today.");
+                    // Still log focus time if a session happened
+                    logDailyFocus();
+                    return;
+                }
+
+                let streakIncremented = false;
+                if (lastFocusDate) {
+                    const last = new Date(lastFocusDate);
+                    const todayDate = new Date(today);
+                    const diffTime = todayDate - last;
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                    console.log(`Streak check: Today: ${today}, Last: ${lastFocusDate}, DiffDays: ${diffDays}`);
+
+                    if (diffDays === 1) {
+                        streakDays++;
+                        streakIncremented = true;
+                        checkMysteryBoxMilestone();
+                        console.log("Streak incremented:", streakDays);
+                    } else if (diffDays > 1) {
+                        if (activePowerUps.streakShield.active && Date.now() < activePowerUps.streakShield.expiry && !activePowerUps.streakShield.used) {
+                            activePowerUps.streakShield.used = true;
+                            showConfirmation("Shield Used!", "Streak Shield protected your focus streak!", false);
+                            console.log("Streak Shield used to protect streak.");
+                            // Keep current streakDays
+                        } else {
+                            console.log("Streak broken. Resetting to 1.");
+                            streakDays = 1; // Reset to 1 for today's focus
+                            activePowerUps.streakShield.used = false; // Reset shield use status if broken
+                        }
+                         streakIncremented = true; // Mark as "updated" for today
+                    } else if (diffDays < 0) {
+                        console.warn("Date anomaly detected (lastFocusDate in future?). Resetting streak.");
+                        streakDays = 1; // Reset streak if date is weird
+                        streakIncremented = true;
+                    }
+                    // If diffDays === 0, it means the last focus was earlier today - handled by the initial check.
+                } else {
+                    // First focus session ever recorded for this user
+                    streakDays = 1;
+                    streakIncremented = true;
+                    console.log("First focus session, starting streak at 1.");
+                }
+
+                // Only update lastFocusDate if the streak was potentially modified (i.e., first focus today)
+                if (streakIncremented || !lastFocusDate) {
+                    lastFocusDate = today;
+                    logDailyFocus(); // Log focus time when the date is updated
+                    updateStreakDisplay();
+                    saveState(); // Save state after updating streak and date
+                }
+            }
+
+            // --- New Function to Log Daily Focus Time ---
+            function logDailyFocus() {
+                if (!isSignedIn || currentSessionFocusTime <= 0) return;
+
+                const today = new Date();
+                const dateString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`; // YYYY-MM-DD format
+
+                if (!dailyFocusData[dateString]) {
+                    dailyFocusData[dateString] = { focusTime: 0, distractions: 0 }; // Initialize if needed
+                }
+
+                dailyFocusData[dateString].focusTime += currentSessionFocusTime;
+                // We could also add distractions logged during this session if tracked separately
+                // dailyFocusData[dateString].distractions += currentSessionDistractions;
+
+                console.log(`Logged ${currentSessionFocusTime}s focus for ${dateString}. Total today: ${dailyFocusData[dateString].focusTime}s`);
+
+                currentSessionFocusTime = 0; // Reset session timer after logging
+                // No need to call saveState() here, as it's called after updateStreak completes.
+            }
+
+
             function updateStreakDisplay() { if (!navStreakDisplay) return; navStreakDisplay.innerHTML = `<i class="fas fa-fire"></i> ${streakDays} ${streakDays === 1 ? 'day' : 'days'} focus`; const profileStreakEl = document.getElementById('profileStreak'); if (profileStreakEl && currentView === 'profile') profileStreakEl.textContent = `${streakDays} day${streakDays === 1 ? '' : 's'}`; const statsStreakEl = document.getElementById('statsCurrentStreak'); if (statsStreakEl && currentView === 'focusStats') statsStreakEl.textContent = `${streakDays} day${streakDays === 1 ? '' : 's'}`; }
             function checkMysteryBoxMilestone() { if (streakDays > 0 && streakDays % MYSTERY_BOX_STREAK_INTERVAL === 0) { mysteryBoxCount++; showMysteryBoxPopup(); playSound('achievementAudio'); saveState(); } }
             function showMysteryBoxPopup() { const popup = document.getElementById("mysteryBoxPopup"); const rewardText = document.getElementById("mysteryRewardText"); const openButton = document.getElementById("openMysteryBox"); if (!popup || !rewardText || !openButton) return; if (mysteryBoxCount > 0) { rewardText.textContent = `You have ${mysteryBoxCount} Box${mysteryBoxCount > 1 ? 'es' : ''}! Open?`; openButton.disabled = false; openButton.textContent = "Open"; popup.style.display = "flex"; } else { console.log("No boxes."); } }
@@ -976,150 +1112,500 @@
             function unlockAudioTrack(trackId) { const track = premiumLofiTracks.find(t => t.id === trackId); if (!track || track.unlocked || points < track.cost) return; points -= track.cost; track.unlocked = true; updateAvailableLofiTracks(); if (pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Unlocked!", `"${track.name}" available!`, false); playSound('achievementAudio'); showAudioTracksStore(); saveState(); checkLevelUp(); }
             function showPomodoroOverlay() { clearInterval(pomodoroInterval); isPomodoroActive = false; pomodoroTimeRemaining = 60 * 60; pomodoroDistractionCount = 0; // Reset count when showing
             updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Ready"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; const overlay = document.getElementById("pomodoroOverlay"); if (overlay) overlay.style.display = "flex"; }
-            function startPomodoro() { if (isPomodoroActive) return; isPomodoroActive = true; pomodoroDistractionCount = 0; // Reset count on start
-            const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing..."; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false;
-            requestFullscreen(document.documentElement); // Enter fullscreen
-            pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000); }
-            function resetPomodoro() { clearInterval(pomodoroInterval); isPomodoroActive = false; pomodoroTimeRemaining = 60 * 60; pomodoroDistractionCount = 0; // Reset count
+
+            function startPomodoro() {
+                 if (isPomodoroActive) return;
+                 isPomodoroActive = true;
+                 pomodoroDistractionCount = 0; // Reset count on start
+                 currentSessionFocusTime = 0; // Reset session focus time tracker
+                 updateStreak(); // Check streak and potentially log previous session data
+
+                 const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing...";
+                 const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true;
+                 const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false;
+                 requestFullscreen(document.documentElement); // Enter fullscreen
+
+                 pomodoroInterval = setInterval(() => {
+                     pomodoroTimeRemaining--;
+                     currentSessionFocusTime++; // Increment focus time for this session
+                     totalFocusTime++; // Increment global total focus time
+                     updatePomodoroDisplay();
+
+                     if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) {
+                         const earned = applyPowerUps(1);
+                         points += earned;
+                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                         checkLevelUp();
+                     }
+                     if (pomodoroTimeRemaining <= 0) {
+                         completePomodoroSession();
+                     }
+                 }, 1000);
+             }
+
+            function resetPomodoro() { clearInterval(pomodoroInterval); if (isPomodoroActive) { logDailyFocus(); /* Log accumulated time before reset */ isPomodoroActive = false; } pomodoroTimeRemaining = 60 * 60; pomodoroDistractionCount = 0; // Reset count
             updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Reset"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; exitFullscreen(); // Exit fullscreen
             }
-            function closePomodoroOverlay() { const overlay = document.getElementById("pomodoroOverlay"); if (!overlay) return; if (isPomodoroActive) { showConfirmation( "Exit?", "Pomodoro session active. Stop?", true, () => { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); // Exit fullscreen
+            function closePomodoroOverlay() { const overlay = document.getElementById("pomodoroOverlay"); if (!overlay) return; if (isPomodoroActive) { showConfirmation( "Exit?", "Pomodoro session active. Stop?", true, () => { clearInterval(pomodoroInterval); logDailyFocus(); /* Log time before exiting */ isPomodoroActive = false; exitFullscreen(); // Exit fullscreen
             saveState(); overlay.style.display = "none"; }, () => {} ); } else { exitFullscreen(); // Exit fullscreen
             overlay.style.display = "none"; } }
             function updatePomodoroDisplay() { const timerElement = document.getElementById("pomodoroTimer"); if (!timerElement) return; const minutes = Math.floor(pomodoroTimeRemaining / 60); const seconds = pomodoroTimeRemaining % 60; timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`; }
-            function completePomodoroSession() { clearInterval(pomodoroInterval); isPomodoroActive = false; playSound("pomodoroCompleteAudio"); if (pomodoroTimeRemaining === 0) { // Only grant point if timer naturally finished
-            const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; } const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = `Complete! Distractions: ${pomodoroDistractionCount}`; // Show distractions
-            const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; exitFullscreen(); // Exit fullscreen
-            saveState(); checkLevelUp(); }
+
+            function completePomodoroSession() {
+                clearInterval(pomodoroInterval);
+                isPomodoroActive = false;
+                playSound("pomodoroCompleteAudio");
+
+                // Log the final second of focus time
+                if (currentSessionFocusTime > 0) { // Avoid logging if already reset somehow
+                     logDailyFocus();
+                }
+
+                const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = `Complete! Distractions: ${pomodoroDistractionCount}`; // Show distractions
+                const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false;
+                const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true;
+                exitFullscreen(); // Exit fullscreen
+                saveState(); // Save state after completion and logging
+                checkLevelUp();
+            }
+
             function toggleTodo() { if (!todoListPopup) return; const isVisible = todoListPopup.style.display === "flex"; if (isVisible) { saveTasks(); todoListPopup.style.display = "none"; } else { restoreTasks(); todoListPopup.style.display = "flex"; } }
             function addTaskLine(taskData = { text: "", completed: false, deadline: null, points: null }) { if (!tasksContainer) return null; const line = document.createElement("div"); line.className = "task-line"; const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.className = "task-check"; checkbox.checked = taskData.completed; checkbox.onchange = handleTaskCompletionChange; const input = document.createElement("input"); input.type = "text"; input.className = "task-text"; input.placeholder = "Add quest..."; input.value = taskData.text; input.readOnly = taskData.completed; input.onkeydown = handleTaskInputKeydown; input.onchange = () => { line.dataset.text = input.value; }; line.dataset.text = taskData.text; line.dataset.completed = taskData.completed; if(taskData.deadline) line.dataset.deadline = taskData.deadline; if(taskData.points) line.dataset.points = taskData.points; if(taskData.deadlineChecked) line.dataset.deadlineChecked = taskData.deadlineChecked; const buttonsContainer = document.createElement('div'); buttonsContainer.className = 'task-buttons'; const deadlineBtn = document.createElement("button"); deadlineBtn.className = "set-deadline"; deadlineBtn.innerHTML = '<i class="fas fa-stopwatch"></i>'; deadlineBtn.title = "Deadline"; deadlineBtn.onclick = () => showDeadlineDialog(line); deadlineBtn.disabled = taskData.completed; const removeBtn = document.createElement("button"); removeBtn.className = "remove-task"; removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove"; removeBtn.onclick = () => removeTask(line); buttonsContainer.appendChild(deadlineBtn); buttonsContainer.appendChild(removeBtn); line.appendChild(checkbox); line.appendChild(input); line.appendChild(buttonsContainer); updateTaskDeadlineDisplay(line, taskData.deadline, taskData.points); tasksContainer.appendChild(line); if (taskData.completed) { line.style.opacity = '0.7'; } return input; }
             function handleTaskInputKeydown(event) { if (event.key === "Enter") { event.preventDefault(); const currentInput = event.target; const currentLine = currentInput.closest('.task-line'); if (currentLine) currentLine.dataset.text = currentInput.value; const allLines = tasksContainer?.querySelectorAll('.task-line'); if (!allLines) return; if (currentLine === allLines[allLines.length - 1]) { const newFocusTarget = addTaskLine(); if (newFocusTarget) newFocusTarget.focus(); } else { let nextLine = currentLine.nextElementSibling; while (nextLine && !nextLine.classList.contains('task-line')) { nextLine = nextLine.nextElementSibling; } if (nextLine) { const nextInput = nextLine.querySelector('.task-text'); if (nextInput) nextInput.focus(); } else { const newFocusTarget = addTaskLine(); if (newFocusTarget) newFocusTarget.focus(); } } } }
             function removeTask(taskElement) { if (!tasksContainer || !taskElement) return; if (tasksContainer.children.length > 1 || tasksContainer.children[0] !== taskElement) { tasksContainer.removeChild(taskElement); } else { const input = taskElement.querySelector('.task-text'); if (input) input.value = ''; taskElement.dataset.text = ''; taskElement.removeAttribute('data-deadline'); taskElement.removeAttribute('data-points'); updateTaskDeadlineDisplay(taskElement, null, null); } }
             function restoreTasks() { if (!tasksContainer) return; tasksContainer.innerHTML = ""; if (tasks.length === 0) { addTaskLine(); } else { tasks.forEach(taskData => addTaskLine(taskData)); } checkTaskDeadlines(); }
             function saveTasks() { if (!tasksContainer) return; const taskLines = tasksContainer.querySelectorAll(".task-line"); tasks = Array.from(taskLines).map(line => ({ text: line.querySelector(".task-text")?.value.trim() || (line.dataset.text || ""), completed: line.querySelector(".task-check")?.checked || (line.dataset.completed === 'true'), deadline: line.dataset.deadline ? parseInt(line.dataset.deadline) : null, points: line.dataset.points ? parseInt(line.dataset.points) : null, deadlineChecked: line.dataset.deadlineChecked === 'true' })).filter(task => task.text !== ""); localStorage.setItem("tasks", JSON.stringify(tasks)); if (isSignedIn && currentUser) { try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if(users[currentUser]) { users[currentUser].tasks = tasks; localStorage.setItem("users", JSON.stringify(users)); } } catch (err) { console.error("Error saving tasks:", err); } } console.log("Tasks saved:", tasks); updateFocusStatus(); }
-
-            function handleTaskCompletionChange(event) {
-                 const checkbox = event.target; const taskLine = checkbox.closest('.task-line'); if (!taskLine) return;
-                 const input = taskLine.querySelector('.task-text'); const deadlineBtn = taskLine.querySelector('.set-deadline');
-                 taskLine.dataset.completed = checkbox.checked;
-                 if (checkbox.checked) {
-                     if(input) input.readOnly = true; taskLine.style.opacity = '0.7'; if(deadlineBtn) deadlineBtn.disabled = true;
-                     checkSingleTaskDeadline(taskLine);
-                     // --- Confetti Trigger ---
-                     if (typeof confetti === 'function') {
-                         const rect = checkbox.getBoundingClientRect();
-                         const origin = { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight };
-                         confetti({ particleCount: 80, spread: 60, origin: origin, colors: ['#a855f7', '#9333ea', '#c084fc', '#6b21a8'] });
-                     }
-                 } else {
-                     if(input) input.readOnly = false; taskLine.style.opacity = '1'; if(deadlineBtn) deadlineBtn.disabled = false;
-                 }
-            }
-
+            function handleTaskCompletionChange(event) { const checkbox = event.target; const taskLine = checkbox.closest('.task-line'); if (!taskLine) return; const input = taskLine.querySelector('.task-text'); const deadlineBtn = taskLine.querySelector('.set-deadline'); taskLine.dataset.completed = checkbox.checked; if (checkbox.checked) { if(input) input.readOnly = true; taskLine.style.opacity = '0.7'; if(deadlineBtn) deadlineBtn.disabled = true; checkSingleTaskDeadline(taskLine); if (typeof confetti === 'function') { const rect = checkbox.getBoundingClientRect(); const origin = { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight }; confetti({ particleCount: 80, spread: 60, origin: origin, colors: ['#a855f7', '#9333ea', '#c084fc', '#6b21a8'] }); } } else { if(input) input.readOnly = false; taskLine.style.opacity = '1'; if(deadlineBtn) deadlineBtn.disabled = false; } }
             function checkSingleTaskDeadline(taskLine) { if (!taskLine) return; const deadlineTimestamp = taskLine.dataset.deadline ? parseInt(taskLine.dataset.deadline) : null; const deadlineChecked = taskLine.dataset.deadlineChecked === 'true'; const taskPoints = taskLine.dataset.points ? parseInt(taskLine.dataset.points) : null; const taskText = taskLine.dataset.text || "Untitled"; if (!deadlineTimestamp || deadlineChecked || !taskPoints) return; const now = Date.now(); let earnedPoints = 0; let message = ""; if (now <= deadlineTimestamp) { earnedPoints = applyPowerUps(taskPoints); points += earnedPoints; message = `Quest "${taskText}" on time! +${earnedPoints} XP`; playSound('achievementAudio'); } else { message = `Quest "${taskText}" completed late.`; } showConfirmation("Quest Update", message, false); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; taskLine.dataset.deadlineChecked = 'true'; saveState(); checkLevelUp(); }
             function checkTaskDeadlines() { const now = Date.now(); let tasksUpdated = false; let totalPenalty = 0; tasks.forEach((task, index) => { if (!task.deadline || task.completed || task.deadlineChecked) return; if (now > task.deadline) { const penaltyPoints = Math.floor((task.points || 50) / 2); totalPenalty += penaltyPoints; tasks[index].deadlineChecked = true; tasksUpdated = true; const taskLines = tasksContainer?.querySelectorAll('.task-line'); if (taskLines && taskLines[index]) { taskLines[index].dataset.deadlineChecked = 'true'; const deadlineInfo = taskLines[index].querySelector('.deadline-info'); if (deadlineInfo) deadlineInfo.textContent += " (Missed)"; taskLines[index].style.backgroundColor = 'rgba(220, 53, 69, 0.1)'; } } }); if (totalPenalty > 0) { points = Math.max(0, points - totalPenalty); showConfirmation("Deadline Missed!", `Missed deadline(s)! -${totalPenalty} XP.`, false); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; saveState(); } if (tasksUpdated) { saveTasks(); } }
             function showDeadlineDialog(taskElement) { const dialog = document.getElementById("deadlineDialog"); const dateInput = document.getElementById("deadlineDate"); const timeInput = document.getElementById("deadlineTime"); const difficultySelect = document.getElementById("taskDifficulty"); if (!dialog || !dateInput || !timeInput || !difficultySelect || !taskElement) return; currentTaskForDeadline = taskElement; const existingDeadline = taskElement.dataset.deadline ? parseInt(taskElement.dataset.deadline) : null; const existingPoints = taskElement.dataset.points ? parseInt(taskElement.dataset.points) : null; if (existingDeadline) { const d = new Date(existingDeadline); dateInput.value = d.toISOString().split('T')[0]; timeInput.value = d.toTimeString().substring(0, 5); } else { const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); dateInput.value = tomorrow.toISOString().split('T')[0]; const now = new Date(); timeInput.value = now.toTimeString().substring(0, 5); } difficultySelect.value = existingPoints || "100"; dialog.style.display = "flex"; }
             function handleDeadlineConfirmation(choice) { const dialog = document.getElementById("deadlineDialog"); if (!dialog || !currentTaskForDeadline) return; dialog.style.display = "none"; if (choice === "yes") { const dateValue = document.getElementById("deadlineDate").value; const timeValue = document.getElementById("deadlineTime").value; const selectedPoints = document.getElementById("taskDifficulty").value; if (!dateValue || !timeValue) { showConfirmation("Invalid", "Select date & time.", false); currentTaskForDeadline = null; return; } const deadlineTimestamp = new Date(`${dateValue}T${timeValue}`).getTime(); if (deadlineTimestamp <= Date.now()) { showConfirmation("Invalid", "Deadline must be future.", false); currentTaskForDeadline = null; return; } currentTaskForDeadline.dataset.deadline = deadlineTimestamp; currentTaskForDeadline.dataset.points = selectedPoints; currentTaskForDeadline.dataset.deadlineChecked = 'false'; updateTaskDeadlineDisplay(currentTaskForDeadline, deadlineTimestamp, selectedPoints); console.log(`Deadline set for "${currentTaskForDeadline.dataset.text}"`); } currentTaskForDeadline = null; }
             function updateTaskDeadlineDisplay(taskLine, deadlineTimestamp, pointsValue) { const existingDeadlineSpan = taskLine.querySelector(".deadline-info"); if (existingDeadlineSpan) existingDeadlineSpan.remove(); const existingPointsSpan = taskLine.querySelector(".points-info"); if (existingPointsSpan) existingPointsSpan.remove(); if (deadlineTimestamp && pointsValue) { const deadlineDate = new Date(deadlineTimestamp); const deadlineInfo = document.createElement("span"); deadlineInfo.className = "deadline-info"; const dateOptions = { month: 'short', day: 'numeric' }; const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true }; deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString(undefined, dateOptions)} ${deadlineDate.toLocaleTimeString(undefined, timeOptions)}`; deadlineInfo.title = deadlineDate.toLocaleString(); const pointsInfo = document.createElement("span"); pointsInfo.className = "points-info"; pointsInfo.textContent = `+${pointsValue} XP`; const buttonsContainer = taskLine.querySelector('.task-buttons'); if (buttonsContainer) { taskLine.insertBefore(pointsInfo, buttonsContainer); taskLine.insertBefore(deadlineInfo, pointsInfo); } else { taskLine.appendChild(deadlineInfo); taskLine.appendChild(pointsInfo); } } }
-            function extractVideoId(url) { if (!url) return null; try { let match = url.match(/[?&]v=([^&]+)/); if (match) return match[1]; match = url.match(/youtu\.be\/([^?&]+)/); if (match) return match[1]; match = url.match(/\/live\/([^?&/]+)/); if (match) return match[1]; match = url.match(/\/embed\/([^?&]+)/); if (match) return match[1]; match = url.match(/\/shorts\/([^?&]+)/); if (match) return match[1]; console.warn("Could not extract ID:", url); return null; } catch (e) { console.error("URL parse error:", url, e); return null; } }
-            function prepareAndStartPlayback() { try { if (!urlInputsContainer) { console.error("URL input missing"); return; } const urlElements = urlInputsContainer.querySelectorAll(".youtube-url"); const urls = Array.from(urlElements).map(input => input.value.trim()).filter(url => url); if (urls.length === 0) { showConfirmation("No URLs", "Enter YouTube URL(s).", false); return; } videoIds = urls.map(extractVideoId).filter(id => id); if (videoIds.length === 0) { showConfirmation("Invalid URLs", "No valid URLs found.", false); return; } currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; if(playerContainer) playerContainer.style.display = 'block'; if(youtubeInputContainer) youtubeInputContainer.style.display = 'none'; initializeYouTubeView(); saveState(); requestFullscreen(document.documentElement); } catch (err) { console.error("Playback prep error:", err); showConfirmation("Playback Error", "Error starting.", false); } }
+
+            // --- Modified YT URL Parsing ---
+            function parseInputUrl(url) {
+                if (!url) return null;
+                try {
+                    const urlObj = new URL(url);
+                    const params = urlObj.searchParams;
+
+                    const playlistId = params.get('list');
+                    let videoId = params.get('v');
+
+                    // Handle youtu.be links
+                    if (urlObj.hostname === 'youtu.be') {
+                        videoId = urlObj.pathname.substring(1); // Remove leading '/'
+                         // Check if list param is also present in youtu.be share links
+                        if (params.has('list')) {
+                             // playlistId = params.get('list'); // Already captured above
+                        }
+                    }
+                    // Handle /live/ links
+                    else if (urlObj.pathname.startsWith('/live/')) {
+                        videoId = urlObj.pathname.split('/')[2];
+                    }
+                    // Handle /shorts/ links
+                    else if (urlObj.pathname.startsWith('/shorts/')) {
+                        videoId = urlObj.pathname.split('/')[2];
+                    }
+                     // Handle /embed/ links
+                    else if (urlObj.pathname.startsWith('/embed/')) {
+                        videoId = urlObj.pathname.split('/')[2];
+                    }
+
+                    // Basic validation (simple check for likely ID format)
+                    const idRegex = /^[a-zA-Z0-9_-]{11}$/;
+                    if (videoId && !idRegex.test(videoId)) {
+                        console.warn("Extracted video ID seems invalid:", videoId);
+                        videoId = null; // Discard if format looks wrong
+                    }
+                     if (playlistId && !/^[a-zA-Z0-9_-]+$/.test(playlistId)) {
+                         console.warn("Extracted playlist ID seems invalid:", playlistId);
+                         // playlistId = null; // Decide if you want to discard invalid playlist IDs
+                    }
+
+                    return { videoId: videoId || null, playlistId: playlistId || null };
+
+                } catch (e) {
+                    console.error("URL parse error:", url, e);
+                    // Fallback: Try basic regex for cases where URL constructor fails (less common)
+                    let match = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+                    const videoId = match ? match[1] : null;
+                    match = url.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+                    const playlistId = match ? match[1] : null;
+                     // Add other regex fallbacks if needed (e.g., for youtu.be manually)
+
+                    return { videoId: videoId, playlistId: playlistId };
+                }
+            }
+
+            function extractVideoId(url) {
+                // This function now primarily uses parseInputUrl
+                const parsed = parseInputUrl(url);
+                return parsed ? parsed.videoId : null;
+            }
+
+
+            function prepareAndStartPlayback() {
+                try {
+                    if (!urlInputsContainer) { console.error("URL input missing"); return; }
+                    const urlElements = urlInputsContainer.querySelectorAll(".youtube-url");
+                    const urls = Array.from(urlElements).map(input => input.value.trim()).filter(url => url);
+                    if (urls.length === 0) { showConfirmation("No URLs", "Enter YouTube URL(s).", false); return; }
+
+                    let isPlaylistDetected = false;
+                    videoIds = [];
+
+                    urls.forEach(url => {
+                        const parsed = parseInputUrl(url);
+                        if (parsed) {
+                            if (parsed.videoId) {
+                                if (!videoIds.includes(parsed.videoId)) { // Avoid duplicates
+                                    videoIds.push(parsed.videoId);
+                                }
+                            }
+                            if (parsed.playlistId) {
+                                isPlaylistDetected = true;
+                                // ** Limitation Note **
+                                // Fetching all videos requires YouTube Data API & key.
+                                // This version only adds the *first* video linked (if any).
+                                console.warn(`Playlist detected (${parsed.playlistId}). Only adding linked video ID: ${parsed.videoId || 'None'}. Full playlist fetch requires API key.`);
+                                if (parsed.videoId && !videoIds.includes(parsed.videoId)) {
+                                    // Already added above if present
+                                }
+                            }
+                        }
+                    });
+
+                    if (videoIds.length === 0) {
+                        showConfirmation("No Valid Videos", "Couldn't find playable video IDs from the URL(s).", false);
+                        return;
+                    }
+
+                     if (isPlaylistDetected && videoIds.length > 0) {
+                         showConfirmation("Playlist Note", `Detected a playlist link. Starting with the first available video (${videoIds[0]}). Full playlist loading requires API integration.`, false);
+                     }
+
+
+                    currentVideoIndex = 0;
+                    completedVideos.clear();
+                    allVideosCompleted = false;
+                    if(playerContainer) playerContainer.style.display = 'block';
+                    if(youtubeInputContainer) youtubeInputContainer.style.display = 'none';
+                    initializeYouTubeView(); // This will call updateStreak
+                    saveState();
+                    requestFullscreen(document.documentElement);
+                } catch (err) {
+                    console.error("Playback prep error:", err);
+                    showConfirmation("Playback Error", "Error starting session.", false);
+                }
+            }
+
             function loadYouTubeAPI() { return new Promise((resolve, reject) => { if (isYouTubeAPILoaded) { resolve(); return; } console.log("Loading YT API..."); const tag = document.createElement("script"); tag.src = "https://www.youtube.com/iframe_api"; tag.async = true; window.onYouTubeIframeAPIReady = () => { console.log("YT API Ready."); isYouTubeAPILoaded = true; if (typeof YT !== 'undefined' && YT.Player) { resolve(); } else { setTimeout(() => { if (typeof YT !== 'undefined' && YT.Player) { resolve(); } else { console.error("YT.Player unavailable."); reject(new Error("YT Player missing.")); } }, 500); } }; tag.onerror = (error) => { console.error("YT API load failed:", error); reject(new Error("YT API script load failed.")); }; document.head.appendChild(tag); setTimeout(() => { if (!isYouTubeAPILoaded) { console.error("YT API timeout."); reject(new Error("YT API load timeout.")); } }, 15000); }); }
-            function initializeYouTubeView() { if (videoIds.length === 0) { console.warn("No video IDs"); showView('homePage'); return; } const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'flex'; loadYouTubeAPI().then(() => { console.log("API loaded, setup player."); setupYouTubePlayer(); updateStreak(); startTimer(focusDuration, "Focus Time"); if(timerDisplay) timerDisplay.style.display = 'block'; setupVideoSidebar(); updateFocusStatus(); }).catch((err) => { console.error("YT View Init Error:", err); showConfirmation("Player Error", "Cannot load YT player.", false); showView('youtubeLecturePage'); isFocusModeActive = false; if(controls) controls.style.display = 'none'; }); }
+            function initializeYouTubeView() { if (videoIds.length === 0) { console.warn("No video IDs"); showView('homePage'); return; } const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'flex'; currentSessionFocusTime = 0; // Reset session focus time
+            updateStreak(); // Update streak and potentially log previous session data
+            loadYouTubeAPI().then(() => { console.log("API loaded, setup player."); setupYouTubePlayer(); startTimer(focusDuration, "Focus Time"); if(timerDisplay) timerDisplay.style.display = 'block'; setupVideoSidebar(); updateFocusStatus(); }).catch((err) => { console.error("YT View Init Error:", err); showConfirmation("Player Error", "Cannot load YT player.", false); showView('youtubeLecturePage'); isFocusModeActive = false; if(controls) controls.style.display = 'none'; }); }
             function setupYouTubePlayer() { if (!isYouTubeAPILoaded || typeof YT === 'undefined' || !YT.Player) { console.error("YT API not ready."); return; } if (!playerDiv) { console.error("Player div missing."); return; } if (videoIds.length === 0) { console.warn("No video IDs."); return; } if (player && typeof player.destroy === 'function') { console.log("Destroying prev player."); player.destroy(); player = null; } console.log("Creating YT.Player:", videoIds[currentVideoIndex]); try { player = new YT.Player("player", { height: "100%", width: "100%", videoId: videoIds[currentVideoIndex], playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0, showinfo: 0, iv_load_policy: 3, fs: 1 }, events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError }, }); } catch (error) { console.error("YT.Player error:", error); showConfirmation("Player Fail", "Error creating player.", false); showView('youtubeLecturePage'); } }
             function onPlayerReady(event) { console.log("Player Ready:", videoIds[currentVideoIndex]); event.target.playVideo(); isFocusModeActive = true; highlightCurrentThumbnail(); }
             function onPlayerStateChange(event) { console.log("Player State:", event.data); if (event.data === YT.PlayerState.ENDED) { console.log("Video ended:", videoIds[currentVideoIndex]); completedVideos.add(videoIds[currentVideoIndex]); totalVideosWatched++; const earnedPoints = applyPowerUps(50); points += earnedPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp(); saveState(); if (currentView === 'focusStats') displayFocusStatsInfo(); currentVideoIndex++; if (currentVideoIndex < videoIds.length) { console.log("Loading next:", videoIds[currentVideoIndex]); player.loadVideoById(videoIds[currentVideoIndex]); highlightCurrentThumbnail(); } else { console.log("Playlist complete."); allVideosCompleted = true; showConfirmation("Playlist Done!", "All videos watched.", false); player.stopVideo(); } } else if (event.data === YT.PlayerState.PLAYING) { console.log("Playing."); isFocusModeActive = true; highlightCurrentThumbnail(); } else if (event.data === YT.PlayerState.PAUSED) { console.log("Paused."); } }
             function onPlayerError(event) { console.error("YT Player Error:", event.data); let errorMsg = "Unknown YT error."; switch (event.data) { case 2: errorMsg = "Invalid parameter."; break; case 5: errorMsg = "HTML5 error."; break; case 100: errorMsg = "Not found."; break; case 101: case 150: errorMsg = "Embedding disallowed."; break; } showConfirmation("Video Error", `${errorMsg} Skipping. (Code: ${event.data})`, false); setTimeout(() => { currentVideoIndex++; if (currentVideoIndex < videoIds.length) { console.log("Attempt next:", videoIds[currentVideoIndex]); player.loadVideoById(videoIds[currentVideoIndex]); } else { console.log("All videos attempted."); allVideosCompleted = true; endFocusSession("Error playing videos."); } }, 2000); }
-            function setupVideoSidebar() { if (!videoThumbnailList || !videoSidebar) return; videoThumbnailList.innerHTML = ''; const showSidebar = videoIds.length > 1; videoSidebar.style.display = showSidebar ? 'block' : 'none'; if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = showSidebar ? 'block' : 'none'; if (!showSidebar) { closeVideoSidebar(); return; } videoIds.forEach((id, index) => { const thumbnail = document.createElement("img"); thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`; thumbnail.alt = `Video ${index + 1}`; thumbnail.className = "thumbnail"; thumbnail.dataset.index = index; thumbnail.title = `Play Video ${index + 1}`; thumbnail.onclick = () => { if (index !== currentVideoIndex) { currentVideoIndex = index; player.loadVideoById(videoIds[currentVideoIndex]); highlightCurrentThumbnail(); closeVideoSidebar(); } }; thumbnail.onerror = () => { thumbnail.alt = `Thumb unavailable`; thumbnail.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; thumbnail.style.cssText = 'border: 1px dashed var(--text-dim); height: 70px; object-fit: cover;'; }; videoThumbnailList.appendChild(thumbnail); }); highlightCurrentThumbnail(); }
+            function setupVideoSidebar() { if (!videoThumbnailList || !videoSidebar) return; videoThumbnailList.innerHTML = ''; const showSidebar = videoIds.length > 1; videoSidebar.style.display = showSidebar ? 'block' : 'none'; if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = showSidebar ? 'block' : 'none'; if (!showSidebar) { closeVideoSidebar(); return; } videoIds.forEach((id, index) => { const thumbnail = document.createElement("img"); thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`; thumbnail.alt = `Video ${index + 1}`; thumbnail.className = "thumbnail"; thumbnail.dataset.index = index; thumbnail.title = `Play Video ${index + 1}`; thumbnail.loading = 'lazy'; // <<< LAZY LOADING ADDED
+            thumbnail.onclick = () => { if (index !== currentVideoIndex) { currentVideoIndex = index; player.loadVideoById(videoIds[currentVideoIndex]); highlightCurrentThumbnail(); closeVideoSidebar(); } }; thumbnail.onerror = () => { thumbnail.alt = `Thumb unavailable`; thumbnail.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; thumbnail.style.cssText = 'border: 1px dashed var(--text-dim); height: 70px; object-fit: cover;'; }; videoThumbnailList.appendChild(thumbnail); }); highlightCurrentThumbnail(); }
             function toggleVideoSidebar() { if (!videoSidebar) return; isVideoSidebarOpen = !isVideoSidebarOpen; videoSidebar.classList.toggle('open', isVideoSidebarOpen); if(videoSidebarToggleBtn) videoSidebarToggleBtn.innerHTML = isVideoSidebarOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-list"></i>'; }
             function closeVideoSidebar() { if (!videoSidebar || !isVideoSidebarOpen) return; isVideoSidebarOpen = false; videoSidebar.classList.remove('open'); if(videoSidebarToggleBtn) videoSidebarToggleBtn.innerHTML = '<i class="fas fa-list"></i>'; }
             function highlightCurrentThumbnail() { if (!videoThumbnailList) return; const thumbnails = videoThumbnailList.querySelectorAll('.thumbnail'); thumbnails.forEach((thumb, index) => { thumb.classList.toggle('active', index === currentVideoIndex); }); }
-            function startTimer(duration, mode) { if (!timerDisplay || !progressFill || !progressBar) { console.error("Timer elements missing!"); return; } clearInterval(countdownInterval); isFocusModeActive = true; timerMode = mode; let timeRemainingSeconds = Math.max(0, Math.floor(duration / 1000)); timerRemaining = timeRemainingSeconds; const totalDurationSeconds = Math.floor(duration / 1000); progressBar.style.display = "block"; progressFill.style.width = '0%'; timerDisplay.style.display = 'block'; console.log(`Timer: ${mode} for ${totalDurationSeconds}s`); countdownInterval = setInterval(() => { const minutes = Math.floor(timeRemainingSeconds / 60); const seconds = Math.floor(timeRemainingSeconds % 60); if(timerText) timerText.textContent = `${mode}: ${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`; const progress = totalDurationSeconds > 0 ? ((totalDurationSeconds - timeRemainingSeconds) / totalDurationSeconds) * 100 : 0; progressFill.style.width = `${Math.min(100, progress)}%`; if (mode === "Focus Time") { totalFocusTime++; } timerRemaining = timeRemainingSeconds; timeRemainingSeconds--; if (timeRemainingSeconds < 0) { clearInterval(countdownInterval); progressFill.style.width = '100%'; progressBar.style.display = "none"; if (mode === "Focus Time") { console.log("Focus finished."); const earnedPoints = applyPowerUps(100); points += earnedPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp(); playSound("achievementAudio"); showSessionCompleteDialog(); } else if (mode === "Break Time") { console.log("Long break done."); startTimer(secondBreakDuration, "Short Break"); } else { console.log("Short break done."); startTimer(focusDuration, "Focus Time"); } saveState(); } }, 1000); }
-            function endFocusSession(reason = "Session ended.") { console.log("Ending focus:", reason); clearInterval(countdownInterval); isFocusModeActive = false; timerRemaining = focusDuration / 1000; timerMode = "Focus Time"; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; console.log("Player destroyed."); } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; if(timerDisplay) timerDisplay.style.display = 'none'; if(progressBar) progressBar.style.display = 'none'; if(progressFill) progressFill.style.width = '0%'; closeVideoSidebar(); if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none'; const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none'; if(playerContainer) playerContainer.style.display = 'none'; if(youtubeInputContainer) youtubeInputContainer.style.display = 'block'; exitFullscreen(); saveState(); if (currentView === 'focusStats') displayFocusStatsInfo(); updateFocusStatus(); showView('homePage'); }
+
+            function startTimer(duration, mode) {
+                 if (!timerDisplay || !progressFill || !progressBar) { console.error("Timer elements missing!"); return; }
+                 clearInterval(countdownInterval);
+                 isFocusModeActive = true; // Ensure this is set
+                 timerMode = mode;
+                 let timeRemainingSeconds = Math.max(0, Math.floor(duration / 1000));
+                 timerRemaining = timeRemainingSeconds;
+                 const totalDurationSeconds = Math.floor(duration / 1000);
+                 progressBar.style.display = "block";
+                 progressFill.style.width = '0%';
+                 timerDisplay.style.display = 'block';
+                 console.log(`Timer: ${mode} for ${totalDurationSeconds}s`);
+
+                 countdownInterval = setInterval(() => {
+                     const minutes = Math.floor(timeRemainingSeconds / 60);
+                     const seconds = Math.floor(timeRemainingSeconds % 60);
+                     if(timerText) timerText.textContent = `${mode}: ${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+                     const progress = totalDurationSeconds > 0 ? ((totalDurationSeconds - timeRemainingSeconds) / totalDurationSeconds) * 100 : 0;
+                     progressFill.style.width = `${Math.min(100, progress)}%`;
+
+                     if (mode === "Focus Time") {
+                         totalFocusTime++; // Increment global total
+                         currentSessionFocusTime++; // Increment session specific total
+                     }
+
+                     timerRemaining = timeRemainingSeconds;
+                     timeRemainingSeconds--;
+
+                     if (timeRemainingSeconds < 0) {
+                         clearInterval(countdownInterval);
+                         progressFill.style.width = '100%';
+                         progressBar.style.display = "none"; // Hide progress bar when done
+
+                         if (mode === "Focus Time") {
+                             console.log("Focus finished.");
+                             const earnedPoints = applyPowerUps(100);
+                             points += earnedPoints;
+                             if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                             checkLevelUp();
+                             playSound("achievementAudio");
+                             logDailyFocus(); // Log focus time at the end of the focus period
+                             showSessionCompleteDialog(); // Offer break or continue
+                         } else if (mode === "Break Time") { // Long break finished
+                             console.log("Long break done.");
+                             startTimer(secondBreakDuration, "Short Break");
+                         } else { // Short break finished
+                             console.log("Short break done.");
+                              currentSessionFocusTime = 0; // Reset session timer for new focus block
+                             startTimer(focusDuration, "Focus Time");
+                         }
+                         saveState(); // Save after timer completes/changes state
+                     }
+                 }, 1000);
+             }
+
+             function endFocusSession(reason = "Session ended.") {
+                 console.log("Ending focus:", reason);
+                 clearInterval(countdownInterval);
+                 if (isFocusModeActive) { // Only log if it was an active YT session
+                    logDailyFocus(); // Log any accumulated time before ending
+                 }
+                 isFocusModeActive = false;
+                 timerRemaining = focusDuration / 1000;
+                 timerMode = "Focus Time";
+                 if (player && typeof player.destroy === 'function') {
+                     player.destroy();
+                     player = null;
+                     console.log("Player destroyed.");
+                 }
+                 videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false;
+                 if(timerDisplay) timerDisplay.style.display = 'none';
+                 if(progressBar) progressBar.style.display = 'none';
+                 if(progressFill) progressFill.style.width = '0%';
+                 closeVideoSidebar();
+                 if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none';
+                 const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none';
+                 if(playerContainer) playerContainer.style.display = 'none';
+                 if(youtubeInputContainer) youtubeInputContainer.style.display = 'block';
+                 exitFullscreen();
+                 saveState(); // Save state after ending
+                 if (currentView === 'focusStats') displayFocusStatsInfo();
+                 updateFocusStatus();
+                 showView('homePage');
+             }
+
             function showSessionCompleteDialog() { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "flex"; }
-            function handleSessionContinue(choice) { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "none"; if (choice === "continue") { const bonusPoints = applyPowerUps(100); points += bonusPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Bonus!", `+${bonusPoints} XP!`, false); playSound('achievementAudio'); checkLevelUp(); saveState(); startTimer(focusDuration, "Focus Time"); } else { endFocusSession("User ended."); } }
-            function requestExitSession() { showConfirmation( "Exit?", "End session?", true, () => { endFocusSession("User exited."); }, () => {} ); }
+            function handleSessionContinue(choice) { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "none"; if (choice === "continue") { const bonusPoints = applyPowerUps(100); points += bonusPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Bonus!", `+${bonusPoints} XP!`, false); playSound('achievementAudio'); checkLevelUp(); saveState(); currentSessionFocusTime = 0; // Reset session timer for continued focus
+            startTimer(focusDuration, "Focus Time"); } else { endFocusSession("User ended session after completion."); } }
+            function requestExitSession() { showConfirmation( "Exit?", "End current focus session?", true, () => { endFocusSession("User exited session manually."); }, () => {} ); }
             function toggleAIPopup() { if (!aiPopup) return; const isVisible = aiPopup.style.display === "block"; aiPopup.style.display = isVisible ? "none" : "block"; }
             function toggleSidebar() { if (!gameSidebar || !sidebarTrigger) return; isSidebarOpen = !isSidebarOpen; gameSidebar.classList.toggle('open', isSidebarOpen); sidebarTrigger.style.left = isSidebarOpen ? '280px' : '0px'; }
             function closeSidebar() { if (!gameSidebar || !sidebarTrigger || !isSidebarOpen) return; isSidebarOpen = false; gameSidebar.classList.remove('open'); sidebarTrigger.style.left = '0px'; }
             function showSignInForm() { showView('signinForm'); if(usernameInput) usernameInput.value = ''; if(passwordInput) passwordInput.value = ''; }
-            function signIn() { if(!usernameInput || !passwordInput) return; const username = usernameInput.value.trim(); const password = passwordInput.value; if (!username || !password) { showConfirmation("Missing", "Enter Name & Code.", false); return; } try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if (users[username] && users[username].password === password) { isSignedIn = true; currentUser = username; points = users[username].points || 0; previousPoints = points; totalFocusTime = users[username].totalFocusTime || 0; totalDistractions = users[username].totalDistractions || 0; totalVideosWatched = users[username].totalVideosWatched || 0; tasks = users[username].tasks || []; streakDays = users[username].streakDays || 0; lastFocusDate = users[username].lastFocusDate || null; mysteryBoxCount = users[username].mysteryBoxCount || 0; activePowerUps = users[username].activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = users[username].playlists || []; const savedTracks = users[username].premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks(); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); showView('homePage'); restoreTasks(); checkExpiredPowerups(); console.log(`Signed in: ${currentUser}.`); } else { showConfirmation("Login Failed", "Invalid credentials.", false); isSignedIn = false; currentUser = null; } } catch (err) { console.error("Sign-in error:", err); showConfirmation("Sign-in Error", "Error during sign-in.", false); } }
-            function createAccount() { if(!usernameInput || !passwordInput) return; const username = usernameInput.value.trim(); const password = passwordInput.value; if (!username || !password) { showConfirmation("Missing", "Enter Name & Code.", false); return; } if (password.length < 4) { showConfirmation("Weak Code", "Code needs 4+ chars.", false); return; } try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if (users[username]) { showConfirmation("Taken", "Name registered.", false); } else { users[username] = { password: password, points: 0, totalFocusTime: 0, totalDistractions: 0, totalVideosWatched: 0, tasks: [], streakDays: 0, lastFocusDate: null, mysteryBoxCount: 0, activePowerUps: { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }, playlists: [], premiumLofiTracks: premiumLofiTracks.map(track => ({ id: track.id, unlocked: false })) }; localStorage.setItem("users", JSON.stringify(users)); isSignedIn = true; currentUser = username; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); showView('homePage'); restoreTasks(); console.log(`Created: ${currentUser}.`); showConfirmation("Success!", `Welcome, ${currentUser}!`, false); } } catch (err) { console.error("Creation error:", err); showConfirmation("Creation Error", "Error creating.", false); } }
-            function logout() { showConfirmation( "Logout?", "Log out?", true, () => { console.log(`Logging out ${currentUser}`); isSignedIn = false; currentUser = null; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); if(isFocusModeActive) { clearInterval(countdownInterval); isFocusModeActive = false; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; } if (isPomodoroActive) { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); } if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`; updateAchievementLevel(); updateStreakDisplay(); populatePlaylistSelect(); restoreTasks(); if(timerDisplay) timerDisplay.style.display = 'none'; showView('landingPage'); }, () => {} ); }
+
+            function signIn() {
+                 if(!usernameInput || !passwordInput) return;
+                 const username = usernameInput.value.trim();
+                 const password = passwordInput.value;
+                 if (!username || !password) { showConfirmation("Missing", "Enter Hero Name & Secret Code.", false); return; }
+                 try {
+                     const users = JSON.parse(localStorage.getItem("users") || "{}");
+                     if (users[username] && users[username].password === password) {
+                         isSignedIn = true;
+                         currentUser = username;
+                         // Load data from user storage
+                         points = users[currentUser].points || 0;
+                         previousPoints = points; // Sync previous points on load
+                         totalFocusTime = users[currentUser].totalFocusTime || 0;
+                         totalDistractions = users[currentUser].totalDistractions || 0;
+                         totalVideosWatched = users[currentUser].totalVideosWatched || 0;
+                         tasks = users[currentUser].tasks || [];
+                         streakDays = users[currentUser].streakDays || 0;
+                         lastFocusDate = users[currentUser].lastFocusDate || null;
+                         mysteryBoxCount = users[currentUser].mysteryBoxCount || 0;
+                         activePowerUps = users[currentUser].activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, };
+                         if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; // Ensure structure exists
+                         if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; // Ensure structure exists
+                         playlists = users[currentUser].playlists || [];
+                         dailyFocusData = users[currentUser].dailyFocusData || {}; // Load calendar data
+                         const savedTracks = users[currentUser].premiumLofiTracks || [];
+                         premiumLofiTracks.forEach(track => {
+                             const saved = savedTracks.find(st => st.id === track.id);
+                             track.unlocked = saved ? saved.unlocked : false;
+                         });
+                         updateAvailableLofiTracks();
+
+                         // Update UI
+                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                         updateAchievementLevel();
+                         updateStreakDisplay();
+                         showView('homePage');
+                         restoreTasks();
+                         checkExpiredPowerups();
+                         console.log(`Signed in: ${currentUser}. Streak: ${streakDays}, Last Focus: ${lastFocusDate}`);
+                     } else {
+                         showConfirmation("Login Failed", "Invalid Hero Name or Secret Code.", false);
+                         isSignedIn = false;
+                         currentUser = null;
+                     }
+                 } catch (err) {
+                     console.error("Sign-in error:", err);
+                     showConfirmation("Sign-in Error", "An error occurred during sign-in.", false);
+                 }
+             }
+
+             function createAccount() {
+                 if(!usernameInput || !passwordInput) return;
+                 const username = usernameInput.value.trim();
+                 const password = passwordInput.value;
+                 if (!username || !password) { showConfirmation("Missing", "Enter Hero Name & Secret Code.", false); return; }
+                 if (password.length < 4) { showConfirmation("Weak Code", "Secret Code needs 4+ characters.", false); return; }
+                 try {
+                     const users = JSON.parse(localStorage.getItem("users") || "{}");
+                     if (users[username]) {
+                         showConfirmation("Name Taken", "This Hero Name is already registered.", false);
+                     } else {
+                         // Initialize new user data
+                         users[username] = {
+                             password: password,
+                             points: 0,
+                             totalFocusTime: 0,
+                             totalDistractions: 0,
+                             totalVideosWatched: 0,
+                             tasks: [],
+                             streakDays: 0,
+                             lastFocusDate: null,
+                             mysteryBoxCount: 0,
+                             activePowerUps: { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, },
+                             playlists: [],
+                             dailyFocusData: {}, // Initialize calendar data
+                             premiumLofiTracks: premiumLofiTracks.map(track => ({ id: track.id, unlocked: false })) // Base tracks are free, premium start locked
+                         };
+                         localStorage.setItem("users", JSON.stringify(users));
+
+                         // Set current state
+                         isSignedIn = true;
+                         currentUser = username;
+                         points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {};
+                         premiumLofiTracks.forEach(t => t.unlocked = false); // Ensure local state matches new user
+                         updateAvailableLofiTracks();
+
+                         // Update UI
+                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                         updateAchievementLevel();
+                         updateStreakDisplay();
+                         showView('homePage');
+                         restoreTasks();
+                         console.log(`Account created: ${currentUser}.`);
+                         showConfirmation("Account Created!", `Welcome to the Quest for Focus, ${currentUser}!`, false);
+                     }
+                 } catch (err) {
+                     console.error("Account creation error:", err);
+                     showConfirmation("Creation Error", "An error occurred creating the account.", false);
+                 }
+             }
+
+            function logout() { showConfirmation( "Logout?", "Are you sure you want to logout?", true, () => { console.log(`Logging out ${currentUser}`); logDailyFocus(); // Log any pending session time before logging out
+            isSignedIn = false; currentUser = null; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {}; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); currentSessionFocusTime = 0; if(isFocusModeActive) { clearInterval(countdownInterval); isFocusModeActive = false; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; } if (isPomodoroActive) { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); } if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`; updateAchievementLevel(); updateStreakDisplay(); populatePlaylistSelect(); restoreTasks(); if(timerDisplay) timerDisplay.style.display = 'none'; localStorage.removeItem("focusModeState_v5"); // Clear session state on logout
+            showView('landingPage'); }, () => {} ); }
             function addUrlInput() { if (!urlInputsContainer) return; const container = document.createElement("div"); container.className = "url-container"; const newInput = document.createElement("input"); newInput.type = "text"; newInput.className = "youtube-url"; newInput.placeholder = "Another YouTube URL"; const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { newInput.value = ''; } }; container.appendChild(newInput); container.appendChild(removeBtn); urlInputsContainer.appendChild(container); newInput.focus(); }
-            function restoreUrlInputs(ids = []) { if (!urlInputsContainer) return; urlInputsContainer.innerHTML = ''; if (ids.length === 0) { addUrlInput(); const firstRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if(firstRemoveBtn) firstRemoveBtn.remove(); } else { ids.forEach((id, index) => { const container = document.createElement("div"); container.className = "url-container"; const input = document.createElement("input"); input.type = "text"; input.className = "youtube-url"; input.placeholder = "YouTube URL"; input.value = id ? `https://www.youtube.com/watch?v=${id}` : ''; container.appendChild(input); if (index > 0 || ids.length > 1) { const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { input.value = ''; } }; container.appendChild(removeBtn); } urlInputsContainer.appendChild(container); }); if (ids.length === 1) { const singleRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if(singleRemoveBtn) singleRemoveBtn.remove(); } } }
-            function savePlaylist() { if (!playlistNameInput || !urlInputsContainer) return; const name = playlistNameInput.value.trim(); if (!name) { showConfirmation("Missing", "Enter name.", false); return; } const urlElements = urlInputsContainer.querySelectorAll(".youtube-url"); const currentVideoIds = Array.from(urlElements).map(input => extractVideoId(input.value)).filter(id => id); if (currentVideoIds.length === 0) { showConfirmation("No Videos", "Add URLs.", false); return; } const existingIndex = playlists.findIndex(p => p.name === name); if (existingIndex !== -1) { showConfirmation( "Overwrite?", `Overwrite "${name}"?`, true, () => { playlists[existingIndex] = { name: name, videoIds: currentVideoIds }; savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `"${name}" updated.`, false); }, () => {} ); } else { playlists.push({ name: name, videoIds: currentVideoIds }); savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `"${name}" saved.`, false); } }
-            function removePlaylist() { if (!playlistSelect) return; const selectedName = playlistSelect.value; if (!selectedName) { showConfirmation("No Select", "Select playlist.", false); return; } showConfirmation( "Delete?", `Delete "${selectedName}"?`, true, () => { playlists = playlists.filter(p => p.name !== selectedName); savePlaylistsToUserData(); populatePlaylistSelect(); playlistSelect.value = ""; restoreUrlInputs(); showConfirmation("Deleted", `"${selectedName}" removed.`, false); }, () => {} ); }
-            function savePlaylistsToUserData() { if (isSignedIn && currentUser) { try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if(users[currentUser]) { users[currentUser].playlists = playlists; localStorage.setItem("users", JSON.stringify(users)); console.log("Playlists saved:", currentUser); } } catch (err) { console.error("Err saving playlists:", err); } } }
-            function populatePlaylistSelect() { if (!playlistSelect) return; const currentSelection = playlistSelect.value; playlistSelect.innerHTML = '<option value="">Load Playlist</option>'; playlists.sort((a, b) => a.name.localeCompare(b.name)); playlists.forEach(playlist => { const option = document.createElement("option"); option.value = playlist.name; option.textContent = playlist.name; playlistSelect.appendChild(option); }); playlistSelect.value = currentSelection; if (!playlistSelect.onchange) { playlistSelect.onchange = handlePlaylistSelection; } }
-            function handlePlaylistSelection() { if (!playlistSelect) return; const selectedName = playlistSelect.value; if (selectedName) { const selectedPlaylist = playlists.find(p => p.name === selectedName); if (selectedPlaylist) { console.log("Loading playlist:", selectedName); restoreUrlInputs(selectedPlaylist.videoIds); if(playlistNameInput) playlistNameInput.value = selectedName; } } else { restoreUrlInputs(); if(playlistNameInput) playlistNameInput.value = ""; } }
+            function restoreUrlInputs(urlsToRestore = []) { if (!urlInputsContainer) return; urlInputsContainer.innerHTML = ''; if (urlsToRestore.length === 0) { addUrlInput(); const firstRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if (firstRemoveBtn && urlInputsContainer.querySelectorAll(".url-container").length === 1) { firstRemoveBtn.remove(); } } else { urlsToRestore.forEach((url, index) => { const container = document.createElement("div"); container.className = "url-container"; const input = document.createElement("input"); input.type = "text"; input.className = "youtube-url"; input.placeholder = "YouTube URL"; input.value = url || ''; // Use provided URL directly
+            container.appendChild(input); if (index > 0 || urlsToRestore.length > 1) { // Add remove button if not the only input OR if more than one initially
+            const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { input.value = ''; } }; container.appendChild(removeBtn); } urlInputsContainer.appendChild(container); }); if (urlsToRestore.length === 1) { const singleRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if(singleRemoveBtn) singleRemoveBtn.remove(); } } }
+            function savePlaylist() { if (!playlistNameInput || !urlInputsContainer) return; const name = playlistNameInput.value.trim(); if (!name) { showConfirmation("Missing Name", "Enter a name to save the playlist.", false); return; } const urlElements = urlInputsContainer.querySelectorAll(".youtube-url"); const currentUrls = Array.from(urlElements).map(input => input.value.trim()).filter(url => url); if (currentUrls.length === 0) { showConfirmation("No Videos", "Add at least one YouTube URL to save.", false); return; } const existingIndex = playlists.findIndex(p => p.name === name); if (existingIndex !== -1) { showConfirmation( "Overwrite?", `A playlist named "${name}" already exists. Overwrite it?`, true, () => { playlists[existingIndex] = { name: name, urls: currentUrls }; savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `Playlist "${name}" updated.`, false); }, () => {} ); } else { playlists.push({ name: name, urls: currentUrls }); savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `Playlist "${name}" saved.`, false); } }
+            function removePlaylist() { if (!playlistSelect) return; const selectedName = playlistSelect.value; if (!selectedName) { showConfirmation("No Selection", "Select a playlist from the dropdown to delete.", false); return; } showConfirmation( "Delete?", `Are you sure you want to delete the playlist "${selectedName}"?`, true, () => { playlists = playlists.filter(p => p.name !== selectedName); savePlaylistsToUserData(); populatePlaylistSelect(); playlistSelect.value = ""; restoreUrlInputs(); showConfirmation("Deleted", `Playlist "${selectedName}" removed.`, false); }, () => {} ); }
+            function savePlaylistsToUserData() { if (isSignedIn && currentUser) { try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if(users[currentUser]) { users[currentUser].playlists = playlists; localStorage.setItem("users", JSON.stringify(users)); console.log("Playlists saved for user:", currentUser); } } catch (err) { console.error("Error saving playlists:", err); } } }
+            function populatePlaylistSelect() { if (!playlistSelect) return; const currentSelection = playlistSelect.value; playlistSelect.innerHTML = '<option value="">Load Playlist</option>'; playlists.sort((a, b) => a.name.localeCompare(b.name)); playlists.forEach(playlist => { const option = document.createElement("option"); option.value = playlist.name; option.textContent = playlist.name; playlistSelect.appendChild(option); }); // Restore selection if it still exists
+            if (playlists.some(p => p.name === currentSelection)) { playlistSelect.value = currentSelection; } else { playlistSelect.value = ""; } if (!playlistSelect.onchange) { playlistSelect.onchange = handlePlaylistSelection; } }
+            function handlePlaylistSelection() { if (!playlistSelect) return; const selectedName = playlistSelect.value; if (selectedName) { const selectedPlaylist = playlists.find(p => p.name === selectedName); if (selectedPlaylist && selectedPlaylist.urls) { console.log("Loading playlist:", selectedName); restoreUrlInputs(selectedPlaylist.urls); if(playlistNameInput) playlistNameInput.value = selectedName; } else { console.warn("Selected playlist not found or has no URLs:", selectedName); restoreUrlInputs(); if(playlistNameInput) playlistNameInput.value = ""; } } else { restoreUrlInputs(); if(playlistNameInput) playlistNameInput.value = ""; } }
 
             function saveState() {
                  if (!isSignedIn || !currentUser) return;
                  const stateToSave = {
-                      // YT Focus Session State
-                      videoIds: isFocusModeActive ? videoIds : [], currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0, timerMode: isFocusModeActive ? timerMode : "Focus Time", timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000, isFocusModeActive: isFocusModeActive, completedVideos: isFocusModeActive ? Array.from(completedVideos) : [], allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
-                      // Pomodoro State (only if active)
-                      isPomodoroActive: isPomodoroActive, pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (60 * 60), pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
-                      // General User State
-                      points: points, totalFocusTime: totalFocusTime, totalDistractions: totalDistractions, totalVideosWatched: totalVideosWatched, streakDays: streakDays, lastFocusDate: lastFocusDate, mysteryBoxCount: mysteryBoxCount, activePowerUps: activePowerUps, premiumLofiTrackState: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })),
-                      currentView: currentView, isSignedIn: isSignedIn, currentUser: currentUser
+                     // Session State (only if active)
+                     isFocusModeActive: isFocusModeActive, videoIds: isFocusModeActive ? videoIds : [], currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0, timerMode: isFocusModeActive ? timerMode : "Focus Time", timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000, completedVideos: isFocusModeActive ? Array.from(completedVideos) : [], allVideosCompleted: isFocusModeActive ? allVideosCompleted : false, isPomodoroActive: isPomodoroActive, pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (60 * 60), pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
+                     // General User State (Persisted under user data too)
+                     points: points, totalFocusTime: totalFocusTime, totalDistractions: totalDistractions, totalVideosWatched: totalVideosWatched, streakDays: streakDays, lastFocusDate: lastFocusDate, mysteryBoxCount: mysteryBoxCount, activePowerUps: activePowerUps, premiumLofiTrackState: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })), dailyFocusData: dailyFocusData, // Save calendar data
+                     currentView: currentView, isSignedIn: isSignedIn, currentUser: currentUser
                  };
                  try {
-                      localStorage.setItem("focusModeState_v4", JSON.stringify(stateToSave)); // Incremented version
-                      const users = JSON.parse(localStorage.getItem("users") || "{}");
-                      if (users[currentUser]) {
-                           users[currentUser].points = points; users[currentUser].totalFocusTime = totalFocusTime; users[currentUser].totalDistractions = totalDistractions; users[currentUser].totalVideosWatched = totalVideosWatched; users[currentUser].streakDays = streakDays; users[currentUser].lastFocusDate = lastFocusDate; users[currentUser].mysteryBoxCount = mysteryBoxCount; users[currentUser].activePowerUps = activePowerUps; users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
-                           localStorage.setItem("users", JSON.stringify(users));
-                      }
-                 } catch (err) { console.error("Error saving state:", err); }
-            }
+                     // Save potentially active session state
+                     localStorage.setItem("focusModeState_v5", JSON.stringify(stateToSave)); // Incremented version
+
+                     // Save persistent user data separately
+                     const users = JSON.parse(localStorage.getItem("users") || "{}");
+                     if (users[currentUser]) {
+                         users[currentUser].points = points;
+                         users[currentUser].totalFocusTime = totalFocusTime;
+                         users[currentUser].totalDistractions = totalDistractions;
+                         users[currentUser].totalVideosWatched = totalVideosWatched;
+                         users[currentUser].streakDays = streakDays;
+                         users[currentUser].lastFocusDate = lastFocusDate;
+                         users[currentUser].mysteryBoxCount = mysteryBoxCount;
+                         users[currentUser].activePowerUps = activePowerUps;
+                         users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
+                         users[currentUser].dailyFocusData = dailyFocusData; // Save calendar data to user profile
+                         users[currentUser].playlists = playlists; // Save playlists
+                         users[currentUser].tasks = tasks; // Save tasks
+                         localStorage.setItem("users", JSON.stringify(users));
+                     }
+                 } catch (err) {
+                     console.error("Error saving state:", err);
+                     // Optional: Implement a more robust error handling/fallback
+                 }
+             }
 
             function loadSavedState() {
-                console.log("Loading state (v4)...");
+                console.log("Loading state (v5)...");
                 let loadedState = null;
                 try {
-                    loadedState = JSON.parse(localStorage.getItem("focusModeState_v4") || "{}");
-                    // Clear older versions if found
-                    localStorage.removeItem("focusModeState_v3");
-                } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v4"); loadedState = {}; }
+                    loadedState = JSON.parse(localStorage.getItem("focusModeState_v5") || "{}");
+                     localStorage.removeItem("focusModeState_v4"); // Clean up old version
+                } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v5"); loadedState = {}; }
 
                 if (loadedState.isSignedIn && loadedState.currentUser) {
                      console.log("Attempting restore for:", loadedState.currentUser);
                      const users = JSON.parse(localStorage.getItem("users") || "{}");
                      if (users[loadedState.currentUser]) {
                          const userData = users[loadedState.currentUser];
-                         // Restore basic user data
-                         isSignedIn = true; currentUser = loadedState.currentUser; points = userData.points || 0; previousPoints = points; totalFocusTime = userData.totalFocusTime || 0; totalDistractions = userData.totalDistractions || 0; totalVideosWatched = userData.totalVideosWatched || 0; tasks = userData.tasks || []; streakDays = userData.streakDays || 0; lastFocusDate = userData.lastFocusDate || null; mysteryBoxCount = userData.mysteryBoxCount || 0; activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = userData.playlists || []; const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
+                         // Restore basic user data from persistent 'users' storage
+                         isSignedIn = true; currentUser = loadedState.currentUser; points = userData.points || 0; previousPoints = points; totalFocusTime = userData.totalFocusTime || 0; totalDistractions = userData.totalDistractions || 0; totalVideosWatched = userData.totalVideosWatched || 0; tasks = userData.tasks || []; streakDays = userData.streakDays || 0; lastFocusDate = userData.lastFocusDate || null; mysteryBoxCount = userData.mysteryBoxCount || 0; activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = userData.playlists || []; dailyFocusData = userData.dailyFocusData || {}; // Load calendar data
+                         const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
                          if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); restoreTasks(); checkExpiredPowerups();
 
-                         // Check for YT Focus Session restore
+                         // Check for YT Focus Session restore (using loadedState for session details)
                          if (loadedState.isFocusModeActive && loadedState.videoIds && loadedState.videoIds.length > 0 && loadedState.currentView === 'youtubeLecturePage') {
                              console.log("Restoring active YouTube focus session...");
-                             isFocusModeActive = true; videoIds = loadedState.videoIds; currentVideoIndex = loadedState.currentVideoIndex || 0; timerMode = loadedState.timerMode || "Focus Time"; timerRemaining = loadedState.timerRemaining || (focusDuration / 1000); completedVideos = new Set(loadedState.completedVideos || []); allVideosCompleted = loadedState.allVideosCompleted || false;
+                             isFocusModeActive = true; videoIds = loadedState.videoIds; currentVideoIndex = loadedState.currentVideoIndex || 0; timerMode = loadedState.timerMode || "Focus Time"; timerRemaining = loadedState.timerRemaining || (focusDuration / 1000); completedVideos = new Set(loadedState.completedVideos || []); allVideosCompleted = loadedState.allVideosCompleted || false; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time too
+
                              loadYouTubeAPI().then(() => { showView('youtubeLecturePage'); setTimeout(() => { console.log("Re-init player."); setupYouTubePlayer(); startTimer(timerRemaining * 1000, timerMode); }, 100); }).catch(err => { console.error("YT API load fail on restore:", err); isFocusModeActive = false; showView('homePage'); });
                          }
                          // Check for Pomodoro Session restore
                          else if (loadedState.isPomodoroActive && loadedState.currentView === 'homePage') { // Assuming Pomodoro runs on home/overlay
                              console.log("Restoring active Pomodoro session...");
-                             isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (60 * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0;
+                             isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (60 * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time
+
                              showPomodoroOverlay(); // Show the overlay first
-                             // Manually update display elements before starting interval
                              updatePomodoroDisplay();
                              const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing...";
                              const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true;
                              const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false;
                              requestFullscreen(document.documentElement); // Re-enter fullscreen if restored
-                             // Restart interval
-                             pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; totalFocusTime++; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
+
+                             pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; currentSessionFocusTime++; totalFocusTime++; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
                          } else {
-                             // No active YT or Pomodoro session, just show the last view
-                             isFocusModeActive = false;
-                             isPomodoroActive = false;
+                             isFocusModeActive = false; isPomodoroActive = false; currentSessionFocusTime = 0;
                              showView(loadedState.currentView || 'homePage');
                          }
                          console.log("Session restored for", currentUser);
                          return;
-                     } else { console.warn("User data mismatch:", loadedState.currentUser); localStorage.removeItem("focusModeState_v4"); }
+                     } else { console.warn("User data mismatch:", loadedState.currentUser); localStorage.removeItem("focusModeState_v5"); }
                 }
                 console.log("No active session found or error. Showing landing.");
                 showView('landingPage'); updateClock(); initAudio(); updateAchievementLevel(); updateStreakDisplay();
@@ -1129,41 +1615,90 @@
             function checkExpiredPowerups() { let stateChanged = false; const now = Date.now(); if (activePowerUps.doublePoints.active && activePowerUps.doublePoints.expiry && now > activePowerUps.doublePoints.expiry) { console.log("Double XP expired."); activePowerUps.doublePoints.active = false; activePowerUps.doublePoints.expiry = null; stateChanged = true; } if (activePowerUps.streakShield.active && activePowerUps.streakShield.expiry && now > activePowerUps.streakShield.expiry) { console.log("Shield expired."); activePowerUps.streakShield.active = false; activePowerUps.streakShield.expiry = null; activePowerUps.streakShield.used = false; stateChanged = true; } if (stateChanged) { saveState(); } }
             function requestFullscreen(element) { try { if (element.requestFullscreen) element.requestFullscreen().catch(err => console.warn("FS Req Catch:", err.message)); else if (element.mozRequestFullScreen) element.mozRequestFullScreen(); else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen(); else if (element.msRequestFullscreen) element.msRequestFullscreen(); } catch(e){ console.warn("Fullscreen fail:", e.message)} }
             function exitFullscreen() { try { if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) { if (document.exitFullscreen) document.exitFullscreen().catch(err => console.warn("FS Exit Catch:", err.message)); else if (document.mozCancelFullScreen) document.mozCancelFullScreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); else if (document.msExitFullscreen) document.msExitFullscreen(); } } catch(e){ console.warn("Exit fullscreen fail:", e.message)} }
-            // Enhanced showConfirmation to optionally add a CSS class for styling (e.g., warning)
-            function showConfirmation(title, message, isCancellable = false, onConfirm = () => {}, onCancel = () => {}, dialogClass = '') {
-                 const dialog = document.getElementById("confirmationDialog");
-                 const dialogBox = dialog?.querySelector(".dialog-box");
-                 const titleEl = dialog?.querySelector("h3");
-                 const messageEl = dialog?.querySelector("p");
-                 const confirmBtn = document.getElementById("confirmBtn");
-                 const cancelBtn = document.getElementById("cancelBtn");
-                 if (!dialog || !dialogBox || !titleEl || !messageEl || !confirmBtn || !cancelBtn) { console.error("Confirm dialog missing elements."); return; }
+            function showConfirmation(title, message, isCancellable = false, onConfirm = () => {}, onCancel = () => {}, dialogClass = '') { const dialog = document.getElementById("confirmationDialog"); const dialogBox = dialog?.querySelector(".dialog-box"); const titleEl = dialog?.querySelector("h3"); const messageEl = dialog?.querySelector("p"); const confirmBtn = document.getElementById("confirmBtn"); const cancelBtn = document.getElementById("cancelBtn"); if (!dialog || !dialogBox || !titleEl || !messageEl || !confirmBtn || !cancelBtn) { console.error("Confirm dialog missing elements."); return; } dialogBox.className = 'dialog-box'; if (dialogClass) { dialogBox.classList.add(dialogClass); } titleEl.innerHTML = `<i class="fas ${isCancellable ? 'fa-question-circle' : (dialogClass === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle')}"></i> ${title}`; messageEl.textContent = message; cancelBtn.style.display = isCancellable ? "inline-block" : "none"; const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); const newCancelBtn = cancelBtn.cloneNode(true); cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn); newConfirmBtn.textContent = isCancellable ? "YES" : "OK"; newConfirmBtn.onclick = () => { dialog.style.display = 'none'; onConfirm(); }; if (isCancellable) { newCancelBtn.onclick = () => { dialog.style.display = 'none'; onCancel(); }; } dialog.style.display = "flex"; }
 
-                 // Reset classes and set new one if provided
-                 dialogBox.className = 'dialog-box'; // Reset to base class
-                 if (dialogClass) { dialogBox.classList.add(dialogClass); }
-
-                 titleEl.innerHTML = `<i class="fas ${isCancellable ? 'fa-question-circle' : (dialogClass === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle')}"></i> ${title}`;
-                 messageEl.textContent = message;
-                 cancelBtn.style.display = isCancellable ? "inline-block" : "none";
-
-                 // Clone buttons to remove old listeners
-                 const newConfirmBtn = confirmBtn.cloneNode(true);
-                 confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-                 const newCancelBtn = cancelBtn.cloneNode(true);
-                 cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-
-                 newConfirmBtn.textContent = isCancellable ? "YES" : "OK";
-                 newConfirmBtn.onclick = () => { dialog.style.display = 'none'; onConfirm(); };
-                 if (isCancellable) { newCancelBtn.onclick = () => { dialog.style.display = 'none'; onCancel(); }; }
-
-                 dialog.style.display = "flex";
+             // --- NEW Calendar Functions ---
+             function showCalendar() {
+                 generateCalendarGrid(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth());
              }
+
+            function generateCalendarGrid(year, month) {
+                if (!calendarGrid || !calendarMonthYear) return;
+                calendarGrid.innerHTML = ''; // Clear previous grid
+
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                calendarMonthYear.innerHTML = `<i class="fas fa-calendar-alt"></i> ${monthNames[month]} ${year}`;
+
+                const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Sun, 1=Mon...
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const today = new Date();
+                const todayString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+
+                // Adjust firstDayOfMonth to start week on Monday (optional, depends on preference)
+                const adjustedFirstDay = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; // 0=Mon, 6=Sun
+
+                // Add weekday headers (optional)
+                // ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(day => {
+                //     const headerCell = document.createElement('div');
+                //     headerCell.classList.add('calendar-header');
+                //     headerCell.textContent = day;
+                //     calendarGrid.appendChild(headerCell);
+                // });
+
+                // Add empty cells for the beginning of the month
+                for (let i = 0; i < adjustedFirstDay; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.classList.add('calendar-day', 'other-month');
+                    calendarGrid.appendChild(emptyCell);
+                }
+
+                // Add cells for each day of the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.classList.add('calendar-day');
+                    dayCell.textContent = day;
+
+                    const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                    const focusData = dailyFocusData[dateString];
+
+                    if (focusData && focusData.focusTime > 0) {
+                        dayCell.classList.add('has-focus');
+                        const focusMinutes = Math.floor(focusData.focusTime / 60);
+                        // Add intensity classes based on focus time
+                        if (focusMinutes >= 60) { // Example threshold: 1 hour
+                            dayCell.classList.add('focus-high');
+                        } else if (focusMinutes >= 15) { // Example threshold: 15 mins
+                             dayCell.classList.add('focus-medium');
+                        }
+                        // Tooltip
+                        const tooltip = document.createElement('span');
+                        tooltip.classList.add('tooltip');
+                        tooltip.textContent = `${focusMinutes} min focus`;
+                        if (focusData.distractions > 0) {
+                             tooltip.textContent += ` (${focusData.distractions} distractions)`;
+                        }
+                        dayCell.appendChild(tooltip);
+                    }
+
+                    // Highlight today
+                    if (dateString === todayString) {
+                        dayCell.classList.add('today');
+                    }
+
+                    calendarGrid.appendChild(dayCell);
+                }
+            }
+
+             function changeCalendarMonth(offset) {
+                 calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + offset);
+                 showCalendar();
+             }
+
 
             // --- Event Listener Setup ---
             function setupEventListeners() {
                 console.log("Setting up listeners...");
-                document.querySelectorAll('button[data-action="show-view"]').forEach(button => { button.addEventListener('click', () => { const viewId = button.dataset.view; if (viewId) { showView(viewId); } else { console.warn("Btn missing data-view:", button); } }); });
+                document.querySelectorAll('button[data-action="show-view"], a[data-action="show-view"]').forEach(element => { element.addEventListener('click', (e) => { e.preventDefault(); const viewId = element.dataset.view; if (viewId) { showView(viewId); } else { console.warn("Element missing data-view:", element); } }); });
                 if(sidebarTrigger) sidebarTrigger.addEventListener('click', toggleSidebar);
                 document.addEventListener('click', (event) => { if (gameSidebar && !gameSidebar.contains(event.target) && sidebarTrigger && !sidebarTrigger.contains(event.target) && isSidebarOpen) { closeSidebar(); } });
                 document.querySelector('button[data-action="sign-in"]')?.addEventListener('click', signIn);
@@ -1196,24 +1731,29 @@
                 if(fireBox) fireBox.addEventListener('click', toggleAIPopup);
                 if (timerDisplay) { let isDragging = false; let initialX, initialY; timerDisplay.addEventListener("mousedown", (e) => { if (e.target.tagName === 'BUTTON') return; isDragging = true; initialX = e.clientX - timerDisplay.offsetLeft; initialY = e.clientY - timerDisplay.offsetTop; timerDisplay.style.cursor = 'grabbing'; e.preventDefault(); }); document.addEventListener("mousemove", (e) => { if (isDragging) { e.preventDefault(); let currentX = e.clientX - initialX; let currentY = e.clientY - initialY; const maxX = window.innerWidth - timerDisplay.offsetWidth - 10; const maxY = window.innerHeight - timerDisplay.offsetHeight - 10; currentX = Math.max(10, Math.min(currentX, maxX)); currentY = Math.max(65, Math.min(currentY, maxY)); timerDisplay.style.left = `${currentX}px`; timerDisplay.style.top = `${currentY}px`; } }); document.addEventListener("mouseup", () => { if (isDragging) { isDragging = false; timerDisplay.style.cursor = 'move'; } }); }
 
+                 // Calendar Buttons
+                 if (prevMonthBtn) prevMonthBtn.addEventListener('click', () => changeCalendarMonth(-1));
+                 if (nextMonthBtn) nextMonthBtn.addEventListener('click', () => changeCalendarMonth(1));
+
                  // Visibility Change Listener for Distraction Audio (Updated for Pomodoro)
                  document.addEventListener("visibilitychange", () => {
                      const isHidden = document.hidden;
+                     let distractionOccurred = false; // Track if a distraction penalty was applied
 
                      if (isHidden) {
-                        // Tab hidden logic
                         pauseLofi(); // Always pause lofi when hidden
 
                         if (isFocusModeActive && currentView === 'youtubeLecturePage') {
-                            // YouTube session distraction
-                            if (focusAudioElement && focusAudioElement.readyState >= 2) {
-                                focusAudioElement.play().catch(e => console.warn("Focus audio play fail (YT):", e.message));
-                            } else if (focusAudioElement) { focusAudioElement.load(); }
                             totalDistractions++; // Increment global counter
                             console.log("Tab hidden (YT). Global Distractions:", totalDistractions);
-                            saveState();
+                            distractionOccurred = true;
+                            // Log distraction to daily data (optional)
+                             const today = new Date();
+                             const dateString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+                             if (!dailyFocusData[dateString]) { dailyFocusData[dateString] = { focusTime: 0, distractions: 0 }; }
+                             dailyFocusData[dateString].distractions = (dailyFocusData[dateString].distractions || 0) + 1;
+
                         } else if (isPomodoroActive) {
-                            // Pomodoro session distraction
                             pomodoroDistractionCount++;
                             totalDistractions++; // Increment global counter too
                             points = Math.max(0, points - POMODORO_DISTRACTION_PENALTY);
@@ -1221,26 +1761,35 @@
 
                             console.log(`Tab hidden (Pomodoro). Session Distractions: ${pomodoroDistractionCount}, Global: ${totalDistractions}. Penalty: -${POMODORO_DISTRACTION_PENALTY}`);
                             showConfirmation("Distraction!", `Pomodoro Focus Lost! -${POMODORO_DISTRACTION_PENALTY} XP. Distractions: ${pomodoroDistractionCount}`, false);
+                             distractionOccurred = true;
 
-                             // Check for warning and major penalty
+                             // Log distraction to daily data
+                             const today = new Date();
+                             const dateString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+                              if (!dailyFocusData[dateString]) { dailyFocusData[dateString] = { focusTime: 0, distractions: 0 }; }
+                             dailyFocusData[dateString].distractions = (dailyFocusData[dateString].distractions || 0) + 1;
+
+
                              if (pomodoroDistractionCount === POMODORO_WARNING_THRESHOLD) {
-                                 showConfirmation("⚠️ WARNING!", `Next distraction: -${POMODORO_MAJOR_PENALTY_AMOUNT} XP penalty!`, false, undefined, undefined, 'warning'); // Use warning style
+                                 showConfirmation("⚠️ WARNING!", `Next distraction: -${POMODORO_MAJOR_PENALTY_AMOUNT} XP penalty!`, false, undefined, undefined, 'warning');
                              } else if (pomodoroDistractionCount >= POMODORO_MAJOR_PENALTY_THRESHOLD) {
                                  points = Math.max(0, points - POMODORO_MAJOR_PENALTY_AMOUNT);
                                  if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
-                                 showConfirmation("🚨 Major Penalty!", `Distraction limit exceeded! -${POMODORO_MAJOR_PENALTY_AMOUNT} XP!`, false, undefined, undefined, 'warning'); // Use warning style
+                                 showConfirmation("🚨 Major Penalty!", `Distraction limit exceeded! -${POMODORO_MAJOR_PENALTY_AMOUNT} XP!`, false, undefined, undefined, 'warning');
                              }
-
-                            if (focusAudioElement && focusAudioElement.readyState >= 2) {
-                                focusAudioElement.play().catch(e => console.warn("Focus audio play fail (Pomo):", e.message));
-                            } else if (focusAudioElement) { focusAudioElement.load(); }
-
-                            saveState(); // Save state after penalties
-                            checkLevelUp(); // Check if points change triggered level change (unlikely down)
+                             checkLevelUp(); // Check if points change triggered level change
                         }
 
-                     } else {
-                        // Tab visible logic
+                        // Play distraction sound if a penalty occurred
+                         if (distractionOccurred && focusAudioElement) {
+                             if (focusAudioElement.readyState >= 2) {
+                                 focusAudioElement.play().catch(e => console.warn("Focus audio play fail:", e.message));
+                             } else { focusAudioElement.load(); }
+                         }
+
+                        if(distractionOccurred) saveState(); // Save state if distraction was logged/penalized
+
+                     } else { // Tab visible logic
                         if (focusAudioElement && !focusAudioElement.paused) {
                             focusAudioElement.pause();
                             focusAudioElement.currentTime = 0; // Reset audio position
@@ -1249,13 +1798,11 @@
                         if ((isFocusModeActive && currentView === 'youtubeLecturePage') || isPomodoroActive) {
                             playLofi(); // Resume lofi only if a focus session is active
                              console.log("Tab visible.");
-                             // Optional: Show a small "back on track" message, maybe less intrusive
-                             // showConfirmation("Focus Restored", "Back on track!", false);
                          }
                      }
                  });
 
-                 window.addEventListener('beforeunload', () => { if (isSignedIn && currentUser) { saveState(); console.log("State saved before unload."); } });
+                 window.addEventListener('beforeunload', () => { if (isSignedIn && currentUser) { logDailyFocus(); /* Log any pending time before closing */ saveState(); console.log("State saved before unload."); } });
                 console.log("Event listeners ready.");
             }
 
@@ -1263,25 +1810,25 @@
             document.addEventListener("DOMContentLoaded", () => {
                 console.log("DOM Loaded.");
                  // Cache DOM elements first
-                 topNavBar = document.getElementById('topNavBar'); landingPage = document.getElementById('landingPage'); signinForm = document.getElementById('signinForm'); homePage = document.getElementById('homePage'); youtubeLecturePage = document.getElementById('youtubeLecturePage'); profilePage = document.getElementById('profile'); focusStatsPage = document.getElementById('focusStats'); // Use correct IDs
+                 topNavBar = document.getElementById('topNavBar'); landingPage = document.getElementById('landingPage'); signinForm = document.getElementById('signinForm'); homePage = document.getElementById('homePage'); youtubeLecturePage = document.getElementById('youtubeLecturePage'); profilePage = document.getElementById('profile'); focusStatsPage = document.getElementById('focusStats');
                  playerContainer = document.getElementById('playerContainer'); playerDiv = document.getElementById('player'); timerDisplay = document.getElementById('timerDisplay'); timerText = document.getElementById('timerText'); progressBar = document.getElementById('progressBar'); progressFill = document.getElementById('progressFill'); pointsDisplay = document.getElementById('pointsDisplay'); achievementLevelDiv = document.getElementById('achievementLevel'); lofiPlayer = document.getElementById('lofiPlayer'); aiPopup = document.getElementById('aiPopup'); fireBox = document.getElementById('fireBox'); videoSidebar = document.getElementById('videoSidebar'); videoThumbnailList = document.getElementById('videoThumbnailList'); usernameInput = document.getElementById('username'); passwordInput = document.getElementById('password'); homeUsernameSpan = document.getElementById('homeUsername'); dateTimeDisplaySpan = document.getElementById('dateTimeDisplay'); focusStatusSpan = document.getElementById('focusStatus'); youtubeInputContainer = document.getElementById('youtubeInputContainer'); playlistSelect = document.getElementById('playlistSelect'); urlInputsContainer = document.getElementById('urlInputs'); playlistNameInput = document.getElementById('playlistName'); todoListPopup = document.getElementById('todoList'); tasksContainer = document.getElementById('tasks'); confirmationDialog = document.getElementById('confirmationDialog'); streakShieldDialog = document.getElementById('streakShieldDialog'); doublePointsDialog = document.getElementById('doublePointsDialog'); deadlineDialog = document.getElementById('deadlineDialog'); sessionCompleteDialog = document.getElementById('sessionCompleteDialog'); mysteryBoxPopup = document.getElementById('mysteryBoxPopup'); audioTracksStore = document.getElementById('audioTracksStore'); pomodoroOverlay = document.getElementById('pomodoroOverlay'); gameSidebar = document.querySelector('.game-sidebar'); sidebarTrigger = document.querySelector('.sidebar-trigger'); navClockTime = document.getElementById('navClockTime'); navClockPeriod = document.getElementById('navClockPeriod'); navStreakDisplay = document.getElementById('navStreakDisplay'); videoSidebarToggleBtn = document.getElementById('videoSidebarToggleBtn'); navProfileBtn = document.getElementById('navProfileBtn');
                  focusAudioElement = document.getElementById('focusAudio');
-                 lofiAudio = document.getElementById("lofiAudio"); // Assign lofiAudio element reference here
+                 lofiAudio = document.getElementById("lofiAudio");
+                 // Cache Calendar elements
+                 calendarGrid = document.getElementById('calendarGrid');
+                 calendarMonthYear = document.getElementById('calendarMonthYear');
+                 prevMonthBtn = document.getElementById('prevMonthBtn');
+                 nextMonthBtn = document.getElementById('nextMonthBtn');
 
-                // Initialize Audio *before* loading state or setting listeners
                 initAudio();
-
-                // Load State *after* basic elements/audio are referenced
-                loadSavedState(); // Tries to restore session
-
-                // Setup Listeners *after* state potentially shows UI
+                loadSavedState(); // Tries to restore session, loads user data including calendar
                 setupEventListeners();
 
-                // Start intervals etc.
                 setInterval(updateClock, 1000);
                 setInterval(checkTaskDeadlines, 60000);
                 displayRandomMotivation();
                 if(todoListPopup) todoListPopup.style.display = 'none'; // Ensure hidden initially
+                calendarCurrentDate = new Date(); // Initialize calendar date
 
                 console.log("Initialization complete.");
             });
