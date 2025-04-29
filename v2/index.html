@@ -1408,35 +1408,37 @@
                  }, 1000);
              }
 
-             function endFocusSession(reason = "Session ended.") {
-                 console.log("Ending focus:", reason);
-                 clearInterval(countdownInterval);
-                 if (isFocusModeActive) { // Only log if it was an active YT session
-                    logDailyFocus(); // Log any accumulated time before ending
-                 }
-                 isFocusModeActive = false;
-                 timerRemaining = focusDuration / 1000;
-                 timerMode = "Focus Time";
-                 if (player && typeof player.destroy === 'function') {
-                     player.destroy();
-                     player = null;
-                     console.log("Player destroyed.");
-                 }
-                 videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false;
-                 if(timerDisplay) timerDisplay.style.display = 'none';
-                 if(progressBar) progressBar.style.display = 'none';
-                 if(progressFill) progressFill.style.width = '0%';
-                 closeVideoSidebar();
-                 if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none';
-                 const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none';
-                 if(playerContainer) playerContainer.style.display = 'none';
-                 if(youtubeInputContainer) youtubeInputContainer.style.display = 'block';
-                 exitFullscreen();
-                 saveState(); // Save state after ending
-                 if (currentView === 'focusStats') displayFocusStatsInfo();
-                 updateFocusStatus();
-                 showView('homePage');
-             }
+function endFocusSession(reason = "Session ended.") {
+    console.log("Ending focus:", reason);
+    pauseLofi(); // <<< ADD THIS LINE to explicitly pause Lofi when session ends
+    clearInterval(countdownInterval);
+    // --- The rest of the function content follows ---
+    if (isFocusModeActive) { // Only log if it was an active YT session
+        logDailyFocus(); // Log any accumulated time before ending
+    }
+    isFocusModeActive = false;
+    timerRemaining = focusDuration / 1000;
+    timerMode = "Focus Time";
+    if (player && typeof player.destroy === 'function') {
+        player.destroy();
+        player = null;
+        console.log("Player destroyed.");
+    }
+    videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false;
+    if(timerDisplay) timerDisplay.style.display = 'none';
+    if(progressBar) progressBar.style.display = 'none';
+    if(progressFill) progressFill.style.width = '0%';
+    closeVideoSidebar();
+    if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none';
+    const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none';
+    if(playerContainer) playerContainer.style.display = 'none';
+    if(youtubeInputContainer) youtubeInputContainer.style.display = 'block';
+    exitFullscreen();
+    saveState(); // Save state after ending
+    if (currentView === 'focusStats') displayFocusStatsInfo();
+    updateFocusStatus();
+    showView('homePage');
+}
 
             function showSessionCompleteDialog() { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "flex"; }
             function handleSessionContinue(choice) { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "none"; if (choice === "continue") { const bonusPoints = applyPowerUps(100); points += bonusPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Bonus!", `+${bonusPoints} XP!`, false); playSound('achievementAudio'); checkLevelUp(); saveState(); currentSessionFocusTime = 0; // Reset session timer for continued focus
