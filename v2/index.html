@@ -41,6 +41,8 @@
             --calendar-focus-high: rgba(65, 105, 225, 0.8);
             --calendar-today-border: var(--accent);
             --timer-warning-color: var(--danger); /* Added for timer warning */
+            --notification-badge-bg: var(--danger); /* Added for notification badge */
+            --notification-badge-text: white; /* Added for notification badge text */
         }
 
         html {
@@ -459,13 +461,39 @@
         #dateTimeDisplay {
             font-size: 18px;
             color: var(--text-dim);
-            margin-bottom: 30px;
+            margin-bottom: 20px; /* Reduced margin */
         }
+
+        /* Upcoming Task Display on Home */
+        #upcomingTaskDisplay {
+            font-size: 16px;
+            color: var(--warning); /* Yellow for upcoming */
+            margin-bottom: 25px; /* Spacing */
+            padding: 10px 15px;
+            background-color: rgba(37, 37, 56, 0.7); /* Slightly different bg */
+            border-radius: 6px;
+            border-left: 4px solid var(--warning);
+            min-height: 40px;
+            display: inline-block; /* Allows centering via text-align on parent */
+            max-width: 90%;
+            text-align: left; /* Align text inside */
+        }
+        #upcomingTaskDisplay i { margin-right: 8px; }
+        #upcomingTaskDisplay.overdue {
+            color: var(--danger);
+            border-left-color: var(--danger);
+        }
+        #upcomingTaskDisplay.none {
+            color: var(--text-dim);
+            border-left-color: var(--text-dim);
+            font-style: italic;
+        }
+        /* End Upcoming Task Display */
 
         #focusStatus {
             font-size: 20px;
             color: var(--accent-alt);
-            margin-bottom: 40px;
+            margin-bottom: 30px; /* Adjusted margin */
             font-weight: 600;
             min-height: 25px;
             padding: 10px;
@@ -475,7 +503,7 @@
         }
 
         #motivationQuote {
-            margin-top: 40px;
+            margin-top: 30px; /* Adjusted margin */
             font-size: 18px;
             color: var(--text-dim);
             font-style: italic;
@@ -633,6 +661,65 @@
           .profile-stat .level { color: var(--gold); }
           .profile-stat .streak { color: var(--accent); }
           .profile-stat .xp { color: var(--secondary); }
+          /* Settings section in Profile */
+         #profileSettings {
+             margin-top: 30px;
+             padding-top: 20px;
+             border-top: 1px solid var(--primary-dark);
+             text-align: left;
+         }
+         #profileSettings h4 {
+             color: var(--secondary);
+             font-size: 16px;
+             margin-bottom: 15px;
+             text-align: center;
+             font-family: 'Roboto Mono', monospace;
+         }
+         .setting-item {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 10px;
+             padding: 8px 0;
+         }
+         .setting-item label {
+             font-size: 15px;
+             color: var(--text-dim);
+             flex-grow: 1;
+             margin-right: 15px;
+         }
+         .setting-item input[type="checkbox"] {
+             appearance: none;
+             width: 40px;
+             height: 20px;
+             background: var(--bg-light);
+             border-radius: 10px;
+             position: relative;
+             cursor: pointer;
+             outline: none;
+             transition: background-color 0.3s;
+             border: 1px solid var(--primary);
+             flex-shrink: 0;
+         }
+         .setting-item input[type="checkbox"]::before {
+             content: "";
+             position: absolute;
+             width: 16px;
+             height: 16px;
+             border-radius: 50%;
+             background: var(--text-dim);
+             top: 1px;
+             left: 2px;
+             transition: transform 0.3s, background-color 0.3s;
+         }
+         .setting-item input[type="checkbox"]:checked {
+             background-color: var(--primary);
+         }
+         .setting-item input[type="checkbox"]:checked::before {
+             background: white;
+             transform: translateX(20px);
+         }
+          /* End Settings */
            #profile button[data-action="show-view"] { /* Target button inside profile view */
                 margin-top: 20px; background: var(--bg-light); font-size: 12px;
             }
@@ -686,11 +773,32 @@
         .sidebar-section { padding: 15px 20px; border-bottom: 1px solid var(--bg-light); }
         .sidebar-section:last-child { border-bottom: none; }
         .sidebar-section h3 { color: var(--secondary); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; padding-bottom: 5px; border-bottom: 1px dashed var(--primary-dark); }
-        .sidebar-section a, .sidebar-section button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 15px; margin: 8px 0; background: var(--bg-light); color: var(--text); border: 1px solid var(--primary); border-radius: 4px; text-align: left; font-size: 14px; font-family: 'Roboto Mono', monospace; cursor: pointer; transition: all 0.2s ease; pointer-events: auto; z-index: 201; text-transform: none; box-shadow: none; letter-spacing: 0.5px; }
+        .sidebar-section a, .sidebar-section button { position: relative; /* Needed for badge positioning */ display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 15px; margin: 8px 0; background: var(--bg-light); color: var(--text); border: 1px solid var(--primary); border-radius: 4px; text-align: left; font-size: 14px; font-family: 'Roboto Mono', monospace; cursor: pointer; transition: all 0.2s ease; pointer-events: auto; z-index: 201; text-transform: none; box-shadow: none; letter-spacing: 0.5px; }
          .sidebar-section button i, .sidebar-section a i { width: 18px; text-align: center; color: var(--primary); }
         .sidebar-section a:hover, .sidebar-section button:hover:not(:disabled) { background: var(--primary); color: white; transform: translateX(5px); border-color: var(--secondary); box-shadow: none; }
          .sidebar-section a:hover i, .sidebar-section button:hover:not(:disabled) i { color: white; }
         .sidebar-section a { text-decoration: none; }
+         /* To-Do Badge Style */
+         .todo-badge {
+             position: absolute;
+             top: 5px;
+             right: 5px;
+             background-color: var(--notification-badge-bg);
+             color: var(--notification-badge-text);
+             border-radius: 50%;
+             width: 20px;
+             height: 20px;
+             font-size: 11px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: bold;
+             line-height: 1;
+             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+             display: none; /* Hidden by default */
+         }
+         .todo-badge.visible { display: flex; }
+         /* End To-Do Badge Style */
          #logoutBtn { background: var(--danger); border-color: #a71d2a; color: white; }
           #logoutBtn i { color: white; }
           #logoutBtn:hover:not(:disabled) { background: #c82333; border-color: #a71d2a; }
@@ -795,21 +903,21 @@
             input[type="text"], input[type="password"], input[type="date"], input[type="time"], input[type="number"], select { padding: 10px 12px; font-size: 14px; }
             #topNavBar { height: 50px; padding: 0 15px; }
             #navLogo img { height: 40px; /* Adjusted logo size for medium screens */ }
-            #navClockContainer { font-size: 14px; margin: 0 10px; } #navButtons { gap: 15px; } #navStreakDisplay { font-size: 13px; padding: 4px 8px; } #navProfileBtn { font-size: 22px; } .page-view { padding: 15px; } #welcomeMessage { font-size: 20px; } #dateTimeDisplay { font-size: 16px; } #focusStatus { font-size: 18px; margin-bottom: 30px; } #motivationQuote { font-size: 16px; }
+            #navClockContainer { font-size: 14px; margin: 0 10px; } #navButtons { gap: 15px; } #navStreakDisplay { font-size: 13px; padding: 4px 8px; } #navProfileBtn { font-size: 22px; } .page-view { padding: 15px; } #welcomeMessage { font-size: 20px; } #dateTimeDisplay { font-size: 16px; } #upcomingTaskDisplay { font-size: 14px; padding: 8px 12px;} #focusStatus { font-size: 18px; margin-bottom: 30px; } #motivationQuote { font-size: 16px; }
             #urlInputs { max-width: 90%; /* Adjust centering */ }
             #youtubeInputContainer { padding: 15px 20px; } #youtubeInputContainer .subtitle { font-size: 16px; } #timerDisplay { top: 60px; font-size: 14px; padding: 8px 12px; } #progressBar { width: 150px; height: 6px; } #pointsDisplay { top: 60px; font-size: 14px; padding: 6px 10px; } #achievementLevel { top: 105px; font-size: 12px; padding: 5px 8px; } #youtubeLecturePageControls { top: 60px; } #restartBtn, #videoSidebarToggleBtn { padding: 6px 10px; font-size: 10px; } #videoSidebarToggleBtn { top: 110px; font-size: 16px; } #videoSidebar { width: 250px; right: -270px; top: 50px; height: calc(100vh - 50px); } #lofiPlayer { padding: 10px; } #lofiPlayer button { padding: 5px 10px; font-size: 12px; min-width: 30px;} #fireBox { width: 45px; height: 45px; font-size: 22px; } #aiPopup { width: 90%; max-width: 300px; height: 400px; bottom: 65px; } .dialog-box { padding: 20px; } .dialog-box h3 { font-size: 18px; } .dialog-box p { font-size: 14px; margin-bottom: 20px; } .dialog-box button { padding: 8px 20px; font-size: 12px; }
-            #pomodoroContainer { padding: 20px; } #pomodoroTimer { font-size: 60px; margin: 15px 0;} #pomodoroDurationSetting { margin-bottom: 20px; } #pomodoroControls { gap: 15px; margin-top: 25px;} #pomodoroControls button { padding: 10px 20px; font-size: 14px; } #profileContainer { padding: 30px; } #profileIcon { font-size: 50px; width: 80px; height: 80px; line-height: 80px;} #profileUsername { font-size: 20px; } .profile-stat { font-size: 16px; } #focusStatsContainer { padding: 20px; max-width: 95%; } #focusStatsContainer h3 { font-size: 18px; margin-bottom: 25px; } .stat-item .value { font-size: 20px; } #todoList { max-width: 90%; } .task-line input[type="text"] { font-size: 14px; } .task-line .task-buttons { margin-left: 5px;} .task-line .set-deadline, .task-line .remove-task { font-size: 14px; padding: 3px;} .task-line .deadline-info, .task-line .points-info { font-size: 10px; margin-left: 4px;} .sidebar-trigger { left: 0px; /* Adjusted for consistency */ } .game-sidebar.open + .sidebar-trigger { left: 240px; }
+            #pomodoroContainer { padding: 20px; } #pomodoroTimer { font-size: 60px; margin: 15px 0;} #pomodoroDurationSetting { margin-bottom: 20px; } #pomodoroControls { gap: 15px; margin-top: 25px;} #pomodoroControls button { padding: 10px 20px; font-size: 14px; } #profileContainer { padding: 30px; } #profileIcon { font-size: 50px; width: 80px; height: 80px; line-height: 80px;} #profileUsername { font-size: 20px; } .profile-stat { font-size: 16px; } .setting-item label {font-size: 14px;} #focusStatsContainer { padding: 20px; max-width: 95%; } #focusStatsContainer h3 { font-size: 18px; margin-bottom: 25px; } .stat-item .value { font-size: 20px; } #todoList { max-width: 90%; } .task-line input[type="text"] { font-size: 14px; } .task-line .task-buttons { margin-left: 5px;} .task-line .set-deadline, .task-line .remove-task { font-size: 14px; padding: 3px;} .task-line .deadline-info, .task-line .points-info { font-size: 10px; margin-left: 4px;} .sidebar-trigger { left: 0px; /* Adjusted for consistency */ } .game-sidebar.open + .sidebar-trigger { left: 240px; }
             #calendarHeader h4 { font-size: 14px; } #calendarHeader button { padding: 4px 8px; font-size: 10px; } .calendar-day { font-size: 10px; }
          }
          @media (max-width: 480px) {
             .title { font-size: 18px; } .subtitle { font-size: 14px; }
             #navLogo { display: none; }
             #navClockContainer { flex-grow: 1; text-align: left; margin-left: 0px;}
-            #topNavBar { padding: 0 10px; } #navButtons { gap: 10px; } #navStreakDisplay { font-size: 12px; padding: 3px 6px; } #navProfileBtn { font-size: 20px; } #welcomeMessage { font-size: 18px; } #dateTimeDisplay { font-size: 14px; } #focusStatus { font-size: 16px; margin-bottom: 25px; padding: 8px;} #motivationQuote { font-size: 14px; } #youtubeInputContainer { padding: 10px 15px; } #youtubeInputContainer .subtitle { font-size: 14px; }
+            #topNavBar { padding: 0 10px; } #navButtons { gap: 10px; } #navStreakDisplay { font-size: 12px; padding: 3px 6px; } #navProfileBtn { font-size: 20px; } #welcomeMessage { font-size: 18px; } #dateTimeDisplay { font-size: 14px; } #upcomingTaskDisplay { font-size: 13px; padding: 6px 10px;} #focusStatus { font-size: 16px; margin-bottom: 25px; padding: 8px;} #motivationQuote { font-size: 14px; } #youtubeInputContainer { padding: 10px 15px; } #youtubeInputContainer .subtitle { font-size: 14px; }
             #urlInputs { max-width: 95%; } /* Adjust centering */
             .url-container { flex-direction: column; align-items: stretch; gap: 5px; } .url-container button { width: 100%; margin-top: 5px; } #playlistManagement { flex-direction: column; gap: 8px; align-items: stretch;} #playlistManagement select, #playlistManagement input { max-width: 100%; } #timerDisplay { font-size: 12px; padding: 6px 8px; } #progressBar { width: 120px; } #pointsDisplay { font-size: 12px; padding: 5px 8px; } #achievementLevel { font-size: 10px; padding: 4px 6px; top: 100px;} #videoSidebar { width: 200px; right: -220px; padding: 15px; } #videoSidebar.open { right: 0; } /* Ensure open works */
             .game-sidebar.open + .sidebar-trigger { left: 200px; }
-            #pomodoroTimer { font-size: 48px; } #pomodoroControls { gap: 10px; } #pomodoroControls button { padding: 8px 15px; font-size: 12px; } .dialog-box button { padding: 8px 15px; } .sidebar-trigger { width: 20px; height: 80px; font-size: 12px; left: 0px; /* Ensure correct initial pos */ } .game-sidebar { width: 200px; left: -220px; padding-top: 60px;} .sidebar-section { padding: 10px 15px; } .sidebar-section h3 { font-size: 14px; margin-bottom: 10px;} .sidebar-section a, .sidebar-section button { padding: 8px 10px; font-size: 13px; gap: 8px;} .sidebar-section button i, .sidebar-section a i { width: 16px; } #todoList { max-width: 95%; padding: 15px;} #todoList h3 { font-size: 16px;} .task-line { padding: 6px 8px;} .task-line input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px;} .task-line input[type="text"] { font-size: 13px;}
+            #pomodoroTimer { font-size: 48px; } #pomodoroControls { gap: 10px; } #pomodoroControls button { padding: 8px 15px; font-size: 12px; } .dialog-box button { padding: 8px 15px; } .sidebar-trigger { width: 20px; height: 80px; font-size: 12px; left: 0px; /* Ensure correct initial pos */ } .game-sidebar { width: 200px; left: -220px; padding-top: 60px;} .sidebar-section { padding: 10px 15px; } .sidebar-section h3 { font-size: 14px; margin-bottom: 10px;} .sidebar-section a, .sidebar-section button { padding: 8px 10px; font-size: 13px; gap: 8px;} .sidebar-section button i, .sidebar-section a i { width: 16px; } .todo-badge { width: 18px; height: 18px; font-size: 10px;} #todoList { max-width: 95%; padding: 15px;} #todoList h3 { font-size: 16px;} .task-line { padding: 6px 8px;} .task-line input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px;} .task-line input[type="text"] { font-size: 13px;}
             #calendarGrid { gap: 3px; } .calendar-day { font-size: 9px; }
          }
 
@@ -845,14 +953,45 @@
         <!-- == Page Views == -->
         <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div> <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button> <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button> <div id="features"> <div class="feature"> <i class="fas fa-ban"></i> <p>Ad-Free Zone<br>Focus!</p> </div> <div class="feature"> <i class="fas fa-moon"></i> <p>Dark Mode<br>Easy on eyes</p> </div> <div class="feature"> <i class="fas fa-gamepad"></i> <p>Gamified<br>Level up!</p> </div> </div> </div> </div>
         <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
-        <div id="homePage" class="page-view"> <div id="homePageContent"> <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div> <div id="dateTimeDisplay">Loading...</div> <div id="focusStatus">Ready to focus?</div> <div id="motivationQuote">"Loading motivation..."</div> </div> </div>
+        <div id="homePage" class="page-view">
+            <div id="homePageContent">
+                <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
+                <div id="dateTimeDisplay">Loading...</div>
+                <!-- Added Upcoming Task Display -->
+                <div id="upcomingTaskDisplay" class="none"><i class="fas fa-star"></i> No urgent quests!</div>
+                <!-- End Upcoming Task Display -->
+                <div id="focusStatus">Ready to focus?</div>
+                <div id="motivationQuote">"Loading motivation..."</div>
+            </div>
+        </div>
         <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playlist</option> </select> <div id="urlInputs"> <div class="url-container"> <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Playlist)" required /> </div> </div> <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button> <div id="playlistManagement"> <input type="text" id="playlistName" placeholder="Save As..." /> <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button> <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button> </div> <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button> </div> <div id="playerContainer"> <div id="player"></div> </div> <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button> <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div> <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div> </div>
-        <div id="profile" class="page-view"> <div id="profileContainer"> <div id="profileIcon"><i class="fas fa-user-shield"></i></div> <div id="profileUsername">Hero Name</div> <div class="profile-stat">Level: <span id="profileLevel" class="level">Mortal</span></div> <div class="profile-stat">XP: <span id="profileXP" class="xp">0</span></div> <div class="profile-stat">Streak: <span id="profileStreak" class="streak">0 days</span></div> <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
+        <div id="profile" class="page-view">
+            <div id="profileContainer">
+                <div id="profileIcon"><i class="fas fa-user-shield"></i></div>
+                <div id="profileUsername">Hero Name</div>
+                <div class="profile-stat">Level: <span id="profileLevel" class="level">Mortal</span></div>
+                <div class="profile-stat">XP: <span id="profileXP" class="xp">0</span></div>
+                <div class="profile-stat">Streak: <span id="profileStreak" class="streak">0 days</span></div>
+
+                <!-- Added Settings Section -->
+                <div id="profileSettings">
+                    <h4><i class="fas fa-cog"></i> Settings</h4>
+                    <div class="setting-item">
+                        <label for="browserNotificationSetting">Enable Browser Notifications for Deadlines</label>
+                        <input type="checkbox" id="browserNotificationSetting">
+                    </div>
+                    <small style="color: var(--text-dim); font-size: 12px; display: block; text-align: center; margin-top: -5px;">Requires browser permission.</small>
+                </div>
+                <!-- End Settings Section -->
+
+                <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Home</button>
+            </div>
+        </div>
         <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <span class="label"><i class="fas fa-stopwatch"></i> Focus Time</span> <span id="statsTotalFocusTime" class="value">0m</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-eye-slash"></i> Distractions</span> <span id="statsTotalDistractions" class="value distractions">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-film"></i> Videos Done</span> <span id="statsTotalVideosWatched" class="value videos">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-fire"></i> Current Streak</span> <span id="statsCurrentStreak" class="value streak">0 days</span> </div> </div> <div id="focusCalendar"> <div id="calendarHeader"> <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button> <h4 id="calendarMonthYear"><i class="fas fa-calendar-alt"></i> Calendar</h4> <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button> </div> <div id="calendarGrid"> <!-- Calendar grid will be generated here --> </div> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
 
         <!-- == Shared Components == -->
         <div class="sidebar-trigger" title="Open Menu">MENU</div>
-        <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button> <button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do</button> </div> <div class="sidebar-section"> <h3>Progress</h3> <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button> <a href="https://room.examgoal.com/" target="_blank" rel="noreferrer"><i class="fas fa-dumbbell"></i> PYQs</a> </div> <div class="sidebar-section"> <h3>Self Study</h3> <button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button> </div> <div class="sidebar-section"> <h3>Shops & Realms</h3> <button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button> <button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button> <button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button> <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a> <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a> <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a> </div> <div class="sidebar-section"> <h3>Account</h3> <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button> <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button> </div> </div>
+        <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button> <button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do<span id="todoBadge" class="todo-badge">0</span></button> <!-- Badge added here --> </div> <div class="sidebar-section"> <h3>Progress</h3> <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button> <a href="https://room.examgoal.com/" target="_blank" rel="noreferrer"><i class="fas fa-dumbbell"></i> PYQs</a> </div> <div class="sidebar-section"> <h3>Self Study</h3> <button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button> </div> <div class="sidebar-section"> <h3>Shops & Realms</h3> <button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button> <button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button> <button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button> <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a> <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a> <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a> </div> <div class="sidebar-section"> <h3>Account</h3> <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button> <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button> </div> </div>
         <div id="timerDisplay"> <span id="timerText">Focus: 00:00</span> <div id="progressBar"> <div id="progressFill"></div> </div> </div>
         <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
         <div id="achievementLevel">Mortal</div>
@@ -924,6 +1063,13 @@
             let pomodoroDistractionCount = 0;
             let currentPomodoroDurationSetting = 60; // Default duration in minutes
 
+            // Notification State
+            let browserNotificationsEnabled = false; // User setting (opt-in)
+            let browserNotificationPermission = 'default'; // 'default', 'granted', 'denied'
+            const NOTIFICATION_LEAD_TIME = 30 * 60 * 1000; // 30 minutes in milliseconds
+            let sentNotificationTaskIds = new Set(); // Track notifications sent in this session
+            let generalInterval; // For periodic checks
+
             let mysteryBoxCount = 0;
             let activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, };
             const STREAK_SHIELD_COST = 800; const STREAK_SHIELD_DURATION = 7 * 24 * 60 * 60 * 1000;
@@ -957,6 +1103,9 @@
             let navClockTime, navClockPeriod, navStreakDisplay, videoSidebarToggleBtn, navProfileBtn;
             let calendarGrid, calendarMonthYear, prevMonthBtn, nextMonthBtn; // Calendar elements
             let pomodoroTimerEl, pomodoroDurationInput, pomodoroStatusEl, pomodoroStartBtn, pomodoroResetBtn; // Pomodoro elements
+            let todoBadgeEl; // <-- New Ref for To-Do badge
+            let browserNotificationSettingCheckbox; // <-- New Ref for Notification setting
+            let upcomingTaskDisplayEl; // <-- New Ref for Upcoming Task display
 
 
             // --- Core Functions ---
@@ -993,7 +1142,7 @@
                 }
 
                 // View Specific Updates
-                if (viewId === 'homePage') { updateHomePageInfo(); displayRandomMotivation(); }
+                if (viewId === 'homePage') { updateHomePageInfo(); displayRandomMotivation(); updateUpcomingTaskDisplay(); /* Update task on home view */ }
                 else if (viewId === 'profile') { displayProfileInfo(); }
                 else if (viewId === 'focusStats') { displayFocusStatsInfo(); showCalendar(); /* Show calendar when view loads */ }
 
@@ -1007,13 +1156,19 @@
 
             function displayProfileInfo() {
                 const usernameEl = document.getElementById('profileUsername'); const levelEl = document.getElementById('profileLevel'); const xpEl = document.getElementById('profileXP'); const streakEl = document.getElementById('profileStreak'); const iconEl = document.getElementById('profileIcon');
-                if (!usernameEl || !levelEl || !xpEl || !streakEl || !iconEl) { console.error("Profile elements missing!"); return; }
+                const notificationCheckbox = document.getElementById('browserNotificationSetting'); // Get checkbox
+                if (!usernameEl || !levelEl || !xpEl || !streakEl || !iconEl || !notificationCheckbox) { console.error("Profile elements missing!"); return; }
                 usernameEl.textContent = currentUser || 'Guest';
                 const levelInfo = getAchievementLevel(points);
                 levelEl.textContent = levelInfo.level; levelEl.className = 'level'; levelEl.style.color = ''; if (levelInfo.color === 'rainbow') { levelEl.classList.add('rainbow'); } else { levelEl.style.color = levelInfo.color; } if (levelInfo.glow) levelEl.classList.add('level-glow');
                 xpEl.textContent = points;
                 streakEl.textContent = `${streakDays} day${streakDays === 1 ? '' : 's'}`;
                 let iconClass = 'fa-user'; if (levelInfo.points >= 8000) iconClass = 'fa-gem'; else if (levelInfo.points >= 5000) iconClass = 'fa-crown'; else if (levelInfo.points >= 2000) iconClass = 'fa-user-shield'; iconEl.innerHTML = `<i class="fas ${iconClass}"></i>`;
+
+                // Update notification setting checkbox
+                notificationCheckbox.checked = browserNotificationsEnabled;
+                // Optionally disable if permission is denied
+                 notificationCheckbox.disabled = browserNotificationPermission === 'denied';
             }
 
             function displayFocusStatsInfo() {
@@ -1288,12 +1443,14 @@
                          if(pomodoroTimerEl) pomodoroTimerEl.classList.remove('timer-warning', 'timer-shake'); // Clean up styles
                          saveState();
                          overlay.style.display = "none";
+                         updateUpcomingTaskDisplay(); // Update home task display after closing
                      }, () => {} );
                  } else {
                      exitFullscreen(); // Exit fullscreen
                      if (pomodoroDurationInput) pomodoroDurationInput.disabled = false; // Ensure input is enabled
                       if(pomodoroTimerEl) pomodoroTimerEl.classList.remove('timer-warning', 'timer-shake'); // Clean up styles
                      overlay.style.display = "none";
+                     updateUpcomingTaskDisplay(); // Update home task display after closing
                  }
              }
 
@@ -1304,10 +1461,10 @@
                  pomodoroTimerEl.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
                  // Update timer styles based on remaining time
-                 if (pomodoroTimeRemaining < 10) {
+                 if (pomodoroTimeRemaining < 10 && pomodoroTimeRemaining >= 0) { // Only shake when >= 0
                      pomodoroTimerEl.classList.add('timer-shake');
                      pomodoroTimerEl.classList.add('timer-warning'); // Also keep red
-                 } else if (pomodoroTimeRemaining < 60) {
+                 } else if (pomodoroTimeRemaining < 60 && pomodoroTimeRemaining >= 0) { // Only warn when >= 0
                      pomodoroTimerEl.classList.add('timer-warning');
                      pomodoroTimerEl.classList.remove('timer-shake');
                  } else {
@@ -1333,21 +1490,232 @@
                 exitFullscreen(); // Exit fullscreen
                 saveState(); // Save state after completion and logging
                 checkLevelUp();
+                updateUpcomingTaskDisplay(); // Update home task display after finishing
             }
             // --- End Pomodoro Functions ---
 
             function toggleTodo() { if (!todoListPopup) return; const isVisible = todoListPopup.style.display === "flex"; if (isVisible) { saveTasks(); todoListPopup.style.display = "none"; } else { restoreTasks(); todoListPopup.style.display = "flex"; } }
-            function addTaskLine(taskData = { text: "", completed: false, deadline: null, points: null }) { if (!tasksContainer) return null; const line = document.createElement("div"); line.className = "task-line"; const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.className = "task-check"; checkbox.checked = taskData.completed; checkbox.onchange = handleTaskCompletionChange; const input = document.createElement("input"); input.type = "text"; input.className = "task-text"; input.placeholder = "Add quest..."; input.value = taskData.text; input.readOnly = taskData.completed; input.onkeydown = handleTaskInputKeydown; input.onchange = () => { line.dataset.text = input.value; }; line.dataset.text = taskData.text; line.dataset.completed = taskData.completed; if(taskData.deadline) line.dataset.deadline = taskData.deadline; if(taskData.points) line.dataset.points = taskData.points; if(taskData.deadlineChecked) line.dataset.deadlineChecked = taskData.deadlineChecked; const buttonsContainer = document.createElement('div'); buttonsContainer.className = 'task-buttons'; const deadlineBtn = document.createElement("button"); deadlineBtn.className = "set-deadline"; deadlineBtn.innerHTML = '<i class="fas fa-stopwatch"></i>'; deadlineBtn.title = "Deadline"; deadlineBtn.onclick = () => showDeadlineDialog(line); deadlineBtn.disabled = taskData.completed; const removeBtn = document.createElement("button"); removeBtn.className = "remove-task"; removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove"; removeBtn.onclick = () => removeTask(line); buttonsContainer.appendChild(deadlineBtn); buttonsContainer.appendChild(removeBtn); line.appendChild(checkbox); line.appendChild(input); line.appendChild(buttonsContainer); updateTaskDeadlineDisplay(line, taskData.deadline, taskData.points); tasksContainer.appendChild(line); if (taskData.completed) { line.style.opacity = '0.7'; } return input; }
+            function addTaskLine(taskData = { id: Date.now() + Math.random(), text: "", completed: false, deadline: null, points: null, deadlineChecked: false }) { // Added ID
+                if (!tasksContainer) return null;
+                const line = document.createElement("div");
+                line.className = "task-line";
+                line.dataset.taskId = taskData.id; // Store ID
+                const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.className = "task-check"; checkbox.checked = taskData.completed; checkbox.onchange = handleTaskCompletionChange; const input = document.createElement("input"); input.type = "text"; input.className = "task-text"; input.placeholder = "Add quest..."; input.value = taskData.text; input.readOnly = taskData.completed; input.onkeydown = handleTaskInputKeydown; input.onchange = () => { line.dataset.text = input.value; }; line.dataset.text = taskData.text; line.dataset.completed = taskData.completed; if(taskData.deadline) line.dataset.deadline = taskData.deadline; if(taskData.points) line.dataset.points = taskData.points; if(taskData.deadlineChecked) line.dataset.deadlineChecked = taskData.deadlineChecked; const buttonsContainer = document.createElement('div'); buttonsContainer.className = 'task-buttons'; const deadlineBtn = document.createElement("button"); deadlineBtn.className = "set-deadline"; deadlineBtn.innerHTML = '<i class="fas fa-stopwatch"></i>'; deadlineBtn.title = "Deadline"; deadlineBtn.onclick = () => showDeadlineDialog(line); deadlineBtn.disabled = taskData.completed; const removeBtn = document.createElement("button"); removeBtn.className = "remove-task"; removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove"; removeBtn.onclick = () => removeTask(line); buttonsContainer.appendChild(deadlineBtn); buttonsContainer.appendChild(removeBtn); line.appendChild(checkbox); line.appendChild(input); line.appendChild(buttonsContainer); updateTaskDeadlineDisplay(line, taskData.deadline, taskData.points); tasksContainer.appendChild(line); if (taskData.completed) { line.style.opacity = '0.7'; }
+                updateTodoBadge(); // Update badge when adding
+                updateUpcomingTaskDisplay(); // Update home task display
+                return input;
+             }
             function handleTaskInputKeydown(event) { if (event.key === "Enter") { event.preventDefault(); const currentInput = event.target; const currentLine = currentInput.closest('.task-line'); if (currentLine) currentLine.dataset.text = currentInput.value; const allLines = tasksContainer?.querySelectorAll('.task-line'); if (!allLines) return; if (currentLine === allLines[allLines.length - 1]) { const newFocusTarget = addTaskLine(); if (newFocusTarget) newFocusTarget.focus(); } else { let nextLine = currentLine.nextElementSibling; while (nextLine && !nextLine.classList.contains('task-line')) { nextLine = nextLine.nextElementSibling; } if (nextLine) { const nextInput = nextLine.querySelector('.task-text'); if (nextInput) nextInput.focus(); } else { const newFocusTarget = addTaskLine(); if (newFocusTarget) newFocusTarget.focus(); } } } }
-            function removeTask(taskElement) { if (!tasksContainer || !taskElement) return; if (tasksContainer.children.length > 1 || tasksContainer.children[0] !== taskElement) { tasksContainer.removeChild(taskElement); } else { const input = taskElement.querySelector('.task-text'); if (input) input.value = ''; taskElement.dataset.text = ''; taskElement.removeAttribute('data-deadline'); taskElement.removeAttribute('data-points'); updateTaskDeadlineDisplay(taskElement, null, null); } }
-            function restoreTasks() { if (!tasksContainer) return; tasksContainer.innerHTML = ""; if (tasks.length === 0) { addTaskLine(); } else { tasks.forEach(taskData => addTaskLine(taskData)); } checkTaskDeadlines(); }
-            function saveTasks() { if (!tasksContainer) return; const taskLines = tasksContainer.querySelectorAll(".task-line"); tasks = Array.from(taskLines).map(line => ({ text: line.querySelector(".task-text")?.value.trim() || (line.dataset.text || ""), completed: line.querySelector(".task-check")?.checked || (line.dataset.completed === 'true'), deadline: line.dataset.deadline ? parseInt(line.dataset.deadline) : null, points: line.dataset.points ? parseInt(line.dataset.points) : null, deadlineChecked: line.dataset.deadlineChecked === 'true' })).filter(task => task.text !== ""); localStorage.setItem("tasks", JSON.stringify(tasks)); if (isSignedIn && currentUser) { try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if(users[currentUser]) { users[currentUser].tasks = tasks; localStorage.setItem("users", JSON.stringify(users)); } } catch (err) { console.error("Error saving tasks:", err); } } console.log("Tasks saved:", tasks); updateFocusStatus(); }
-            function handleTaskCompletionChange(event) { const checkbox = event.target; const taskLine = checkbox.closest('.task-line'); if (!taskLine) return; const input = taskLine.querySelector('.task-text'); const deadlineBtn = taskLine.querySelector('.set-deadline'); taskLine.dataset.completed = checkbox.checked; if (checkbox.checked) { if(input) input.readOnly = true; taskLine.style.opacity = '0.7'; if(deadlineBtn) deadlineBtn.disabled = true; checkSingleTaskDeadline(taskLine); if (typeof confetti === 'function') { const rect = checkbox.getBoundingClientRect(); const origin = { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight }; confetti({ particleCount: 80, spread: 60, origin: origin, colors: ['#a855f7', '#9333ea', '#c084fc', '#6b21a8'] }); } } else { if(input) input.readOnly = false; taskLine.style.opacity = '1'; if(deadlineBtn) deadlineBtn.disabled = false; } }
-            function checkSingleTaskDeadline(taskLine) { if (!taskLine) return; const deadlineTimestamp = taskLine.dataset.deadline ? parseInt(taskLine.dataset.deadline) : null; const deadlineChecked = taskLine.dataset.deadlineChecked === 'true'; const taskPoints = taskLine.dataset.points ? parseInt(taskLine.dataset.points) : null; const taskText = taskLine.dataset.text || "Untitled"; if (!deadlineTimestamp || deadlineChecked || !taskPoints) return; const now = Date.now(); let earnedPoints = 0; let message = ""; if (now <= deadlineTimestamp) { earnedPoints = applyPowerUps(taskPoints); points += earnedPoints; message = `Quest "${taskText}" on time! +${earnedPoints} XP`; playSound('achievementAudio'); } else { message = `Quest "${taskText}" completed late.`; } showConfirmation("Quest Update", message, false); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; taskLine.dataset.deadlineChecked = 'true'; saveState(); checkLevelUp(); }
-            function checkTaskDeadlines() { const now = Date.now(); let tasksUpdated = false; let totalPenalty = 0; tasks.forEach((task, index) => { if (!task.deadline || task.completed || task.deadlineChecked) return; if (now > task.deadline) { const penaltyPoints = Math.floor((task.points || 50) / 2); totalPenalty += penaltyPoints; tasks[index].deadlineChecked = true; tasksUpdated = true; const taskLines = tasksContainer?.querySelectorAll('.task-line'); if (taskLines && taskLines[index]) { taskLines[index].dataset.deadlineChecked = 'true'; const deadlineInfo = taskLines[index].querySelector('.deadline-info'); if (deadlineInfo) deadlineInfo.textContent += " (Missed)"; taskLines[index].style.backgroundColor = 'rgba(220, 53, 69, 0.1)'; } } }); if (totalPenalty > 0) { points = Math.max(0, points - totalPenalty); showConfirmation("Deadline Missed!", `Missed deadline(s)! -${totalPenalty} XP.`, false); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; saveState(); } if (tasksUpdated) { saveTasks(); } }
+            function removeTask(taskElement) { if (!tasksContainer || !taskElement) return; if (tasksContainer.children.length > 1 || tasksContainer.children[0] !== taskElement) { tasksContainer.removeChild(taskElement); } else { const input = taskElement.querySelector('.task-text'); if (input) input.value = ''; taskElement.dataset.text = ''; taskElement.removeAttribute('data-deadline'); taskElement.removeAttribute('data-points'); updateTaskDeadlineDisplay(taskElement, null, null); }
+                updateTodoBadge(); // Update badge after removing
+                updateUpcomingTaskDisplay(); // Update home task display
+            }
+            function restoreTasks() { if (!tasksContainer) return; tasksContainer.innerHTML = ""; if (tasks.length === 0) { addTaskLine(); } else { tasks.forEach(taskData => addTaskLine({ ...taskData, id: taskData.id || Date.now() + Math.random() })); } // Ensure ID exists
+                checkTaskDeadlines(); updateTodoBadge(); updateUpcomingTaskDisplay(); }
+            function saveTasks() { if (!tasksContainer) return; const taskLines = tasksContainer.querySelectorAll(".task-line"); tasks = Array.from(taskLines).map(line => ({ id: line.dataset.taskId || Date.now() + Math.random(), text: line.querySelector(".task-text")?.value.trim() || (line.dataset.text || ""), completed: line.querySelector(".task-check")?.checked || (line.dataset.completed === 'true'), deadline: line.dataset.deadline ? parseInt(line.dataset.deadline) : null, points: line.dataset.points ? parseInt(line.dataset.points) : null, deadlineChecked: line.dataset.deadlineChecked === 'true' })).filter(task => task.text !== ""); localStorage.setItem("tasks", JSON.stringify(tasks)); if (isSignedIn && currentUser) { try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if(users[currentUser]) { users[currentUser].tasks = tasks; localStorage.setItem("users", JSON.stringify(users)); } } catch (err) { console.error("Error saving tasks:", err); } } console.log("Tasks saved:", tasks); updateFocusStatus(); updateTodoBadge(); updateUpcomingTaskDisplay(); }
+            function handleTaskCompletionChange(event) { const checkbox = event.target; const taskLine = checkbox.closest('.task-line'); if (!taskLine) return; const input = taskLine.querySelector('.task-text'); const deadlineBtn = taskLine.querySelector('.set-deadline'); taskLine.dataset.completed = checkbox.checked; if (checkbox.checked) { if(input) input.readOnly = true; taskLine.style.opacity = '0.7'; if(deadlineBtn) deadlineBtn.disabled = true; checkSingleTaskDeadline(taskLine); if (typeof confetti === 'function') { const rect = checkbox.getBoundingClientRect(); const origin = { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight }; confetti({ particleCount: 80, spread: 60, origin: origin, colors: ['#a855f7', '#9333ea', '#c084fc', '#6b21a8'] }); } } else { if(input) input.readOnly = false; taskLine.style.opacity = '1'; if(deadlineBtn) deadlineBtn.disabled = false; }
+                updateTodoBadge(); // Update badge on completion change
+                updateUpcomingTaskDisplay(); // Update home task display
+            }
+            function checkSingleTaskDeadline(taskLine) { if (!taskLine) return; const deadlineTimestamp = taskLine.dataset.deadline ? parseInt(taskLine.dataset.deadline) : null; const deadlineChecked = taskLine.dataset.deadlineChecked === 'true'; const taskPoints = taskLine.dataset.points ? parseInt(taskLine.dataset.points) : null; const taskText = taskLine.dataset.text || "Untitled"; if (!deadlineTimestamp || deadlineChecked || !taskPoints) return; const now = Date.now(); let earnedPoints = 0; let message = ""; if (now <= deadlineTimestamp) { earnedPoints = applyPowerUps(taskPoints); points += earnedPoints; message = `Quest "${taskText}" on time! +${earnedPoints} XP`; playSound('achievementAudio'); } else { message = `Quest "${taskText}" completed late.`; } showConfirmation("Quest Update", message, false); if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; taskLine.dataset.deadlineChecked = 'true'; saveState(); checkLevelUp(); updateTodoBadge(); updateUpcomingTaskDisplay(); }
+            function checkTaskDeadlines() { // Also updates badge now
+                const now = Date.now();
+                let tasksUpdated = false;
+                let totalPenalty = 0;
+                tasks.forEach((task, index) => {
+                    if (!task.deadline || task.completed || task.deadlineChecked) return;
+                    if (now > task.deadline) {
+                        const penaltyPoints = Math.floor((task.points || 50) / 2);
+                        totalPenalty += penaltyPoints;
+                        tasks[index].deadlineChecked = true;
+                        tasksUpdated = true;
+                        const taskLines = tasksContainer?.querySelectorAll('.task-line');
+                        if (taskLines && taskLines[index]) {
+                            taskLines[index].dataset.deadlineChecked = 'true';
+                            const deadlineInfo = taskLines[index].querySelector('.deadline-info');
+                            if (deadlineInfo) deadlineInfo.textContent += " (Missed)";
+                            taskLines[index].style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                        }
+                    }
+                });
+
+                if (totalPenalty > 0) {
+                    points = Math.max(0, points - totalPenalty);
+                    showConfirmation("Deadline Missed!", `Missed deadline(s)! -${totalPenalty} XP.`, false);
+                    if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                    saveState(); // Save points change
+                }
+                if (tasksUpdated) {
+                    saveTasks(); // Save task changes (deadlineChecked) - this will call updateTodoBadge & upcomingTask
+                } else {
+                    // If no tasks were updated due to missed deadlines, still update the badge
+                    // in case time passing made a "due today" task count change.
+                    updateTodoBadge();
+                    updateUpcomingTaskDisplay();
+                }
+             }
             function showDeadlineDialog(taskElement) { const dialog = document.getElementById("deadlineDialog"); const dateInput = document.getElementById("deadlineDate"); const timeInput = document.getElementById("deadlineTime"); const difficultySelect = document.getElementById("taskDifficulty"); if (!dialog || !dateInput || !timeInput || !difficultySelect || !taskElement) return; currentTaskForDeadline = taskElement; const existingDeadline = taskElement.dataset.deadline ? parseInt(taskElement.dataset.deadline) : null; const existingPoints = taskElement.dataset.points ? parseInt(taskElement.dataset.points) : null; if (existingDeadline) { const d = new Date(existingDeadline); dateInput.value = d.toISOString().split('T')[0]; timeInput.value = d.toTimeString().substring(0, 5); } else { const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); dateInput.value = tomorrow.toISOString().split('T')[0]; const now = new Date(); timeInput.value = now.toTimeString().substring(0, 5); } difficultySelect.value = existingPoints || "100"; dialog.style.display = "flex"; }
-            function handleDeadlineConfirmation(choice) { const dialog = document.getElementById("deadlineDialog"); if (!dialog || !currentTaskForDeadline) return; dialog.style.display = "none"; if (choice === "yes") { const dateValue = document.getElementById("deadlineDate").value; const timeValue = document.getElementById("deadlineTime").value; const selectedPoints = document.getElementById("taskDifficulty").value; if (!dateValue || !timeValue) { showConfirmation("Invalid", "Select date & time.", false); currentTaskForDeadline = null; return; } const deadlineTimestamp = new Date(`${dateValue}T${timeValue}`).getTime(); if (deadlineTimestamp <= Date.now()) { showConfirmation("Invalid", "Deadline must be future.", false); currentTaskForDeadline = null; return; } currentTaskForDeadline.dataset.deadline = deadlineTimestamp; currentTaskForDeadline.dataset.points = selectedPoints; currentTaskForDeadline.dataset.deadlineChecked = 'false'; updateTaskDeadlineDisplay(currentTaskForDeadline, deadlineTimestamp, selectedPoints); console.log(`Deadline set for "${currentTaskForDeadline.dataset.text}"`); } currentTaskForDeadline = null; }
+            function handleDeadlineConfirmation(choice) { const dialog = document.getElementById("deadlineDialog"); if (!dialog || !currentTaskForDeadline) return; dialog.style.display = "none"; if (choice === "yes") { const dateValue = document.getElementById("deadlineDate").value; const timeValue = document.getElementById("deadlineTime").value; const selectedPoints = document.getElementById("taskDifficulty").value; if (!dateValue || !timeValue) { showConfirmation("Invalid", "Select date & time.", false); currentTaskForDeadline = null; return; } const deadlineTimestamp = new Date(`${dateValue}T${timeValue}`).getTime(); if (deadlineTimestamp <= Date.now()) { showConfirmation("Invalid", "Deadline must be future.", false); currentTaskForDeadline = null; return; } currentTaskForDeadline.dataset.deadline = deadlineTimestamp; currentTaskForDeadline.dataset.points = selectedPoints; currentTaskForDeadline.dataset.deadlineChecked = 'false'; updateTaskDeadlineDisplay(currentTaskForDeadline, deadlineTimestamp, selectedPoints); console.log(`Deadline set for "${currentTaskForDeadline.dataset.text}"`); sentNotificationTaskIds.delete(currentTaskForDeadline.dataset.taskId); // Allow notification for new deadline
+                updateTodoBadge(); updateUpcomingTaskDisplay(); } currentTaskForDeadline = null; }
             function updateTaskDeadlineDisplay(taskLine, deadlineTimestamp, pointsValue) { const existingDeadlineSpan = taskLine.querySelector(".deadline-info"); if (existingDeadlineSpan) existingDeadlineSpan.remove(); const existingPointsSpan = taskLine.querySelector(".points-info"); if (existingPointsSpan) existingPointsSpan.remove(); if (deadlineTimestamp && pointsValue) { const deadlineDate = new Date(deadlineTimestamp); const deadlineInfo = document.createElement("span"); deadlineInfo.className = "deadline-info"; const dateOptions = { month: 'short', day: 'numeric' }; const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true }; deadlineInfo.textContent = `Due: ${deadlineDate.toLocaleDateString(undefined, dateOptions)} ${deadlineDate.toLocaleTimeString(undefined, timeOptions)}`; deadlineInfo.title = deadlineDate.toLocaleString(); const pointsInfo = document.createElement("span"); pointsInfo.className = "points-info"; pointsInfo.textContent = `+${pointsValue} XP`; const buttonsContainer = taskLine.querySelector('.task-buttons'); if (buttonsContainer) { taskLine.insertBefore(pointsInfo, buttonsContainer); taskLine.insertBefore(deadlineInfo, pointsInfo); } else { taskLine.appendChild(deadlineInfo); taskLine.appendChild(pointsInfo); } } }
+            // --- New: To-Do Badge Update ---
+            function updateTodoBadge() {
+                if (!todoBadgeEl || !tasks) return;
+                const now = Date.now();
+                const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+                const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+
+                const urgentTasksCount = tasks.filter(task =>
+                    !task.completed && task.deadline && (task.deadline < now || (task.deadline >= todayStart.getTime() && task.deadline <= todayEnd.getTime()))
+                ).length;
+
+                if (urgentTasksCount > 0) {
+                    todoBadgeEl.textContent = urgentTasksCount;
+                    todoBadgeEl.classList.add('visible');
+                } else {
+                    todoBadgeEl.classList.remove('visible');
+                }
+            }
+            // --- New: Upcoming Task Display Update ---
+            function updateUpcomingTaskDisplay() {
+                if (!upcomingTaskDisplayEl || !tasks) return;
+                const now = Date.now();
+                const twoDaysFromNow = now + 2 * 24 * 60 * 60 * 1000;
+
+                const incompleteTasks = tasks.filter(task => !task.completed && task.deadline);
+
+                // Sort tasks: Overdue first, then Soonest deadline
+                incompleteTasks.sort((a, b) => {
+                    const aIsOverdue = a.deadline < now;
+                    const bIsOverdue = b.deadline < now;
+                    if (aIsOverdue && !bIsOverdue) return -1; // a (overdue) comes first
+                    if (!aIsOverdue && bIsOverdue) return 1;  // b (overdue) comes first
+                    return a.deadline - b.deadline; // Sort by deadline ascending
+                });
+
+                const nextTask = incompleteTasks[0]; // Get the highest priority task
+
+                if (nextTask) {
+                    const deadline = new Date(nextTask.deadline);
+                    const isOverdue = nextTask.deadline < now;
+                    let timeString = '';
+
+                    const diffHours = Math.round((nextTask.deadline - now) / (1000 * 60 * 60));
+                    const diffMinutes = Math.round((nextTask.deadline - now) / (1000 * 60));
+
+                    if (isOverdue) {
+                        timeString = "OVERDUE!";
+                        upcomingTaskDisplayEl.className = 'overdue'; // Use class for styling
+                    } else if (diffMinutes < 60) {
+                         timeString = `Due in ${diffMinutes} min`;
+                         upcomingTaskDisplayEl.className = ''; // Reset class
+                    } else if (diffHours < 24) {
+                         timeString = `Due in ${diffHours}h`;
+                         upcomingTaskDisplayEl.className = ''; // Reset class
+                    } else {
+                        const dateOptions = { month: 'short', day: 'numeric' };
+                        const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+                        timeString = `Due: ${deadline.toLocaleDateString(undefined, dateOptions)} ${deadline.toLocaleTimeString(undefined, timeOptions)}`;
+                        upcomingTaskDisplayEl.className = ''; // Reset class
+                    }
+
+                    upcomingTaskDisplayEl.innerHTML = `<i class="fas ${isOverdue ? 'fa-exclamation-triangle' : 'fa-bell'}"></i> ${nextTask.text} <span style="color: var(--text-dim); font-size: 0.9em;">(${timeString})</span>`;
+                } else {
+                    upcomingTaskDisplayEl.innerHTML = `<i class="fas fa-star"></i> No urgent quests!`;
+                    upcomingTaskDisplayEl.className = 'none'; // Use class for styling
+                }
+            }
+            // --- New: Browser Notification Functions ---
+            function requestNotificationPermission() {
+                if (!('Notification' in window)) {
+                    console.warn('Browser does not support notifications.');
+                    browserNotificationPermission = 'denied'; // Treat as denied if not supported
+                    browserNotificationsEnabled = false; // Force disable setting
+                    if (browserNotificationSettingCheckbox) browserNotificationSettingCheckbox.disabled = true;
+                     if (currentView === 'profile') displayProfileInfo(); // Update UI
+                    return Promise.resolve('denied');
+                }
+
+                return Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                    browserNotificationPermission = permission;
+                    if (permission === 'denied') {
+                        browserNotificationsEnabled = false; // Force disable if denied
+                         if (browserNotificationSettingCheckbox) browserNotificationSettingCheckbox.disabled = true;
+                    } else if (permission === 'granted') {
+                         if (browserNotificationSettingCheckbox) browserNotificationSettingCheckbox.disabled = false;
+                         // Setting remains as user set it
+                    } else { // 'default' - permission not yet granted or denied
+                         if (browserNotificationSettingCheckbox) browserNotificationSettingCheckbox.disabled = false;
+                         browserNotificationsEnabled = false; // Default to disabled until granted
+                    }
+                     if (currentView === 'profile') displayProfileInfo(); // Update UI
+                    saveState(); // Save updated permission status reflected in enabled flag
+                    return permission;
+                });
+            }
+
+             function handleNotificationSettingChange(event) {
+                 const isEnabled = event.target.checked;
+                 browserNotificationsEnabled = isEnabled;
+                 console.log('Browser notification setting toggled:', isEnabled);
+
+                 if (isEnabled && browserNotificationPermission === 'default') {
+                     // Request permission only if enabling and permission is default
+                     requestNotificationPermission();
+                 } else if (isEnabled && browserNotificationPermission === 'denied') {
+                     // If enabling but permission is denied, show a message and revert checkbox
+                     showConfirmation("Permission Needed", "Browser notification permission was denied. Please enable it in your browser settings.", false);
+                     event.target.checked = false;
+                     browserNotificationsEnabled = false;
+                 }
+                 saveState(); // Save the new setting state
+             }
+
+             function checkAndSendNotifications() {
+                 if (!browserNotificationsEnabled || browserNotificationPermission !== 'granted' || !tasks) {
+                     return; // Exit if disabled, permission not granted, or no tasks
+                 }
+
+                 const now = Date.now();
+
+                 tasks.forEach(task => {
+                     // Check if task is not completed, has a deadline, is within lead time, and notification not sent
+                     if (!task.completed && task.deadline &&
+                         task.deadline > now && // Deadline is in the future
+                         task.deadline <= now + NOTIFICATION_LEAD_TIME && // Within lead time
+                         !sentNotificationTaskIds.has(task.id) // Notification not already sent this session
+                     ) {
+                         const minutesLeft = Math.round((task.deadline - now) / (1000 * 60));
+                         const title = `Quest Due Soon! (${minutesLeft} min)`;
+                         const options = {
+                             body: task.text || "Upcoming task requires attention.",
+                             icon: '/favicon-32x32.png', // Optional: Use your favicon
+                             tag: `task-${task.id}` // Tag allows replacing old notif for same task
+                         };
+
+                         // Send notification
+                         try {
+                             const notification = new Notification(title, options);
+                             console.log(`Notification sent for task: ${task.id}`);
+                             sentNotificationTaskIds.add(task.id); // Mark as sent for this session
+
+                             // Optional: Close notification after a while or on click
+                             notification.onclick = () => {
+                                 window.focus(); // Bring window to front
+                                 showView('homePage'); // Or navigate to ToDo list
+                                 toggleTodo(); // Open the todo list
+                             };
+                             // setTimeout(() => notification.close(), 10000); // Auto-close after 10s
+
+                         } catch (err) {
+                             console.error("Error sending notification:", err);
+                         }
+                     }
+                 });
+             }
+             // --- End Notification Functions ---
+
 
             // --- Modified YT URL Parsing ---
             function parseInputUrl(url) {
@@ -1565,6 +1933,7 @@
                 saveState(); // Save state after ending
                 if (currentView === 'focusStats') displayFocusStatsInfo();
                 updateFocusStatus();
+                updateUpcomingTaskDisplay(); // Update home task display
                 showView('homePage');
             }
 
@@ -1602,6 +1971,11 @@
                          if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; // Ensure structure exists
                          playlists = users[currentUser].playlists || [];
                          dailyFocusData = users[currentUser].dailyFocusData || {}; // Load calendar data
+                         // Load Notification Setting
+                         browserNotificationsEnabled = users[currentUser].browserNotificationsEnabled || false;
+                         // browserNotificationPermission is handled by browser, check on load maybe
+                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
+
                          const savedTracks = users[currentUser].premiumLofiTracks || [];
                          premiumLofiTracks.forEach(track => {
                              const saved = savedTracks.find(st => st.id === track.id);
@@ -1614,8 +1988,9 @@
                          updateAchievementLevel();
                          updateStreakDisplay();
                          showView('homePage');
-                         restoreTasks();
+                         restoreTasks(); // Will call badge/upcoming updates
                          checkExpiredPowerups();
+                         sentNotificationTaskIds.clear(); // Reset session notifications
                          console.log(`Signed in: ${currentUser}. Streak: ${streakDays}, Last Focus: ${lastFocusDate}`);
                      } else {
                          showConfirmation("Login Failed", "Invalid Hero Name or Secret Code.", false);
@@ -1653,6 +2028,7 @@
                              activePowerUps: { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, },
                              playlists: [],
                              dailyFocusData: {}, // Initialize calendar data
+                             browserNotificationsEnabled: false, // Default setting
                              premiumLofiTracks: premiumLofiTracks.map(track => ({ id: track.id, unlocked: false })) // Base tracks are free, premium start locked
                          };
                          localStorage.setItem("users", JSON.stringify(users));
@@ -1661,6 +2037,9 @@
                          isSignedIn = true;
                          currentUser = username;
                          points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {};
+                         browserNotificationsEnabled = false; // Default setting
+                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied'; // Check permission
+
                          premiumLofiTracks.forEach(t => t.unlocked = false); // Ensure local state matches new user
                          updateAvailableLofiTracks();
 
@@ -1669,7 +2048,8 @@
                          updateAchievementLevel();
                          updateStreakDisplay();
                          showView('homePage');
-                         restoreTasks();
+                         restoreTasks(); // Will call badge/upcoming updates
+                         sentNotificationTaskIds.clear(); // Reset session notifications
                          console.log(`Account created: ${currentUser}.`);
                          showConfirmation("Account Created!", `Welcome to the Quest for Focus, ${currentUser}!`, false);
                      }
@@ -1680,7 +2060,8 @@
              }
 
             function logout() { showConfirmation( "Logout?", "Are you sure you want to logout?", true, () => { console.log(`Logging out ${currentUser}`); logDailyFocus(); // Log any pending session time before logging out
-            isSignedIn = false; currentUser = null; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {}; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); currentSessionFocusTime = 0; if(isFocusModeActive) { clearInterval(countdownInterval); isFocusModeActive = false; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; } if (isPomodoroActive) { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); } if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`; updateAchievementLevel(); updateStreakDisplay(); populatePlaylistSelect(); restoreTasks(); if(timerDisplay) timerDisplay.style.display = 'none'; localStorage.removeItem("focusModeState_v5"); // Clear session state on logout
+            clearInterval(generalInterval); // Stop periodic checks
+            isSignedIn = false; currentUser = null; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {}; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); currentSessionFocusTime = 0; browserNotificationsEnabled = false; browserNotificationPermission = 'default'; sentNotificationTaskIds.clear(); if(isFocusModeActive) { clearInterval(countdownInterval); isFocusModeActive = false; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; } if (isPomodoroActive) { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); } if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`; updateAchievementLevel(); updateStreakDisplay(); populatePlaylistSelect(); restoreTasks(); if(timerDisplay) timerDisplay.style.display = 'none'; localStorage.removeItem("focusModeState_v5"); // Clear session state on logout
             showView('landingPage'); }, () => {} ); }
             function addUrlInput() { if (!urlInputsContainer) return; const container = document.createElement("div"); container.className = "url-container"; const newInput = document.createElement("input"); newInput.type = "text"; newInput.className = "youtube-url"; newInput.placeholder = "Another YouTube URL"; const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { newInput.value = ''; } }; container.appendChild(newInput); container.appendChild(removeBtn); urlInputsContainer.appendChild(container); newInput.focus(); }
             function restoreUrlInputs(urlsToRestore = []) { if (!urlInputsContainer) return; urlInputsContainer.innerHTML = ''; if (urlsToRestore.length === 0) { addUrlInput(); const firstRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if (firstRemoveBtn && urlInputsContainer.querySelectorAll(".url-container").length === 1) { firstRemoveBtn.remove(); } } else { urlsToRestore.forEach((url, index) => { const container = document.createElement("div"); container.className = "url-container"; const input = document.createElement("input"); input.type = "text"; input.className = "youtube-url"; input.placeholder = "YouTube URL"; input.value = url || ''; // Use provided URL directly
@@ -1705,11 +2086,12 @@
 
                      // General User State (Persisted under user data too)
                      points: points, totalFocusTime: totalFocusTime, totalDistractions: totalDistractions, totalVideosWatched: totalVideosWatched, streakDays: streakDays, lastFocusDate: lastFocusDate, mysteryBoxCount: mysteryBoxCount, activePowerUps: activePowerUps, premiumLofiTrackState: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })), dailyFocusData: dailyFocusData, // Save calendar data
+                     browserNotificationsEnabled: browserNotificationsEnabled, // Save notification setting
                      currentView: currentView, isSignedIn: isSignedIn, currentUser: currentUser
                  };
                  try {
                      // Save potentially active session state
-                     localStorage.setItem("focusModeState_v5", JSON.stringify(stateToSave)); // Incremented version
+                     localStorage.setItem("focusModeState_v5", JSON.stringify(stateToSave)); // Version 5
 
                      // Save persistent user data separately
                      const users = JSON.parse(localStorage.getItem("users") || "{}");
@@ -1726,6 +2108,7 @@
                          users[currentUser].dailyFocusData = dailyFocusData; // Save calendar data to user profile
                          users[currentUser].playlists = playlists; // Save playlists
                          users[currentUser].tasks = tasks; // Save tasks
+                         users[currentUser].browserNotificationsEnabled = browserNotificationsEnabled; // Save setting to user profile
                          // Maybe save currentPomodoroDurationSetting per user? Optional.
                          // users[currentUser].pomodoroDuration = currentPomodoroDurationSetting;
                          localStorage.setItem("users", JSON.stringify(users));
@@ -1741,7 +2124,6 @@
                 let loadedState = null;
                 try {
                     loadedState = JSON.parse(localStorage.getItem("focusModeState_v5") || "{}");
-                    // No need to remove old version if using v5 key now
                 } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v5"); loadedState = {}; }
 
                 if (loadedState.isSignedIn && loadedState.currentUser) {
@@ -1751,11 +2133,17 @@
                          const userData = users[loadedState.currentUser];
                          // Restore basic user data from persistent 'users' storage
                          isSignedIn = true; currentUser = loadedState.currentUser; points = userData.points || 0; previousPoints = points; totalFocusTime = userData.totalFocusTime || 0; totalDistractions = userData.totalDistractions || 0; totalVideosWatched = userData.totalVideosWatched || 0; tasks = userData.tasks || []; streakDays = userData.streakDays || 0; lastFocusDate = userData.lastFocusDate || null; mysteryBoxCount = userData.mysteryBoxCount || 0; activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = userData.playlists || []; dailyFocusData = userData.dailyFocusData || {}; // Load calendar data
-                         const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
                          currentPomodoroDurationSetting = loadedState.currentPomodoroDurationSetting || 60; // Restore Pomodoro duration setting
+                         browserNotificationsEnabled = userData.browserNotificationsEnabled || false; // Restore notification setting from USER data
+                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied'; // Check current permission
+
                          if(pomodoroDurationInput) pomodoroDurationInput.value = currentPomodoroDurationSetting; // Update input field
 
-                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); restoreTasks(); checkExpiredPowerups();
+                         const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
+
+                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); restoreTasks(); // Calls badge/upcoming update
+                         checkExpiredPowerups();
+                         sentNotificationTaskIds.clear(); // Reset session notifications
 
                          // Check for YT Focus Session restore (using loadedState for session details)
                          if (loadedState.isFocusModeActive && loadedState.videoIds && loadedState.videoIds.length > 0 && loadedState.currentView === 'youtubeLecturePage') {
@@ -1780,8 +2168,9 @@
                              pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; currentSessionFocusTime++; totalFocusTime++; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
                          } else {
                              isFocusModeActive = false; isPomodoroActive = false; currentSessionFocusTime = 0;
-                             showView(loadedState.currentView || 'homePage');
+                             showView(loadedState.currentView || 'homePage'); // Go to last viewed or home
                          }
+                         startPeriodicChecks(); // Start interval checks after successful login/restore
                          console.log("Session restored for", currentUser);
                          return;
                      } else { console.warn("User data mismatch:", loadedState.currentUser); localStorage.removeItem("focusModeState_v5"); }
@@ -1865,6 +2254,18 @@
                  showCalendar();
              }
 
+             // --- Periodic Check Starter ---
+             function startPeriodicChecks() {
+                 clearInterval(generalInterval); // Clear any existing interval
+                 generalInterval = setInterval(() => {
+                     if (isSignedIn) {
+                         checkTaskDeadlines(); // Checks deadlines and updates badge/upcoming task
+                         checkAndSendNotifications(); // Checks if browser notifications need to be sent
+                     }
+                 }, 60 * 1000); // Run every minute
+                 console.log("Periodic checks started (every 60s).");
+             }
+
 
             // --- Event Listener Setup ---
             function setupEventListeners() {
@@ -1920,6 +2321,11 @@
                         }
                     });
                  }
+                 // Browser Notification Setting Listener
+                 if (browserNotificationSettingCheckbox) {
+                     browserNotificationSettingCheckbox.addEventListener('change', handleNotificationSettingChange);
+                 }
+
 
                 document.getElementById('lofiPlay')?.addEventListener('click', playLofi); document.getElementById('lofiPause')?.addEventListener('click', pauseLofi); document.getElementById('lofiPrev')?.addEventListener('click', prevLofi); document.getElementById('lofiNext')?.addEventListener('click', nextLofi);
                 if(fireBox) fireBox.addEventListener('click', toggleAIPopup);
@@ -1990,6 +2396,15 @@
                         }
 
                         if ((isFocusModeActive && currentView === 'youtubeLecturePage') || isPomodoroActive) {
+                             // Check notification permission status when tab becomes visible again
+                             if ('Notification' in window) {
+                                browserNotificationPermission = Notification.permission;
+                                if (browserNotificationPermission === 'denied' && browserNotificationsEnabled) {
+                                    browserNotificationsEnabled = false; // Sync setting if denied externally
+                                    saveState();
+                                     if (currentView === 'profile') displayProfileInfo(); // Update profile UI
+                                }
+                             }
                             playLofi(); // Resume lofi only if a focus session is active
                              console.log("Tab visible.");
                          }
@@ -2019,14 +2434,18 @@
                  pomodoroStatusEl = document.getElementById('pomodoroStatus');
                  pomodoroStartBtn = document.getElementById('pomodoroStartBtn');
                  pomodoroResetBtn = document.getElementById('pomodoroResetBtn');
-
+                 // Cache New Elements
+                 todoBadgeEl = document.getElementById('todoBadge');
+                 browserNotificationSettingCheckbox = document.getElementById('browserNotificationSetting');
+                 upcomingTaskDisplayEl = document.getElementById('upcomingTaskDisplay');
 
                 initAudio();
-                loadSavedState(); // Tries to restore session, loads user data including calendar
+                loadSavedState(); // Tries to restore session, loads user data including calendar & notification settings
                 setupEventListeners();
 
                 setInterval(updateClock, 1000);
-                setInterval(checkTaskDeadlines, 60000);
+                // Periodic checks are started *after* successful login/restore in loadSavedState()
+
                 displayRandomMotivation();
                 if(todoListPopup) todoListPopup.style.display = 'none'; // Ensure hidden initially
                 calendarCurrentDate = new Date(); // Initialize calendar date
