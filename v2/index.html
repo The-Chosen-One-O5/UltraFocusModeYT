@@ -40,6 +40,7 @@
             --calendar-focus-medium: rgba(65, 105, 225, 0.5);
             --calendar-focus-high: rgba(65, 105, 225, 0.8);
             --calendar-today-border: var(--accent);
+            --timer-warning-color: var(--danger); /* Added for timer warning */
         }
 
         html {
@@ -298,6 +299,7 @@
         input[type="password"],
         input[type="date"],
         input[type="time"],
+        input[type="number"], /* Added number type */
         select {
             display: block;
             width: 100%;
@@ -316,6 +318,16 @@
             z-index: 11;
             pointer-events: auto;
         }
+        /* Style specifically for number input spinners (optional) */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+
 
         input:focus,
         select:focus {
@@ -753,12 +765,21 @@
         .task-line .points-info { color: var(--secondary); background-color: rgba(142, 45, 226, 0.1); }
         #todoList .dialog-buttons { margin-top: 15px; flex-shrink: 0; pointer-events: auto; }
         #todoList .dialog-buttons button { pointer-events: auto; }
+
+        /* Pomodoro Styles */
         #pomodoroOverlay { background: rgba(15, 15, 27, 0.95); backdrop-filter: blur(12px); z-index: 1000; }
         #pomodoroContainer { width: 90%; max-width: 420px; background: transparent; padding: 30px; border: none; box-shadow: none; text-align: center; pointer-events: auto; }
         #pomodoroContainer h3 { font-family: 'Press Start 2P', cursive; font-size: 22px; color: var(--secondary); margin-bottom: 15px; text-shadow: 2px 2px 0px var(--primary-dark); display: flex; align-items: center; justify-content: center; gap: 10px; }
-        #pomodoroContainer p { font-size: 16px; color: var(--text-dim); margin-bottom: 30px; }
-        #pomodoroTimer { font-size: 90px; font-weight: bold; color: var(--text); margin: 25px 0;font-family: 'Press Start 2P', cursive; text-shadow: 0 0 15px rgba(65, 105, 225, 0.5), 0 0 25px rgba(142, 45, 226, 0.4); }
-        #pomodoroStatus { font-size: 18px; color: var(--accent-alt); margin-top: 20px; min-height: 25px; font-weight: 600; }
+        #pomodoroContainer p { font-size: 16px; color: var(--text-dim); margin-bottom: 15px; } /* Adjusted margin */
+        #pomodoroTimer { font-size: 90px; font-weight: bold; color: var(--text); margin: 20px 0; /* Adjusted margin */ font-family: 'Press Start 2P', cursive; text-shadow: 0 0 15px rgba(65, 105, 225, 0.5), 0 0 25px rgba(142, 45, 226, 0.4); transition: color 0.3s ease; }
+        #pomodoroTimer.timer-warning { color: var(--timer-warning-color); text-shadow: 0 0 15px rgba(220, 53, 69, 0.6); }
+        #pomodoroTimer.timer-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        #pomodoroDurationSetting { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px; pointer-events: auto; }
+        #pomodoroDurationSetting label { color: var(--text-dim); font-size: 14px; }
+        #pomodoroDurationInput { width: 70px; padding: 8px 10px; font-size: 14px; text-align: center; margin: 0; pointer-events: auto; }
+        #pomodoroDurationInput:disabled { background-color: var(--bg-medium); cursor: not-allowed; opacity: 0.6; }
+        #pomodoroStatus { font-size: 18px; color: var(--accent-alt); margin-top: 15px; min-height: 25px; font-weight: 600; }
         #pomodoroControls { display: flex; justify-content: center; gap: 25px; margin-top: 35px; pointer-events: auto; }
         #pomodoroControls button { padding: 12px 30px; font-size: 16px; pointer-events: auto; }
         #pomodoroStartBtn { background: var(--success); border: none; box-shadow: 3px 3px 0 #1c7430;}
@@ -771,12 +792,13 @@
         /* Responsive Adjustments */
         @media (max-width: 800px) {
             body { font-size: 14px; } .title { font-size: 22px; margin-bottom: 20px;} .subtitle { font-size: 16px; margin-bottom: 25px; } button { padding: 8px 18px; font-size: 12px; margin: 5px 5px 12px; } #landingPageContainer, #signinFormContainer { padding: 30px 20px; } #features { gap: 15px; } .feature { width: 180px; padding: 15px; } .feature i { font-size: 24px; } .feature p { font-size: 14px; }
-            input[type="text"], input[type="password"], input[type="date"], input[type="time"], select { padding: 10px 12px; font-size: 14px; }
+            input[type="text"], input[type="password"], input[type="date"], input[type="time"], input[type="number"], select { padding: 10px 12px; font-size: 14px; }
             #topNavBar { height: 50px; padding: 0 15px; }
             #navLogo img { height: 40px; /* Adjusted logo size for medium screens */ }
             #navClockContainer { font-size: 14px; margin: 0 10px; } #navButtons { gap: 15px; } #navStreakDisplay { font-size: 13px; padding: 4px 8px; } #navProfileBtn { font-size: 22px; } .page-view { padding: 15px; } #welcomeMessage { font-size: 20px; } #dateTimeDisplay { font-size: 16px; } #focusStatus { font-size: 18px; margin-bottom: 30px; } #motivationQuote { font-size: 16px; }
             #urlInputs { max-width: 90%; /* Adjust centering */ }
-            #youtubeInputContainer { padding: 15px 20px; } #youtubeInputContainer .subtitle { font-size: 16px; } #timerDisplay { top: 60px; font-size: 14px; padding: 8px 12px; } #progressBar { width: 150px; height: 6px; } #pointsDisplay { top: 60px; font-size: 14px; padding: 6px 10px; } #achievementLevel { top: 105px; font-size: 12px; padding: 5px 8px; } #youtubeLecturePageControls { top: 60px; } #restartBtn, #videoSidebarToggleBtn { padding: 6px 10px; font-size: 10px; } #videoSidebarToggleBtn { top: 110px; font-size: 16px; } #videoSidebar { width: 250px; right: -270px; top: 50px; height: calc(100vh - 50px); } #lofiPlayer { padding: 10px; } #lofiPlayer button { padding: 5px 10px; font-size: 12px; min-width: 30px;} #fireBox { width: 45px; height: 45px; font-size: 22px; } #aiPopup { width: 90%; max-width: 300px; height: 400px; bottom: 65px; } .dialog-box { padding: 20px; } .dialog-box h3 { font-size: 18px; } .dialog-box p { font-size: 14px; margin-bottom: 20px; } .dialog-box button { padding: 8px 20px; font-size: 12px; } #pomodoroContainer { padding: 20px; } #pomodoroTimer { font-size: 60px; margin: 20px 0;} #pomodoroControls { gap: 15px; margin-top: 25px;} #pomodoroControls button { padding: 10px 20px; font-size: 14px; } #profileContainer { padding: 30px; } #profileIcon { font-size: 50px; width: 80px; height: 80px; line-height: 80px;} #profileUsername { font-size: 20px; } .profile-stat { font-size: 16px; } #focusStatsContainer { padding: 20px; max-width: 95%; } #focusStatsContainer h3 { font-size: 18px; margin-bottom: 25px; } .stat-item .value { font-size: 20px; } #todoList { max-width: 90%; } .task-line input[type="text"] { font-size: 14px; } .task-line .task-buttons { margin-left: 5px;} .task-line .set-deadline, .task-line .remove-task { font-size: 14px; padding: 3px;} .task-line .deadline-info, .task-line .points-info { font-size: 10px; margin-left: 4px;} .sidebar-trigger { left: 0px; /* Adjusted for consistency */ } .game-sidebar.open + .sidebar-trigger { left: 240px; }
+            #youtubeInputContainer { padding: 15px 20px; } #youtubeInputContainer .subtitle { font-size: 16px; } #timerDisplay { top: 60px; font-size: 14px; padding: 8px 12px; } #progressBar { width: 150px; height: 6px; } #pointsDisplay { top: 60px; font-size: 14px; padding: 6px 10px; } #achievementLevel { top: 105px; font-size: 12px; padding: 5px 8px; } #youtubeLecturePageControls { top: 60px; } #restartBtn, #videoSidebarToggleBtn { padding: 6px 10px; font-size: 10px; } #videoSidebarToggleBtn { top: 110px; font-size: 16px; } #videoSidebar { width: 250px; right: -270px; top: 50px; height: calc(100vh - 50px); } #lofiPlayer { padding: 10px; } #lofiPlayer button { padding: 5px 10px; font-size: 12px; min-width: 30px;} #fireBox { width: 45px; height: 45px; font-size: 22px; } #aiPopup { width: 90%; max-width: 300px; height: 400px; bottom: 65px; } .dialog-box { padding: 20px; } .dialog-box h3 { font-size: 18px; } .dialog-box p { font-size: 14px; margin-bottom: 20px; } .dialog-box button { padding: 8px 20px; font-size: 12px; }
+            #pomodoroContainer { padding: 20px; } #pomodoroTimer { font-size: 60px; margin: 15px 0;} #pomodoroDurationSetting { margin-bottom: 20px; } #pomodoroControls { gap: 15px; margin-top: 25px;} #pomodoroControls button { padding: 10px 20px; font-size: 14px; } #profileContainer { padding: 30px; } #profileIcon { font-size: 50px; width: 80px; height: 80px; line-height: 80px;} #profileUsername { font-size: 20px; } .profile-stat { font-size: 16px; } #focusStatsContainer { padding: 20px; max-width: 95%; } #focusStatsContainer h3 { font-size: 18px; margin-bottom: 25px; } .stat-item .value { font-size: 20px; } #todoList { max-width: 90%; } .task-line input[type="text"] { font-size: 14px; } .task-line .task-buttons { margin-left: 5px;} .task-line .set-deadline, .task-line .remove-task { font-size: 14px; padding: 3px;} .task-line .deadline-info, .task-line .points-info { font-size: 10px; margin-left: 4px;} .sidebar-trigger { left: 0px; /* Adjusted for consistency */ } .game-sidebar.open + .sidebar-trigger { left: 240px; }
             #calendarHeader h4 { font-size: 14px; } #calendarHeader button { padding: 4px 8px; font-size: 10px; } .calendar-day { font-size: 10px; }
          }
          @media (max-width: 480px) {
@@ -786,7 +808,8 @@
             #topNavBar { padding: 0 10px; } #navButtons { gap: 10px; } #navStreakDisplay { font-size: 12px; padding: 3px 6px; } #navProfileBtn { font-size: 20px; } #welcomeMessage { font-size: 18px; } #dateTimeDisplay { font-size: 14px; } #focusStatus { font-size: 16px; margin-bottom: 25px; padding: 8px;} #motivationQuote { font-size: 14px; } #youtubeInputContainer { padding: 10px 15px; } #youtubeInputContainer .subtitle { font-size: 14px; }
             #urlInputs { max-width: 95%; } /* Adjust centering */
             .url-container { flex-direction: column; align-items: stretch; gap: 5px; } .url-container button { width: 100%; margin-top: 5px; } #playlistManagement { flex-direction: column; gap: 8px; align-items: stretch;} #playlistManagement select, #playlistManagement input { max-width: 100%; } #timerDisplay { font-size: 12px; padding: 6px 8px; } #progressBar { width: 120px; } #pointsDisplay { font-size: 12px; padding: 5px 8px; } #achievementLevel { font-size: 10px; padding: 4px 6px; top: 100px;} #videoSidebar { width: 200px; right: -220px; padding: 15px; } #videoSidebar.open { right: 0; } /* Ensure open works */
-            .game-sidebar.open + .sidebar-trigger { left: 200px; } #pomodoroTimer { font-size: 48px; } #pomodoroControls { gap: 10px; } #pomodoroControls button { padding: 8px 15px; font-size: 12px; } .dialog-box button { padding: 8px 15px; } .sidebar-trigger { width: 20px; height: 80px; font-size: 12px; left: 0px; /* Ensure correct initial pos */ } .game-sidebar { width: 200px; left: -220px; padding-top: 60px;} .sidebar-section { padding: 10px 15px; } .sidebar-section h3 { font-size: 14px; margin-bottom: 10px;} .sidebar-section a, .sidebar-section button { padding: 8px 10px; font-size: 13px; gap: 8px;} .sidebar-section button i, .sidebar-section a i { width: 16px; } #todoList { max-width: 95%; padding: 15px;} #todoList h3 { font-size: 16px;} .task-line { padding: 6px 8px;} .task-line input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px;} .task-line input[type="text"] { font-size: 13px;}
+            .game-sidebar.open + .sidebar-trigger { left: 200px; }
+            #pomodoroTimer { font-size: 48px; } #pomodoroControls { gap: 10px; } #pomodoroControls button { padding: 8px 15px; font-size: 12px; } .dialog-box button { padding: 8px 15px; } .sidebar-trigger { width: 20px; height: 80px; font-size: 12px; left: 0px; /* Ensure correct initial pos */ } .game-sidebar { width: 200px; left: -220px; padding-top: 60px;} .sidebar-section { padding: 10px 15px; } .sidebar-section h3 { font-size: 14px; margin-bottom: 10px;} .sidebar-section a, .sidebar-section button { padding: 8px 10px; font-size: 13px; gap: 8px;} .sidebar-section button i, .sidebar-section a i { width: 16px; } #todoList { max-width: 95%; padding: 15px;} #todoList h3 { font-size: 16px;} .task-line { padding: 6px 8px;} .task-line input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px;} .task-line input[type="text"] { font-size: 13px;}
             #calendarGrid { gap: 3px; } .calendar-day { font-size: 9px; }
          }
 
@@ -845,7 +868,25 @@
         <div id="sessionCompleteDialog" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-check-circle"></i> Session Done!</h3> <p>Great focus!</p> <p>Continue for +100 XP bonus?</p> <div class="dialog-buttons"> <button id="sessionContinueBtn">Continue</button> <button id="sessionEndBtn">End</button> </div> </div> </div>
         <div id="mysteryBoxPopup" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-gift"></i> Mystery Box</h3> <p id="mysteryRewardText">Mystery box earned!</p> <div class="dialog-buttons"> <button id="openMysteryBox">Open</button> <button id="closeMysteryBoxBtn">Later</button> </div> </div> </div>
         <div id="audioTracksStore" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-store"></i> Audio Store</h3> <p>Unlock Lo-Fi tracks!</p> <div id="audioTracksList"></div> <div class="dialog-buttons" style="margin-top: 20px;"> <button id="closeAudioStore">Close</button> </div> </div> </div>
-        <div id="pomodoroOverlay" class="dialog-overlay"> <div id="pomodoroContainer"> <h3><i class="fas fa-brain"></i> POMODORO</h3> <p>Earn 1 XP per minute.</p> <div id="pomodoroTimer">60:00</div> <div id="pomodoroStatus">Ready</div> <div id="pomodoroControls"> <button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button> <button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button> <button id="pomodoroCloseBtn"><i class="fas fa-times"></i> CLOSE</button> </div> </div> </div>
+        <div id="pomodoroOverlay" class="dialog-overlay">
+            <div id="pomodoroContainer">
+                <h3><i class="fas fa-brain"></i> POMODORO</h3>
+                <p>Focus deeply. Earn 1 XP per minute.</p>
+                <!-- Custom Duration Input -->
+                <div id="pomodoroDurationSetting">
+                    <label for="pomodoroDurationInput">Duration (min):</label>
+                    <input type="number" id="pomodoroDurationInput" value="60" min="1" max="180">
+                </div>
+                <!-- End Custom Duration Input -->
+                <div id="pomodoroTimer">60:00</div>
+                <div id="pomodoroStatus">Ready</div>
+                <div id="pomodoroControls">
+                    <button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button>
+                    <button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button>
+                    <button id="pomodoroCloseBtn"><i class="fas fa-times"></i> CLOSE</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Audio Elements -->
         <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio> <!-- Added loop attribute -->
@@ -875,17 +916,23 @@
             let lofiAudio, focusAudioElement;
             let currentLofiIndex = 0; let currentTaskForDeadline = null;
             let isSidebarOpen = false; let isVideoSidebarOpen = false;
-            let pomodoroInterval; let pomodoroTimeRemaining = 60 * 60; let isPomodoroActive = false;
-            let pomodoroDistractionCount = 0; // <-- New state for pomodoro distractions
+
+            // Pomodoro State
+            let pomodoroInterval;
+            let pomodoroTimeRemaining = 60 * 60; // Default 60 minutes in seconds
+            let isPomodoroActive = false;
+            let pomodoroDistractionCount = 0;
+            let currentPomodoroDurationSetting = 60; // Default duration in minutes
+
             let mysteryBoxCount = 0;
             let activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, };
             const STREAK_SHIELD_COST = 800; const STREAK_SHIELD_DURATION = 7 * 24 * 60 * 60 * 1000;
             const DOUBLE_POINTS_COST = 800; const DOUBLE_POINTS_DURATION = 24 * 60 * 60 * 1000;
             const MYSTERY_BOX_STREAK_INTERVAL = 14;
-            const POMODORO_DISTRACTION_PENALTY = 20; // <-- Penalty per distraction
-            const POMODORO_MAJOR_PENALTY_THRESHOLD = 5; // <-- Distraction count for major penalty
-            const POMODORO_MAJOR_PENALTY_AMOUNT = 400; // <-- Major penalty amount
-            const POMODORO_WARNING_THRESHOLD = 4; // <-- Distraction count for warning
+            const POMODORO_DISTRACTION_PENALTY = 20; // Penalty per distraction
+            const POMODORO_MAJOR_PENALTY_THRESHOLD = 5; // Distraction count for major penalty
+            const POMODORO_MAJOR_PENALTY_AMOUNT = 400; // Major penalty amount
+            const POMODORO_WARNING_THRESHOLD = 4; // Distraction count for warning
             const mysteryBoxRewards = [ { type: "points", value: () => Math.floor(Math.random() * 451) + 50, message: (val) => `+${val} XP` }, { type: "doublePoints", value: DOUBLE_POINTS_DURATION, message: () => "Double XP (24h)" }, { type: "streakShield", value: STREAK_SHIELD_DURATION, message: () => "Streak Shield (1w)" }, { type: "lofiTrack", message: () => "Unlock Lofi Track" }, ];
             const baseLofiSongs = [ "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1", "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1", "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1", ];
             let premiumLofiTracks = [ { id: "track1", name: "Celestial", url: "https://www.dropbox.com/scl/fi/3xkks3j4tcmnloz46o03m/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=6w97eurecqph68b8f2r7zn5pf&st=epeucz72&dl=1", unlocked: false, cost: 150 }, { id: "track2", name: "Midnight", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=ui3kdsq5&dl=1", unlocked: false, cost: 150 }, { id: "track3", name: "Rainy", url: "https://www.dropbox.com/scl/fi/iaouozc1osse7h5ea9lon/thunder-chosic.com.mp3?rlkey=o7u0rarnh4kk657qhmcgyiolz&st=2r9f625j&dl=1", unlocked: false, cost: 200 }, { id: "track4", name: "Dark Academia ✨", url: "https://www.dropbox.com/scl/fi/6gbti0c7ka2e3lc1kj895/Toxic-Drunker-a-playlist-to-romanticize-studying-physics-dark-academia-playlist.mp3?rlkey=xfo51y00j6tbuozey81c5cfub&st=lvu3uvvp&dl=1", unlocked: false, cost: 1000 }, { id: "track5", name: "Aria Math", url: "https://www.dropbox.com/scl/fi/nqgmray2um9mjtm9stjk9/aria_math_credit_to_c4.mp3?rlkey=99e4kgsulvy1k738piy17iiye&st=uj9t230p&dl=1", unlocked: false, cost: 800 }, { id: "track6", name: "Apollo 11", url: "https://www.dropbox.com/scl/fi/6gl1bhdz9pe8ymjyh0jgd/RevenantEntertainment-kataruma-dont-worry-ill-always-be-here-for-you.mp3?rlkey=ntodkwanh7by2r2nyuw7cht1x&st=mbs2fozn&dl=1", unlocked: false, cost: 800 }, { id: "track7", name: "Aatma rama lofi", url: "https://www.dropbox.com/scl/fi/55vg6j03lwhlmi4eoqual/Aatma-Rama-_-Raghu-X-Stereo-India.mp3?rlkey=25klv8ao9wtg63wq65ol33oub&st=w68o3ka6&dl=1", unlocked: false, cost: 500 }, { id: "track8", name: "The greatest song ever made 👾", url: "https://www.dropbox.com/scl/fi/hrbitky0j4l92zya0gvrg/If-You-re-A-Gamer-This-Song-FOUND-You-4.mp3?rlkey=4kevn083g6iz20bcmh5o6kizw&st=jp2zojra&dl=1", unlocked: false, cost: 1000 } , { id: "track9", name: "Minecraft Music", url: "https://www.dropbox.com/scl/fi/ux9xrruz6lm9a4v6gxwci/A-Minecraft-Movie-Soundtrack-_-Minecraft-from-A-Minecraft-Movie-Mark-Mothersbaugh-_-WaterTower-0.mp3?rlkey=g1xufj61oamoub6y97pzqjn9i&st=ke6mjj22&dl=1", unlocked: false, cost: 1000 } , { id: "track9", name: "Minecraft Music extended", url: "https://www.dropbox.com/scl/fi/buiewhxmbx9q19t2ir54q/Minecraft-Movie-Theme-_-EXTENDED-ORCHESTRAL-VERSION-_A-Minecraft-Movie_-Soundtrack-4.mp3?rlkey=p7melu9j1d9q0x4lh2116s8xz&st=s20iizbq&dl=1", unlocked: false, cost: 1000 } ];
@@ -893,7 +940,7 @@
             const achievementLevels = [ { points: 0, level: "Mortal", color: "white" }, { points: 1000, level: "Soldier", color: "#4169E1" }, { points: 2000, level: "Knight", color: "#e0e0ff", glow: true }, { points: 3000, level: "KING", color: "#ff8c00", glow: true }, { points: 4000, level: "GIGACHAD", color: "#ff4500", glow: true }, { points: 5000, level: "Demigod", color: "gold", glow: true }, { points: 6000, level: "Titan", color: "gold", glow: true, box: true }, { points: 7000, level: "Immortal", color: "gold", glow: true, box: true, boxGlow: true }, { points: 8000, level: "Celestial", color: "#00BFFF", glow: true, box: true, boxGlow: true }, { points: 9000, level: "Divine", color: "rainbow" }, { points: 10000, level: "Omnipotent", color: "rainbow", glow: true }, ];
             const motivationalQuotes = [ "Focus is key.", "Step by step.", "Progress > perfection.", "You got this!", "Stay sharp.", "Embrace challenge." ];
 
-            // --- NEW Calendar State ---
+            // --- Calendar State ---
             let dailyFocusData = {}; // Stores { 'YYYY-MM-DD': { focusTime: seconds, distractions: count } }
             let currentSessionFocusTime = 0; // Tracks focus time within the current YT or Pomodoro session
             let calendarCurrentDate = new Date(); // Tracks the month/year displayed in the calendar
@@ -909,6 +956,7 @@
             let gameSidebar, sidebarTrigger;
             let navClockTime, navClockPeriod, navStreakDisplay, videoSidebarToggleBtn, navProfileBtn;
             let calendarGrid, calendarMonthYear, prevMonthBtn, nextMonthBtn; // Calendar elements
+            let pomodoroTimerEl, pomodoroDurationInput, pomodoroStatusEl, pomodoroStartBtn, pomodoroResetBtn; // Pomodoro elements
 
 
             // --- Core Functions ---
@@ -1148,26 +1196,56 @@
             function showAudioTracksStore() { const store = document.getElementById("audioTracksStore"); const tracksList = document.getElementById("audioTracksList"); if (!store || !tracksList) return; tracksList.innerHTML = ""; premiumLofiTracks.sort((a, b) => a.name.localeCompare(b.name)); premiumLofiTracks.forEach(track => { const trackItem = document.createElement("div"); trackItem.className = `audio-track-item ${track.unlocked ? 'unlocked' : 'locked'}`; const trackInfo = document.createElement("div"); trackInfo.className = "track-info"; const trackName = document.createElement("div"); trackName.className = "track-name"; trackName.textContent = track.name; const trackCost = document.createElement("div"); trackCost.className = "track-cost"; trackCost.textContent = track.unlocked ? "Owned" : `${track.cost} XP`; trackInfo.appendChild(trackName); trackInfo.appendChild(trackCost); const unlockBtn = document.createElement("button"); unlockBtn.className = "unlock-track-btn"; unlockBtn.dataset.trackId = track.id; if (track.unlocked) { unlockBtn.textContent = "✓ OWNED"; unlockBtn.disabled = true; unlockBtn.classList.add('unlocked'); } else { unlockBtn.textContent = "UNLOCK"; unlockBtn.disabled = points < track.cost; unlockBtn.onclick = () => unlockAudioTrack(track.id); } trackItem.appendChild(trackInfo); trackItem.appendChild(unlockBtn); tracksList.appendChild(trackItem); }); store.style.display = "flex"; }
             function closeAudioTracksStore() { const store = document.getElementById("audioTracksStore"); if (store) store.style.display = "none"; }
             function unlockAudioTrack(trackId) { const track = premiumLofiTracks.find(t => t.id === trackId); if (!track || track.unlocked || points < track.cost) return; points -= track.cost; track.unlocked = true; updateAvailableLofiTracks(); if (pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Unlocked!", `"${track.name}" available!`, false); playSound('achievementAudio'); showAudioTracksStore(); saveState(); checkLevelUp(); }
-            function showPomodoroOverlay() { clearInterval(pomodoroInterval); isPomodoroActive = false; pomodoroTimeRemaining = 60 * 60; pomodoroDistractionCount = 0; // Reset count when showing
-            updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Ready"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; const overlay = document.getElementById("pomodoroOverlay"); if (overlay) overlay.style.display = "flex"; }
+
+            // --- Pomodoro Functions (Updated) ---
+            function showPomodoroOverlay() {
+                clearInterval(pomodoroInterval);
+                isPomodoroActive = false;
+                pomodoroDistractionCount = 0; // Reset count when showing
+                if (pomodoroDurationInput) {
+                    pomodoroDurationInput.disabled = false; // Enable input when not active
+                    pomodoroDurationInput.value = currentPomodoroDurationSetting; // Show current setting
+                }
+                pomodoroTimeRemaining = currentPomodoroDurationSetting * 60; // Reset to current setting in seconds
+
+                updatePomodoroDisplay(); // Update display with correct time
+                if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Ready";
+                if (pomodoroStartBtn) pomodoroStartBtn.disabled = false;
+                if (pomodoroResetBtn) pomodoroResetBtn.disabled = true;
+                if (pomodoroOverlay) pomodoroOverlay.style.display = "flex";
+            }
 
             function startPomodoro() {
-                 if (isPomodoroActive) return;
+                 if (isPomodoroActive || !pomodoroDurationInput) return;
+
+                 // Get and validate custom duration
+                 const durationMinutes = parseInt(pomodoroDurationInput.value, 10);
+                 if (isNaN(durationMinutes) || durationMinutes < 1 || durationMinutes > 180) {
+                     showConfirmation("Invalid Time", "Set duration between 1 and 180 minutes.", false);
+                     return;
+                 }
+                 currentPomodoroDurationSetting = durationMinutes; // Store the valid setting
+                 pomodoroTimeRemaining = currentPomodoroDurationSetting * 60; // Set time remaining in seconds
+
                  isPomodoroActive = true;
                  pomodoroDistractionCount = 0; // Reset count on start
                  currentSessionFocusTime = 0; // Reset session focus time tracker
                  updateStreak(); // Check streak and potentially log previous session data
 
-                 const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing...";
-                 const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true;
-                 const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false;
+                 if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing...";
+                 if (pomodoroStartBtn) pomodoroStartBtn.disabled = true;
+                 if (pomodoroResetBtn) pomodoroResetBtn.disabled = false;
+                 if (pomodoroDurationInput) pomodoroDurationInput.disabled = true; // Disable input while running
+
                  requestFullscreen(document.documentElement); // Enter fullscreen
+
+                 updatePomodoroDisplay(); // Initial display update
 
                  pomodoroInterval = setInterval(() => {
                      pomodoroTimeRemaining--;
                      currentSessionFocusTime++; // Increment focus time for this session
                      totalFocusTime++; // Increment global total focus time
-                     updatePomodoroDisplay();
+                     updatePomodoroDisplay(); // Update visual timer (handles color/shake)
 
                      if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) {
                          const earned = applyPowerUps(1);
@@ -1181,13 +1259,61 @@
                  }, 1000);
              }
 
-            function resetPomodoro() { clearInterval(pomodoroInterval); if (isPomodoroActive) { logDailyFocus(); /* Log accumulated time before reset */ isPomodoroActive = false; } pomodoroTimeRemaining = 60 * 60; pomodoroDistractionCount = 0; // Reset count
-            updatePomodoroDisplay(); const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Reset"; const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false; const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true; exitFullscreen(); // Exit fullscreen
-            }
-            function closePomodoroOverlay() { const overlay = document.getElementById("pomodoroOverlay"); if (!overlay) return; if (isPomodoroActive) { showConfirmation( "Exit?", "Pomodoro session active. Stop?", true, () => { clearInterval(pomodoroInterval); logDailyFocus(); /* Log time before exiting */ isPomodoroActive = false; exitFullscreen(); // Exit fullscreen
-            saveState(); overlay.style.display = "none"; }, () => {} ); } else { exitFullscreen(); // Exit fullscreen
-            overlay.style.display = "none"; } }
-            function updatePomodoroDisplay() { const timerElement = document.getElementById("pomodoroTimer"); if (!timerElement) return; const minutes = Math.floor(pomodoroTimeRemaining / 60); const seconds = pomodoroTimeRemaining % 60; timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`; }
+            function resetPomodoro() {
+                 clearInterval(pomodoroInterval);
+                 if (isPomodoroActive) {
+                     logDailyFocus(); /* Log accumulated time before reset */
+                     isPomodoroActive = false;
+                 }
+                 pomodoroTimeRemaining = currentPomodoroDurationSetting * 60; // Reset to current setting
+                 pomodoroDistractionCount = 0; // Reset count
+                 updatePomodoroDisplay(); // Update visual timer (removes warning/shake)
+                 if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Reset";
+                 if (pomodoroStartBtn) pomodoroStartBtn.disabled = false;
+                 if (pomodoroResetBtn) pomodoroResetBtn.disabled = true;
+                 if (pomodoroDurationInput) pomodoroDurationInput.disabled = false; // Enable input
+                 exitFullscreen(); // Exit fullscreen
+             }
+
+            function closePomodoroOverlay() {
+                 const overlay = document.getElementById("pomodoroOverlay");
+                 if (!overlay) return;
+                 if (isPomodoroActive) {
+                     showConfirmation( "Exit?", "Pomodoro session active. Stop?", true, () => {
+                         clearInterval(pomodoroInterval);
+                         logDailyFocus(); /* Log time before exiting */
+                         isPomodoroActive = false;
+                         exitFullscreen(); // Exit fullscreen
+                         if (pomodoroDurationInput) pomodoroDurationInput.disabled = false; // Enable input
+                         if(pomodoroTimerEl) pomodoroTimerEl.classList.remove('timer-warning', 'timer-shake'); // Clean up styles
+                         saveState();
+                         overlay.style.display = "none";
+                     }, () => {} );
+                 } else {
+                     exitFullscreen(); // Exit fullscreen
+                     if (pomodoroDurationInput) pomodoroDurationInput.disabled = false; // Ensure input is enabled
+                      if(pomodoroTimerEl) pomodoroTimerEl.classList.remove('timer-warning', 'timer-shake'); // Clean up styles
+                     overlay.style.display = "none";
+                 }
+             }
+
+            function updatePomodoroDisplay() {
+                 if (!pomodoroTimerEl) return;
+                 const minutes = Math.floor(pomodoroTimeRemaining / 60);
+                 const seconds = pomodoroTimeRemaining % 60;
+                 pomodoroTimerEl.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+                 // Update timer styles based on remaining time
+                 if (pomodoroTimeRemaining < 10) {
+                     pomodoroTimerEl.classList.add('timer-shake');
+                     pomodoroTimerEl.classList.add('timer-warning'); // Also keep red
+                 } else if (pomodoroTimeRemaining < 60) {
+                     pomodoroTimerEl.classList.add('timer-warning');
+                     pomodoroTimerEl.classList.remove('timer-shake');
+                 } else {
+                     pomodoroTimerEl.classList.remove('timer-warning', 'timer-shake');
+                 }
+             }
 
             function completePomodoroSession() {
                 clearInterval(pomodoroInterval);
@@ -1199,13 +1325,16 @@
                      logDailyFocus();
                 }
 
-                const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = `Complete! Distractions: ${pomodoroDistractionCount}`; // Show distractions
-                const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = false;
-                const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = true;
+                if (pomodoroStatusEl) pomodoroStatusEl.textContent = `Complete! Distractions: ${pomodoroDistractionCount}`; // Show distractions
+                if (pomodoroStartBtn) pomodoroStartBtn.disabled = false;
+                if (pomodoroResetBtn) pomodoroResetBtn.disabled = true;
+                if (pomodoroDurationInput) pomodoroDurationInput.disabled = false; // Re-enable input
+                if(pomodoroTimerEl) pomodoroTimerEl.classList.remove('timer-warning', 'timer-shake'); // Reset styles
                 exitFullscreen(); // Exit fullscreen
                 saveState(); // Save state after completion and logging
                 checkLevelUp();
             }
+            // --- End Pomodoro Functions ---
 
             function toggleTodo() { if (!todoListPopup) return; const isVisible = todoListPopup.style.display === "flex"; if (isVisible) { saveTasks(); todoListPopup.style.display = "none"; } else { restoreTasks(); todoListPopup.style.display = "flex"; } }
             function addTaskLine(taskData = { text: "", completed: false, deadline: null, points: null }) { if (!tasksContainer) return null; const line = document.createElement("div"); line.className = "task-line"; const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.className = "task-check"; checkbox.checked = taskData.completed; checkbox.onchange = handleTaskCompletionChange; const input = document.createElement("input"); input.type = "text"; input.className = "task-text"; input.placeholder = "Add quest..."; input.value = taskData.text; input.readOnly = taskData.completed; input.onkeydown = handleTaskInputKeydown; input.onchange = () => { line.dataset.text = input.value; }; line.dataset.text = taskData.text; line.dataset.completed = taskData.completed; if(taskData.deadline) line.dataset.deadline = taskData.deadline; if(taskData.points) line.dataset.points = taskData.points; if(taskData.deadlineChecked) line.dataset.deadlineChecked = taskData.deadlineChecked; const buttonsContainer = document.createElement('div'); buttonsContainer.className = 'task-buttons'; const deadlineBtn = document.createElement("button"); deadlineBtn.className = "set-deadline"; deadlineBtn.innerHTML = '<i class="fas fa-stopwatch"></i>'; deadlineBtn.title = "Deadline"; deadlineBtn.onclick = () => showDeadlineDialog(line); deadlineBtn.disabled = taskData.completed; const removeBtn = document.createElement("button"); removeBtn.className = "remove-task"; removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove"; removeBtn.onclick = () => removeTask(line); buttonsContainer.appendChild(deadlineBtn); buttonsContainer.appendChild(removeBtn); line.appendChild(checkbox); line.appendChild(input); line.appendChild(buttonsContainer); updateTaskDeadlineDisplay(line, taskData.deadline, taskData.points); tasksContainer.appendChild(line); if (taskData.completed) { line.style.opacity = '0.7'; } return input; }
@@ -1408,37 +1537,36 @@
                  }, 1000);
              }
 
-function endFocusSession(reason = "Session ended.") {
-    console.log("Ending focus:", reason);
-    pauseLofi(); // <<< ADD THIS LINE to explicitly pause Lofi when session ends
-    clearInterval(countdownInterval);
-    // --- The rest of the function content follows ---
-    if (isFocusModeActive) { // Only log if it was an active YT session
-        logDailyFocus(); // Log any accumulated time before ending
-    }
-    isFocusModeActive = false;
-    timerRemaining = focusDuration / 1000;
-    timerMode = "Focus Time";
-    if (player && typeof player.destroy === 'function') {
-        player.destroy();
-        player = null;
-        console.log("Player destroyed.");
-    }
-    videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false;
-    if(timerDisplay) timerDisplay.style.display = 'none';
-    if(progressBar) progressBar.style.display = 'none';
-    if(progressFill) progressFill.style.width = '0%';
-    closeVideoSidebar();
-    if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none';
-    const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none';
-    if(playerContainer) playerContainer.style.display = 'none';
-    if(youtubeInputContainer) youtubeInputContainer.style.display = 'block';
-    exitFullscreen();
-    saveState(); // Save state after ending
-    if (currentView === 'focusStats') displayFocusStatsInfo();
-    updateFocusStatus();
-    showView('homePage');
-}
+            function endFocusSession(reason = "Session ended.") {
+                console.log("Ending focus:", reason);
+                pauseLofi(); // Pause Lofi when session ends
+                clearInterval(countdownInterval);
+                if (isFocusModeActive) { // Only log if it was an active YT session
+                    logDailyFocus(); // Log any accumulated time before ending
+                }
+                isFocusModeActive = false;
+                timerRemaining = focusDuration / 1000;
+                timerMode = "Focus Time";
+                if (player && typeof player.destroy === 'function') {
+                    player.destroy();
+                    player = null;
+                    console.log("Player destroyed.");
+                }
+                videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false;
+                if(timerDisplay) timerDisplay.style.display = 'none';
+                if(progressBar) progressBar.style.display = 'none';
+                if(progressFill) progressFill.style.width = '0%';
+                closeVideoSidebar();
+                if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none';
+                const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none';
+                if(playerContainer) playerContainer.style.display = 'none';
+                if(youtubeInputContainer) youtubeInputContainer.style.display = 'block';
+                exitFullscreen();
+                saveState(); // Save state after ending
+                if (currentView === 'focusStats') displayFocusStatsInfo();
+                updateFocusStatus();
+                showView('homePage');
+            }
 
             function showSessionCompleteDialog() { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "flex"; }
             function handleSessionContinue(choice) { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "none"; if (choice === "continue") { const bonusPoints = applyPowerUps(100); points += bonusPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Bonus!", `+${bonusPoints} XP!`, false); playSound('achievementAudio'); checkLevelUp(); saveState(); currentSessionFocusTime = 0; // Reset session timer for continued focus
@@ -1569,7 +1697,12 @@ function endFocusSession(reason = "Session ended.") {
                  if (!isSignedIn || !currentUser) return;
                  const stateToSave = {
                      // Session State (only if active)
-                     isFocusModeActive: isFocusModeActive, videoIds: isFocusModeActive ? videoIds : [], currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0, timerMode: isFocusModeActive ? timerMode : "Focus Time", timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000, completedVideos: isFocusModeActive ? Array.from(completedVideos) : [], allVideosCompleted: isFocusModeActive ? allVideosCompleted : false, isPomodoroActive: isPomodoroActive, pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (60 * 60), pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
+                     isFocusModeActive: isFocusModeActive, videoIds: isFocusModeActive ? videoIds : [], currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0, timerMode: isFocusModeActive ? timerMode : "Focus Time", timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000, completedVideos: isFocusModeActive ? Array.from(completedVideos) : [], allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
+                     isPomodoroActive: isPomodoroActive,
+                     pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (currentPomodoroDurationSetting * 60), // Save based on setting
+                     pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
+                     currentPomodoroDurationSetting: currentPomodoroDurationSetting, // Save the setting
+
                      // General User State (Persisted under user data too)
                      points: points, totalFocusTime: totalFocusTime, totalDistractions: totalDistractions, totalVideosWatched: totalVideosWatched, streakDays: streakDays, lastFocusDate: lastFocusDate, mysteryBoxCount: mysteryBoxCount, activePowerUps: activePowerUps, premiumLofiTrackState: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })), dailyFocusData: dailyFocusData, // Save calendar data
                      currentView: currentView, isSignedIn: isSignedIn, currentUser: currentUser
@@ -1593,6 +1726,8 @@ function endFocusSession(reason = "Session ended.") {
                          users[currentUser].dailyFocusData = dailyFocusData; // Save calendar data to user profile
                          users[currentUser].playlists = playlists; // Save playlists
                          users[currentUser].tasks = tasks; // Save tasks
+                         // Maybe save currentPomodoroDurationSetting per user? Optional.
+                         // users[currentUser].pomodoroDuration = currentPomodoroDurationSetting;
                          localStorage.setItem("users", JSON.stringify(users));
                      }
                  } catch (err) {
@@ -1606,7 +1741,7 @@ function endFocusSession(reason = "Session ended.") {
                 let loadedState = null;
                 try {
                     loadedState = JSON.parse(localStorage.getItem("focusModeState_v5") || "{}");
-                     localStorage.removeItem("focusModeState_v4"); // Clean up old version
+                    // No need to remove old version if using v5 key now
                 } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v5"); loadedState = {}; }
 
                 if (loadedState.isSignedIn && loadedState.currentUser) {
@@ -1617,6 +1752,9 @@ function endFocusSession(reason = "Session ended.") {
                          // Restore basic user data from persistent 'users' storage
                          isSignedIn = true; currentUser = loadedState.currentUser; points = userData.points || 0; previousPoints = points; totalFocusTime = userData.totalFocusTime || 0; totalDistractions = userData.totalDistractions || 0; totalVideosWatched = userData.totalVideosWatched || 0; tasks = userData.tasks || []; streakDays = userData.streakDays || 0; lastFocusDate = userData.lastFocusDate || null; mysteryBoxCount = userData.mysteryBoxCount || 0; activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = userData.playlists || []; dailyFocusData = userData.dailyFocusData || {}; // Load calendar data
                          const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
+                         currentPomodoroDurationSetting = loadedState.currentPomodoroDurationSetting || 60; // Restore Pomodoro duration setting
+                         if(pomodoroDurationInput) pomodoroDurationInput.value = currentPomodoroDurationSetting; // Update input field
+
                          if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); restoreTasks(); checkExpiredPowerups();
 
                          // Check for YT Focus Session restore (using loadedState for session details)
@@ -1629,13 +1767,14 @@ function endFocusSession(reason = "Session ended.") {
                          // Check for Pomodoro Session restore
                          else if (loadedState.isPomodoroActive && loadedState.currentView === 'homePage') { // Assuming Pomodoro runs on home/overlay
                              console.log("Restoring active Pomodoro session...");
-                             isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (60 * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time
+                             isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (currentPomodoroDurationSetting * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time
 
                              showPomodoroOverlay(); // Show the overlay first
-                             updatePomodoroDisplay();
-                             const statusEl = document.getElementById("pomodoroStatus"); if (statusEl) statusEl.textContent = "Focusing...";
-                             const startBtn = document.getElementById('pomodoroStartBtn'); if(startBtn) startBtn.disabled = true;
-                             const resetBtn = document.getElementById('pomodoroResetBtn'); if(resetBtn) resetBtn.disabled = false;
+                             updatePomodoroDisplay(); // Update display immediately
+                             if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing...";
+                             if (pomodoroStartBtn) pomodoroStartBtn.disabled = true;
+                             if (pomodoroResetBtn) pomodoroResetBtn.disabled = false;
+                             if (pomodoroDurationInput) pomodoroDurationInput.disabled = true; // Disable input
                              requestFullscreen(document.documentElement); // Re-enter fullscreen if restored
 
                              pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; currentSessionFocusTime++; totalFocusTime++; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
@@ -1657,7 +1796,7 @@ function endFocusSession(reason = "Session ended.") {
             function exitFullscreen() { try { if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) { if (document.exitFullscreen) document.exitFullscreen().catch(err => console.warn("FS Exit Catch:", err.message)); else if (document.mozCancelFullScreen) document.mozCancelFullScreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); else if (document.msExitFullscreen) document.msExitFullscreen(); } } catch(e){ console.warn("Exit fullscreen fail:", e.message)} }
             function showConfirmation(title, message, isCancellable = false, onConfirm = () => {}, onCancel = () => {}, dialogClass = '') { const dialog = document.getElementById("confirmationDialog"); const dialogBox = dialog?.querySelector(".dialog-box"); const titleEl = dialog?.querySelector("h3"); const messageEl = dialog?.querySelector("p"); const confirmBtn = document.getElementById("confirmBtn"); const cancelBtn = document.getElementById("cancelBtn"); if (!dialog || !dialogBox || !titleEl || !messageEl || !confirmBtn || !cancelBtn) { console.error("Confirm dialog missing elements."); return; } dialogBox.className = 'dialog-box'; if (dialogClass) { dialogBox.classList.add(dialogClass); } titleEl.innerHTML = `<i class="fas ${isCancellable ? 'fa-question-circle' : (dialogClass === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle')}"></i> ${title}`; messageEl.textContent = message; cancelBtn.style.display = isCancellable ? "inline-block" : "none"; const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); const newCancelBtn = cancelBtn.cloneNode(true); cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn); newConfirmBtn.textContent = isCancellable ? "YES" : "OK"; newConfirmBtn.onclick = () => { dialog.style.display = 'none'; onConfirm(); }; if (isCancellable) { newCancelBtn.onclick = () => { dialog.style.display = 'none'; onCancel(); }; } dialog.style.display = "flex"; }
 
-             // --- NEW Calendar Functions ---
+             // --- Calendar Functions ---
              function showCalendar() {
                  generateCalendarGrid(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth());
              }
@@ -1676,14 +1815,6 @@ function endFocusSession(reason = "Session ended.") {
 
                 // Adjust firstDayOfMonth to start week on Monday (optional, depends on preference)
                 const adjustedFirstDay = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; // 0=Mon, 6=Sun
-
-                // Add weekday headers (optional)
-                // ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(day => {
-                //     const headerCell = document.createElement('div');
-                //     headerCell.classList.add('calendar-header');
-                //     headerCell.textContent = day;
-                //     calendarGrid.appendChild(headerCell);
-                // });
 
                 // Add empty cells for the beginning of the month
                 for (let i = 0; i < adjustedFirstDay; i++) {
@@ -1766,7 +1897,30 @@ function endFocusSession(reason = "Session ended.") {
                 document.getElementById('sessionContinueBtn')?.addEventListener('click', () => handleSessionContinue('continue')); document.getElementById('sessionEndBtn')?.addEventListener('click', () => handleSessionContinue('end'));
                 document.getElementById('openMysteryBox')?.addEventListener('click', openMysteryBox); document.getElementById('closeMysteryBoxBtn')?.addEventListener('click', closeMysteryBoxPopup);
                 document.getElementById('closeAudioStore')?.addEventListener('click', closeAudioTracksStore);
-                document.getElementById('pomodoroStartBtn')?.addEventListener('click', startPomodoro); document.getElementById('pomodoroResetBtn')?.addEventListener('click', resetPomodoro); document.getElementById('pomodoroCloseBtn')?.addEventListener('click', closePomodoroOverlay);
+                // Pomodoro Listeners
+                document.getElementById('pomodoroStartBtn')?.addEventListener('click', startPomodoro);
+                document.getElementById('pomodoroResetBtn')?.addEventListener('click', resetPomodoro);
+                document.getElementById('pomodoroCloseBtn')?.addEventListener('click', closePomodoroOverlay);
+                 // Update duration setting when input changes
+                 if(pomodoroDurationInput) {
+                    pomodoroDurationInput.addEventListener('change', () => {
+                        const newDuration = parseInt(pomodoroDurationInput.value, 10);
+                        if (!isNaN(newDuration) && newDuration >= 1 && newDuration <= 180) {
+                            currentPomodoroDurationSetting = newDuration;
+                            // Update display immediately if timer is not running
+                            if (!isPomodoroActive) {
+                                pomodoroTimeRemaining = currentPomodoroDurationSetting * 60;
+                                updatePomodoroDisplay();
+                            }
+                            console.log("Pomodoro duration set to:", currentPomodoroDurationSetting);
+                        } else {
+                            // Revert to last valid setting if input is invalid
+                            pomodoroDurationInput.value = currentPomodoroDurationSetting;
+                            showConfirmation("Invalid Time", "Set duration between 1 and 180 minutes.", false);
+                        }
+                    });
+                 }
+
                 document.getElementById('lofiPlay')?.addEventListener('click', playLofi); document.getElementById('lofiPause')?.addEventListener('click', pauseLofi); document.getElementById('lofiPrev')?.addEventListener('click', prevLofi); document.getElementById('lofiNext')?.addEventListener('click', nextLofi);
                 if(fireBox) fireBox.addEventListener('click', toggleAIPopup);
                 if (timerDisplay) { let isDragging = false; let initialX, initialY; timerDisplay.addEventListener("mousedown", (e) => { if (e.target.tagName === 'BUTTON') return; isDragging = true; initialX = e.clientX - timerDisplay.offsetLeft; initialY = e.clientY - timerDisplay.offsetTop; timerDisplay.style.cursor = 'grabbing'; e.preventDefault(); }); document.addEventListener("mousemove", (e) => { if (isDragging) { e.preventDefault(); let currentX = e.clientX - initialX; let currentY = e.clientY - initialY; const maxX = window.innerWidth - timerDisplay.offsetWidth - 10; const maxY = window.innerHeight - timerDisplay.offsetHeight - 10; currentX = Math.max(10, Math.min(currentX, maxX)); currentY = Math.max(65, Math.min(currentY, maxY)); timerDisplay.style.left = `${currentX}px`; timerDisplay.style.top = `${currentY}px`; } }); document.addEventListener("mouseup", () => { if (isDragging) { isDragging = false; timerDisplay.style.cursor = 'move'; } }); }
@@ -1859,6 +2013,13 @@ function endFocusSession(reason = "Session ended.") {
                  calendarMonthYear = document.getElementById('calendarMonthYear');
                  prevMonthBtn = document.getElementById('prevMonthBtn');
                  nextMonthBtn = document.getElementById('nextMonthBtn');
+                 // Cache Pomodoro elements
+                 pomodoroTimerEl = document.getElementById('pomodoroTimer');
+                 pomodoroDurationInput = document.getElementById('pomodoroDurationInput');
+                 pomodoroStatusEl = document.getElementById('pomodoroStatus');
+                 pomodoroStartBtn = document.getElementById('pomodoroStartBtn');
+                 pomodoroResetBtn = document.getElementById('pomodoroResetBtn');
+
 
                 initAudio();
                 loadSavedState(); // Tries to restore session, loads user data including calendar
