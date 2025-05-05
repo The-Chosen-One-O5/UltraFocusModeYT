@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+[⚠️ Suspicious Content] [⚠️ Suspicious Content] <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultra Focus Mode</title>
 
-    <!-- Favicon Links (Added as requested) -->
+    <!-- Favicon Links -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -1040,6 +1040,13 @@
     <script>
         // Wrap entire script in IIFE
         ;(() => {
+
+            // !!! WARNING: Storing API keys directly in client-side JS is insecure for public apps.
+            // This is acceptable ONLY for personal use or very low-traffic prototypes
+            // with strict HTTP referrer restrictions set in Google Cloud Console.
+            // Consider a backend proxy for better security if this becomes a serious project.
+            const YOUTUBE_API_KEY = 'AIzaSyA16li1kPmHxCkcIw87ThOHmpBB1fuBPFY'; // <-- PASTE YOUR KEY HERE
+
             // --- State Variables ---
             let currentView = 'landingPage';
             let player; let videoIds = []; let currentVideoIndex = 0;
@@ -1081,7 +1088,7 @@
             const POMODORO_WARNING_THRESHOLD = 4; // Distraction count for warning
             const mysteryBoxRewards = [ { type: "points", value: () => Math.floor(Math.random() * 451) + 50, message: (val) => `+${val} XP` }, { type: "doublePoints", value: DOUBLE_POINTS_DURATION, message: () => "Double XP (24h)" }, { type: "streakShield", value: STREAK_SHIELD_DURATION, message: () => "Streak Shield (1w)" }, { type: "lofiTrack", message: () => "Unlock Lofi Track" }, ];
             const baseLofiSongs = [ "https://www.dropbox.com/scl/fi/7qrgbk6vpej7x0ih7vev2/1-6_XRwBX7NX-1.mp3?rlkey=m3gntnys7az2hoq0iokkajucj&st=bmrhzjy8&dl=1", "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1", "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1", ];
-            let premiumLofiTracks = [ { id: "track1", name: "Celestial", url: "https://www.dropbox.com/scl/fi/3xkks3j4tcmnloz46o03m/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=6w97eurecqph68b8f2r7zn5pf&st=epeucz72&dl=1", unlocked: false, cost: 150 }, { id: "track2", name: "Midnight", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=ui3kdsq5&dl=1", unlocked: false, cost: 150 }, { id: "track3", name: "Rainy", url: "https://www.dropbox.com/scl/fi/iaouozc1osse7h5ea9lon/thunder-chosic.com.mp3?rlkey=o7u0rarnh4kk657qhmcgyiolz&st=2r9f625j&dl=1", unlocked: false, cost: 200 }, { id: "track4", name: "Dark Academia ✨", url: "https://www.dropbox.com/scl/fi/6gbti0c7ka2e3lc1kj895/Toxic-Drunker-a-playlist-to-romanticize-studying-physics-dark-academia-playlist.mp3?rlkey=xfo51y00j6tbuozey81c5cfub&st=lvu3uvvp&dl=1", unlocked: false, cost: 1000 }, { id: "track5", name: "Aria Math", url: "https://www.dropbox.com/scl/fi/nqgmray2um9mjtm9stjk9/aria_math_credit_to_c4.mp3?rlkey=99e4kgsulvy1k738piy17iiye&st=uj9t230p&dl=1", unlocked: false, cost: 800 }, { id: "track6", name: "Apollo 11", url: "https://www.dropbox.com/scl/fi/6gl1bhdz9pe8ymjyh0jgd/RevenantEntertainment-kataruma-dont-worry-ill-always-be-here-for-you.mp3?rlkey=ntodkwanh7by2r2nyuw7cht1x&st=mbs2fozn&dl=1", unlocked: false, cost: 800 }, { id: "track7", name: "Aatma rama lofi", url: "https://www.dropbox.com/scl/fi/55vg6j03lwhlmi4eoqual/Aatma-Rama-_-Raghu-X-Stereo-India.mp3?rlkey=25klv8ao9wtg63wq65ol33oub&st=w68o3ka6&dl=1", unlocked: false, cost: 500 }, { id: "track8", name: "The greatest song ever made 👾", url: "https://www.dropbox.com/scl/fi/hrbitky0j4l92zya0gvrg/If-You-re-A-Gamer-This-Song-FOUND-You-4.mp3?rlkey=4kevn083g6iz20bcmh5o6kizw&st=jp2zojra&dl=1", unlocked: false, cost: 1000 } , { id: "track9", name: "Minecraft Music", url: "https://www.dropbox.com/scl/fi/ux9xrruz6lm9a4v6gxwci/A-Minecraft-Movie-Soundtrack-_-Minecraft-from-A-Minecraft-Movie-Mark-Mothersbaugh-_-WaterTower-0.mp3?rlkey=g1xufj61oamoub6y97pzqjn9i&st=ke6mjj22&dl=1", unlocked: false, cost: 1000 } , { id: "track9", name: "Minecraft Music extended", url: "https://www.dropbox.com/scl/fi/buiewhxmbx9q19t2ir54q/Minecraft-Movie-Theme-_-EXTENDED-ORCHESTRAL-VERSION-_A-Minecraft-Movie_-Soundtrack-4.mp3?rlkey=p7melu9j1d9q0x4lh2116s8xz&st=s20iizbq&dl=1", unlocked: false, cost: 1000 } ];
+            let premiumLofiTracks = [ { id: "track1", name: "Celestial", url: "https://www.dropbox.com/scl/fi/3xkks3j4tcmnloz46o03m/Kyle-Dixon-Michael-Stei-Kids.mp3?rlkey=6w97eurecqph68b8f2r7zn5pf&st=epeucz72&dl=1", unlocked: false, cost: 150 }, { id: "track2", name: "Midnight", url: "https://www.dropbox.com/scl/fi/7vikjhsay7xayyab0tlvt/enchanted-metamorphosis-chronicles-264087.mp3?rlkey=mrdncvjr3g5bo8dksxywh9zxh&st=ui3kdsq5&dl=1", unlocked: false, cost: 150 }, { id: "track3", name: "Rainy", url: "https://www.dropbox.com/scl/fi/iaouozc1osse7h5ea9lon/thunder-chosic.com.mp3?rlkey=o7u0rarnh4kk657qhmcgyiolz&st=2r9f625j&dl=1", unlocked: false, cost: 200 }, { id: "track4", name: "Dark Academia ✨", url: "https://www.dropbox.com/scl/fi/6gbti0c7ka2e3lc1kj895/Toxic-Drunker-a-playlist-to-romanticize-studying-physics-dark-academia-playlist.mp3?rlkey=xfo51y00j6tbuozey81c5cfub&st=lvu3uvvp&dl=1", unlocked: false, cost: 1000 }, { id: "track5", name: "Aria Math", url: "https://www.dropbox.com/scl/fi/nqgmray2um9mjtm9stjk9/aria_math_credit_to_c4.mp3?rlkey=99e4kgsulvy1k738piy17iiye&st=uj9t230p&dl=1", unlocked: false, cost: 800 }, { id: "track6", name: "Apollo 11", url: "https://www.dropbox.com/scl/fi/6gl1bhdz9pe8ymjyh0jgd/RevenantEntertainment-kataruma-dont-worry-ill-always-be-here-for-you.mp3?rlkey=ntodkwanh7by2r2nyuw7cht1x&st=mbs2fozn&dl=1", unlocked: false, cost: 800 }, { id: "track7", name: "Aatma rama lofi", url: "https://www.dropbox.com/scl/fi/55vg6j03lwhlmi4eoqual/Aatma-Rama-_-Raghu-X-Stereo-India.mp3?rlkey=25klv8ao9wt63wq65ol33oub&st=w68o3ka6&dl=1", unlocked: false, cost: 500 }, { id: "track8", name: "The greatest song ever made 👾", url: "https://www.dropbox.com/scl/fi/hrbitky0j4l92zya0gvrg/If-You-re-A-Gamer-This-Song-FOUND-You-4.mp3?rlkey=4kevn083g6iz20bcmh5o6kizw&st=jp2zojra&dl=1", unlocked: false, cost: 1000 } , { id: "track9", name: "Minecraft Music", url: "https://www.dropbox.com/scl/fi/ux9xrruz6lm9a4v6gxwci/A-Minecraft-Movie-Soundtrack-_-Minecraft-from-A-Minecraft-Movie-Mark-Mothersbaugh-_-WaterTower-0.mp3?rlkey=g1xufj61oamoub6y97pzqjn9i&st=ke6mjj22&dl=1", unlocked: false, cost: 1000 } , { id: "track9", name: "Minecraft Music extended", url: "https://www.dropbox.com/scl/fi/buiewhxmbx9q19t2ir54q/Minecraft-Movie-Theme-_-EXTENDED-ORCHESTRAL-VERSION-_A-Minecraft-Movie_-Soundtrack-4.mp3?rlkey=p7melu9j1d9q0x4lh2116s8xz&st=s20iizbq&dl=1", unlocked: false, cost: 1000 } ];
             let availableLofiSongs = [...baseLofiSongs];
             const achievementLevels = [ { points: 0, level: "Mortal", color: "white" }, { points: 1000, level: "Soldier", color: "#4169E1" }, { points: 2000, level: "Knight", color: "#e0e0ff", glow: true }, { points: 3000, level: "KING", color: "#ff8c00", glow: true }, { points: 4000, level: "GIGACHAD", color: "#ff4500", glow: true }, { points: 5000, level: "Demigod", color: "gold", glow: true }, { points: 6000, level: "Titan", color: "gold", glow: true, box: true }, { points: 7000, level: "Immortal", color: "gold", glow: true, box: true, boxGlow: true }, { points: 8000, level: "Celestial", color: "#00BFFF", glow: true, box: true, boxGlow: true }, { points: 9000, level: "Divine", color: "rainbow" }, { points: 10000, level: "Omnipotent", color: "rainbow", glow: true }, ];
             const motivationalQuotes = [ "Focus is key.", "Step by step.", "Progress > perfection.", "You got this!", "Stay sharp.", "Embrace challenge." ];
@@ -1780,61 +1787,153 @@
                 return parsed ? parsed.videoId : null;
             }
 
+             // --- NEW: Function to fetch videos from a playlist ---
+             async function fetchPlaylistVideos(playlistId, pageToken = '') {
+                 if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === 'YOUR_API_KEY_HERE') {
+                     console.error("YouTube API Key is missing or not replaced!");
+                     showConfirmation("API Key Error", "YouTube API Key is not configured.", false);
+                     return []; // Return empty array if key is missing
+                 }
 
-            function prepareAndStartPlayback() {
+                 const MAX_RESULTS_PER_PAGE = 50; // YouTube API limit
+                 let allVideoIds = [];
+
+                 const apiUrl = `https://www.googleapis.com/youtube/v3/playlistItems` +
+                              `?part=snippet` + // We only need the snippet to get the video ID
+                              `&playlistId=${playlistId}` +
+                              `&maxResults=${MAX_RESULTS_PER_PAGE}` +
+                              `&key=${YOUTUBE_API_KEY}` +
+                              (pageToken ? `&pageToken=${pageToken}` : ''); // Add pageToken if provided
+
+                 try {
+                     console.log(`Fetching playlist page: ${apiUrl.replace(YOUTUBE_API_KEY, '***KEY***')}`); // Log URL without the key for security
+                     const response = await fetch(apiUrl);
+
+                     if (!response.ok) {
+                         // Try to get more specific error details from the response body
+                         let errorData;
+                         try {
+                             errorData = await response.json();
+                             console.error("API Error Response:", errorData);
+                         } catch (jsonError) {
+                             console.error("Failed to parse error JSON from API response.");
+                             // Use status text or a generic message if JSON parsing fails
+                             errorData = { message: response.statusText || `HTTP error! Status: ${response.status}` };
+                         }
+                         // Construct a user-friendly error message
+                         const errorMessage = errorData?.error?.message || errorData.message || `Failed to fetch playlist items (HTTP ${response.status})`;
+                         throw new Error(errorMessage); // Throw an error to be caught below
+                     }
+
+                     const data = await response.json();
+
+                     // Extract video IDs from the current page
+                     if (data.items) {
+                         data.items.forEach(item => {
+                             // Ensure the item has the necessary structure
+                             if (item.snippet?.resourceId?.kind === 'youtube#video' && item.snippet.resourceId.videoId) {
+                                 allVideoIds.push(item.snippet.resourceId.videoId);
+                             } else {
+                                 console.warn("Skipping playlist item without valid video ID:", item);
+                             }
+                         });
+                     }
+
+                     // Check if there's a next page and recursively fetch it
+                     if (data.nextPageToken) {
+                         console.log("Fetching next page for playlist:", playlistId);
+                         const nextPageVideos = await fetchPlaylistVideos(playlistId, data.nextPageToken);
+                         allVideoIds = allVideoIds.concat(nextPageVideos); // Append results from the next page
+                     }
+
+                     return allVideoIds; // Return all collected video IDs for this playlist
+
+                 } catch (error) {
+                     console.error(`Error fetching playlist ${playlistId}:`, error);
+                     // Show a confirmation dialog to the user about the error
+                     showConfirmation("Playlist Load Error", `Failed to load videos for playlist ${playlistId}. ${error.message}`, false);
+                     return []; // Return an empty array to indicate failure for this specific playlist
+                 }
+             }
+
+            // --- UPDATED: prepareAndStartPlayback to handle API calls ---
+            async function prepareAndStartPlayback() { // Make async to handle API calls
                 try {
-                    if (!urlInputsContainer) { console.error("URL input missing"); return; }
+                    if (!urlInputsContainer) { console.error("URL input container missing"); return; }
                     const urlElements = urlInputsContainer.querySelectorAll(".youtube-url");
                     const urls = Array.from(urlElements).map(input => input.value.trim()).filter(url => url);
-                    if (urls.length === 0) { showConfirmation("No URLs", "Enter YouTube URL(s).", false); return; }
+                    if (urls.length === 0) { showConfirmation("No URLs", "Please enter at least one YouTube URL (video or playlist).", false); return; }
 
-                    let isPlaylistDetected = false;
-                    videoIds = [];
+                    videoIds = []; // Reset video IDs list for the new session
+                    let playlistFetchPromises = []; // Array to hold promises for fetching playlist items
 
+                    // Process each URL provided by the user
                     urls.forEach(url => {
-                        const parsed = parseInputUrl(url);
+                        const parsed = parseInputUrl(url); // Use the improved parser
                         if (parsed) {
-                            if (parsed.videoId) {
-                                if (!videoIds.includes(parsed.videoId)) { // Avoid duplicates
+                            if (parsed.playlistId) {
+                                console.log(`Playlist detected: ${parsed.playlistId}. Queuing fetch...`);
+                                // Add a promise to fetch videos for this playlist
+                                // The actual fetching happens later with Promise.all
+                                playlistFetchPromises.push(fetchPlaylistVideos(parsed.playlistId));
+                            } else if (parsed.videoId) {
+                                // Directly add single video IDs if no playlist ID is present in this URL
+                                // Avoid adding duplicates
+                                if (!videoIds.includes(parsed.videoId)) {
                                     videoIds.push(parsed.videoId);
                                 }
                             }
-                            if (parsed.playlistId) {
-                                isPlaylistDetected = true;
-                                // ** Limitation Note **
-                                // Fetching all videos requires YouTube Data API & key.
-                                // This version only adds the *first* video linked (if any).
-                                console.warn(`Playlist detected (${parsed.playlistId}). Only adding linked video ID: ${parsed.videoId || 'None'}. Full playlist fetch requires API key.`);
-                                if (parsed.videoId && !videoIds.includes(parsed.videoId)) {
-                                    // Already added above if present
-                                }
-                            }
+                        } else {
+                            console.warn("Could not parse URL:", url);
                         }
                     });
 
+                    // Wait for all playlist fetch operations to complete
+                    // This executes the promises added in the loop above
+                    console.log(`Waiting for ${playlistFetchPromises.length} playlist fetches...`);
+                    const playlistResults = await Promise.all(playlistFetchPromises);
+                    console.log("Playlist fetches complete.");
+
+                    // Combine results: Add fetched playlist videos to the main videoIds array
+                    playlistResults.forEach(playlistVideoIds => {
+                        if (Array.isArray(playlistVideoIds)) { // Ensure we got an array back
+                            playlistVideoIds.forEach(videoId => {
+                                if (!videoIds.includes(videoId)) { // Avoid duplicates
+                                    videoIds.push(videoId);
+                                }
+                            });
+                        }
+                    });
+
+                    // Check if we ended up with any videos after processing all URLs and playlists
                     if (videoIds.length === 0) {
-                        showConfirmation("No Valid Videos", "Couldn't find playable video IDs from the URL(s).", false);
-                        return;
+                        showConfirmation("No Videos Found", "Could not find any playable video IDs from the provided URL(s) or playlists. Check the URLs and ensure the API key is correct.", false);
+                        return; // Stop if no videos are available
                     }
 
-                     if (isPlaylistDetected && videoIds.length > 0) {
-                         showConfirmation("Playlist Note", `Detected a playlist link. Starting with the first available video (${videoIds[0]}). Full playlist loading requires API integration.`, false);
-                     }
+                    console.log("Final video list prepared:", videoIds);
 
-
+                    // Proceed to start the focus session
                     currentVideoIndex = 0;
                     completedVideos.clear();
                     allVideosCompleted = false;
                     if(playerContainer) playerContainer.style.display = 'block';
                     if(youtubeInputContainer) youtubeInputContainer.style.display = 'none';
-                    initializeYouTubeView(); // This will call updateStreak
-                    saveState();
-                    requestFullscreen(document.documentElement);
+                    initializeYouTubeView(); // This will load the YT API if needed and start the player/timer
+                    saveState(); // Save the initial state of the focus session
+                    requestFullscreen(document.documentElement); // Request fullscreen
+
                 } catch (err) {
-                    console.error("Playback prep error:", err);
-                    showConfirmation("Playback Error", "Error starting session.", false);
+                    // Catch errors during the preparation phase (e.g., Promise.all rejection if fetch fails badly)
+                    console.error("Playback preparation error:", err);
+                    showConfirmation("Playback Error", `Error starting the focus session: ${err.message}. Please try again.`, false);
+                    // Optionally reset the UI back to the input state
+                    if(youtubeInputContainer) youtubeInputContainer.style.display = 'block';
+                    if(playerContainer) playerContainer.style.display = 'none';
+                    videoIds = []; // Clear the list as preparation failed
                 }
             }
+
 
             function loadYouTubeAPI() { return new Promise((resolve, reject) => { if (isYouTubeAPILoaded) { resolve(); return; } console.log("Loading YT API..."); const tag = document.createElement("script"); tag.src = "https://www.youtube.com/iframe_api"; tag.async = true; window.onYouTubeIframeAPIReady = () => { console.log("YT API Ready."); isYouTubeAPILoaded = true; if (typeof YT !== 'undefined' && YT.Player) { resolve(); } else { setTimeout(() => { if (typeof YT !== 'undefined' && YT.Player) { resolve(); } else { console.error("YT.Player unavailable."); reject(new Error("YT Player missing.")); } }, 500); } }; tag.onerror = (error) => { console.error("YT API load failed:", error); reject(new Error("YT API script load failed.")); }; document.head.appendChild(tag); setTimeout(() => { if (!isYouTubeAPILoaded) { console.error("YT API timeout."); reject(new Error("YT API load timeout.")); } }, 15000); }); }
             function initializeYouTubeView() { if (videoIds.length === 0) { console.warn("No video IDs"); showView('homePage'); return; } const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'flex'; currentSessionFocusTime = 0; // Reset session focus time
@@ -2280,7 +2379,7 @@
                 document.querySelector('#youtubeLecturePage button[data-action="add-url"]')?.addEventListener('click', addUrlInput);
                 document.querySelector('#youtubeLecturePage button[data-action="save-playlist"]')?.addEventListener('click', savePlaylist);
                 document.querySelector('#youtubeLecturePage button[data-action="remove-playlist"]')?.addEventListener('click', removePlaylist);
-                document.querySelector('#youtubeLecturePage button[data-action="start-playback"]')?.addEventListener('click', prepareAndStartPlayback);
+                document.querySelector('#youtubeLecturePage button[data-action="start-playback"]')?.addEventListener('click', prepareAndStartPlayback); // THIS NOW CALLS THE ASYNC VERSION
                 document.getElementById('restartBtn')?.addEventListener('click', requestExitSession);
                 if(videoSidebarToggleBtn) videoSidebarToggleBtn.addEventListener('click', toggleVideoSidebar);
                 document.addEventListener('keydown', (e) => { if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return; if (currentView === 'youtubeLecturePage' && (e.key === 't' || e.key === 'T')) { toggleVideoSidebar(); } });
