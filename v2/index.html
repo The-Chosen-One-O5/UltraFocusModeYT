@@ -399,26 +399,26 @@
 
     </div> <!-- End Game Container -->
 
-    <script>
-        // Wrap entire script in an IIFE (Immediately Invoked Function Expression)
-        // to avoid polluting the global scope.
-        (() => {
-            
-            // FIREBASE: Initialize Firebase with your provided configuration.
-            const firebaseConfig = {
-                apiKey: "AIzaSyDS6ZuQcViCFgolCcmAqBPp_9pndCB8F8Q",
-                authDomain: "ultrafocusmode-18ae4.firebaseapp.com",
-                projectId: "ultrafocusmode-18ae4",
-                storageBucket: "ultrafocusmode-18ae4.firebasestorage.app",
-                messagingSenderId: "998572603670",
-                appId: "1:998572603670:web:f14dff88199d964b0c3837",
-                measurementId: "G-04LSN8085M"
-            };
+   <script>
+    // Wrap entire script in an IIFE (Immediately Invoked Function Expression)
+    // to avoid polluting the global scope.
+    (() => {
+        
+        // FIREBASE: Initialize Firebase with your provided configuration.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDS6ZuQcViCFgolCcmAqBPp_9pndCB8F8Q",
+            authDomain: "ultrafocusmode-18ae4.firebaseapp.com",
+            projectId: "ultrafocusmode-18ae4",
+            storageBucket: "ultrafocusmode-18ae4.firebasestorage.app",
+            messagingSenderId: "998572603670",
+            appId: "1:998572603670:web:f14dff88199d964b0c3837",
+            measurementId: "G-04LSN8085M"
+        };
 
-            // Initialize Firebase and its services
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+        // Initialize Firebase and its services
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
             // --- State Variables ---
             // This object holds the entire state of the application for the current user.
