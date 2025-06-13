@@ -239,7 +239,25 @@
         .unlock-track-btn.unlocked { background: var(--success); color: white; cursor: default; }
         .unlock-track-btn.unlocked:hover:not(:disabled) { background: var(--success); }
         #achievementOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 15, 27, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; color: gold; font-size: 36px; font-weight: bold; z-index: 104; display: none; font-family: 'Press Start 2P', cursive; text-align: center; text-shadow: 3px 3px 0 var(--primary-dark), 5px 5px 10px rgba(0,0,0,0.5); background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FFD700' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E"); pointer-events: none; padding: 20px; line-height: 1.4; }
-        #todoList { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; max-height: 75vh; background: var(--bg-medium); padding: 20px; border: 2px solid var(--secondary); border-radius: 8px; display: none; z-index: 100; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4); pointer-events: auto; display: flex; flex-direction: column; }
+        #todoList {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 450px;
+    max-height: 75vh;
+    background: var(--bg-medium);
+    padding: 20px;
+    border: 2px solid var(--secondary);
+    border-radius: 8px;
+    display: none; /* This is now the only display rule and will work correctly */
+    z-index: 100;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+    /* The incorrect 'display: flex;' line has been removed */
+    flex-direction: column; 
+}
         #todoList h3 { font-size: 18px; margin-bottom: 15px; color: var(--secondary); font-family: 'Roboto Mono', monospace; text-align: center; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
         #tasks { overflow-y: auto; margin-bottom: 15px; background: none; padding-right: 5px; flex-grow: 1; pointer-events: auto; }
         .task-line { display: flex; align-items: center; margin-bottom: 10px; background: var(--bg-light); padding: 8px 10px; border: 1px solid var(--primary-dark); border-radius: 4px; pointer-events: auto; transition: background-color 0.2s, opacity 0.2s; }
