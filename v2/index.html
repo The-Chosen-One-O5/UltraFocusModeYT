@@ -239,25 +239,27 @@
         .unlock-track-btn.unlocked { background: var(--success); color: white; cursor: default; }
         .unlock-track-btn.unlocked:hover:not(:disabled) { background: var(--success); }
         #achievementOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 15, 27, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; color: gold; font-size: 36px; font-weight: bold; z-index: 104; display: none; font-family: 'Press Start 2P', cursive; text-align: center; text-shadow: 3px 3px 0 var(--primary-dark), 5px 5px 10px rgba(0,0,0,0.5); background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FFD700' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E"); pointer-events: none; padding: 20px; line-height: 1.4; }
+        
+        /* CORRECTED CSS FOR #todoList */
         #todoList {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 450px;
-    max-height: 75vh;
-    background: var(--bg-medium);
-    padding: 20px;
-    border: 2px solid var(--secondary);
-    border-radius: 8px;
-    display: none; /* This is now the only display rule and will work correctly */
-    z-index: 100;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
-    pointer-events: auto;
-    /* The incorrect 'display: flex;' line has been removed */
-    flex-direction: column; 
-}
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 450px;
+            max-height: 75vh;
+            background: var(--bg-medium);
+            padding: 20px;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            display: none; /* This is now the ONLY display property, correctly hiding it by default. */
+            z-index: 100;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
+            flex-direction: column;
+        }
+
         #todoList h3 { font-size: 18px; margin-bottom: 15px; color: var(--secondary); font-family: 'Roboto Mono', monospace; text-align: center; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
         #tasks { overflow-y: auto; margin-bottom: 15px; background: none; padding-right: 5px; flex-grow: 1; pointer-events: auto; }
         .task-line { display: flex; align-items: center; margin-bottom: 10px; background: var(--bg-light); padding: 8px 10px; border: 1px solid var(--primary-dark); border-radius: 4px; pointer-events: auto; transition: background-color 0.2s, opacity 0.2s; }
@@ -423,6 +425,8 @@
         // =======================================================
         // FIREBASE INITIALIZATION
         // =======================================================
+        // NOTE: Your API Key is visible here. For a production app, you should use
+        // environment variables or other methods to secure this. For a personal project, this is fine.
         const firebaseConfig = {
             apiKey: "AIzaSyDS6ZuQcViCFgolCcmAqBPp_9pndCB8F8Q",
             authDomain: "ultrafocusmode-18ae4.firebaseapp.com",
@@ -440,54 +444,100 @@
         // =======================================================
         const dom = {}; // Object to hold all our DOM elements
         let appState = {
-            currentView: 'landingPage', isLoggedIn: false, currentUser: null,
-            // ... All other state variables
+            currentView: 'landingPage',
+            isLoggedIn: false,
+            currentUser: null,
+            // You can add other global state variables here as needed
         };
 
-        // All of your other constants (achievementLevels, YOUTUBE_API_KEY, etc.) go here
-        // This is a condensed version for the example
-        const motivationalQuotes = [ "Focus is key.", "Step by step.", "Progress > perfection.", "You got this!", "Stay sharp.", "Embrace challenge." ];
+        const motivationalQuotes = [
+            "The secret to getting ahead is getting started.",
+            "Focus on being productive instead of busy.",
+            "The successful warrior is the average man, with laser-like focus.",
+            "Do what you can, with what you have, where you are.",
+            "Success is the sum of small efforts, repeated day in and day out.",
+            "Don't watch the clock; do what it does. Keep going."
+        ];
+
+        // Placeholder for functions that would be defined later.
+        // This is not strictly necessary but can help with code organization.
+        let showView, signInWithGoogle, loadUserData, toggleTodo, saveTasks, restoreTasks, addTaskLine, toggleSidebar;
 
         // =======================================================
         // CORE APPLICATION LOGIC
         // =======================================================
-        
-        // --- This is the new, robust event handler ---
+
         function handleAction(action, element) {
+            // This function centralizes all click events from 'data-action' attributes
+            const view = element.dataset.view;
             switch (action) {
-                case 'show-view': showView(element.dataset.view); break;
+                case 'show-view': if (view) showView(view); break;
                 case 'github': window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank"); break;
                 case 'google-sign-in': signInWithGoogle(); break;
                 case 'toggle-todo': toggleTodo(); break;
                 case 'save-tasks': saveTasks(); break;
                 case 'add-task-line': addTaskLine(); break;
-                case 'close-todo': toggleTodo(); break; // Just closes the popup
-                case 'toggle-edit-profile': toggleEditProfile(); break;
-                case 'save-username': saveNewUsername(); break;
-                case 'cancel-edit-username': toggleEditProfile(); break;
-                // Add all your other shop and playback actions here
-                case 'start-playback': prepareAndStartPlayback(); break;
-                // ... etc.
+                case 'close-todo': toggleTodo(); break;
+                // Add stubs for other actions if needed, e.g.,
+                // case 'start-playback': prepareAndStartPlayback(); break;
             }
         }
         
-        // --- Pop-up and To-Do List Fix ---
-        function toggleTodo() {
-            if (dom.todoList) {
-                const isVisible = dom.todoList.style.display === "flex";
-                if (isVisible) {
-                    saveTasks(); // Save on close
-                    dom.todoList.style.display = "none";
-                } else {
-                    restoreTasks(); // Load tasks on open
-                    dom.todoList.style.display = "flex";
-                }
+        showView = (viewId) => {
+            document.querySelectorAll('.page-view').forEach(view => {
+                view.style.display = 'none';
+            });
+            const targetView = dom[viewId];
+            if (targetView) {
+                targetView.style.display = 'flex';
+                appState.currentView = viewId;
             } else {
-                console.error("To-Do List element not found!");
+                console.error(`View with ID "${viewId}" not found.`);
             }
-        }
+        };
+        
+        signInWithGoogle = () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch((error) => {
+                    console.error("Google Sign-In Error:", error.message);
+                    // You might want to show a user-friendly error message here
+                });
+        };
 
-        // --- "Loading..." Text Fix ---
+        const resetLocalState = () => {
+            appState.isLoggedIn = false;
+            appState.currentUser = null;
+            // Reset UI elements to their signed-out state
+            if (dom.homeUsername) dom.homeUsername.textContent = "Hero";
+            if (dom.dateTimeDisplay) dom.dateTimeDisplay.textContent = "Loading...";
+            if (dom.motivationQuote) dom.motivationQuote.textContent = `"Loading motivation..."`;
+            if (dom.topNavBar) dom.topNavBar.style.display = 'none';
+            if (dom.gameSidebar) dom.gameSidebar.classList.remove('open');
+            if (dom.sidebarTrigger) dom.sidebarTrigger.style.display = 'none';
+        };
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                appState.isLoggedIn = true;
+                appState.currentUser = user;
+                // TODO: Replace with your actual loadUserData logic
+                console.log("User logged in:", user.displayName);
+                // After user data is loaded, update UI and show the homepage
+                if (dom.homeUsername) dom.homeUsername.textContent = user.displayName || "Hero";
+                if (dom.topNavBar) dom.topNavBar.style.display = 'flex';
+                if (dom.sidebarTrigger) dom.sidebarTrigger.style.display = 'flex';
+                updateDateTimeDisplay();
+                displayRandomMotivation();
+                showView('homePage');
+            } else {
+                resetLocalState();
+                showView('landingPage');
+            }
+        });
+
+        // --- UI Helper Functions ---
+        
         function updateDateTimeDisplay() {
             if (dom.dateTimeDisplay) {
                 const now = new Date();
@@ -503,79 +553,32 @@
             }
         }
 
-        // --- Lofi Player Fix ---
-        function initAudio() {
-            // Your initAudio function should go here, it's likely correct
-            // But we need to ensure it's called after login.
-            // A simplified version:
-            if(dom.audio.lofi) {
-                // ... your logic to set src ...
-                dom.audio.lofi.src = baseLofiSongs[0]; // Example
-            }
-        }
-
-        function playLofi() {
-            if (dom.audio.lofi) {
-                dom.audio.lofi.play().catch(e => console.error("Lofi play error:", e));
-                if (dom.lofiPlay) dom.lofiPlay.style.display = 'none';
-                if (dom.lofiPause) dom.lofiPause.style.display = 'inline-block';
-            }
-        }
-        function pauseLofi() {
-            if (dom.audio.lofi) {
-                dom.audio.lofi.pause();
-                if (dom.lofiPlay) dom.lofiPlay.style.display = 'inline-block';
-                if (dom.lofiPause) dom.lofiPause.style.display = 'none';
-            }
-        }
-
-        // --- Core Authentication and Data Flow (Revised) ---
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                // User is signed in
-                appState.isLoggedIn = true; appState.currentUser = user;
-                await loadUserData(user); // This loads data from Firestore
-                showView('homePage'); // This shows the home page
-            } else {
-                // User is signed out
-                appState.isLoggedIn = false; appState.currentUser = null;
-                resetLocalState();
-                showView('landingPage');
-            }
-        });
-
-        async function loadUserData(user) {
-            const userDocRef = db.collection('users').doc(user.uid);
-            try {
-                const doc = await userDocRef.get();
-                if (doc.exists) {
-                    // Existing user, load their data
-                    loadStateFromFirestore(doc.data());
+        toggleTodo = () => {
+            if (dom.todoList) {
+                const isVisible = dom.todoList.style.display === "flex";
+                if (isVisible) {
+                    // if (appState.isLoggedIn) saveTasks(); // Only save if logged in
+                    dom.todoList.style.display = "none";
                 } else {
-                    // New user, create a default profile
-                    const newUserData = createDefaultUserData(user);
-                    await userDocRef.set(newUserData);
-                    loadStateFromFirestore(newUserData);
-                    // Show the welcome popup
-                    setTimeout(() => showConfirmation(`Welcome, ${user.displayName || 'Hero'}!`, 'You can set a custom hero name on your profile page.', false), 1500);
+                    // if (appState.isLoggedIn) restoreTasks(); // Only restore if logged in
+                    dom.todoList.style.display = "flex";
                 }
-                await userDocRef.update({ lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
-                // AFTER loading all data, THEN update the UI
-                updateHomePageInfo(); 
-                initAudio(); // Initialize audio now that we have user data (for unlocked tracks)
-            } catch (error) { console.error("Error loading user data:", error); }
-        }
+            } else {
+                console.error("To-Do List element not found!");
+            }
+        };
 
-        function updateHomePageInfo() {
-            if (dom.homeUsername) dom.homeUsername.textContent = appState.currentUser?.displayName || "Hero";
-            updateDateTimeDisplay(); // This replaces the "Loading..." text
-            updateFocusStatus();
-            displayRandomMotivation(); // This replaces the "Loading motivation..." text
-        }
+        toggleSidebar = () => {
+            if (dom.gameSidebar && dom.sidebarTrigger) {
+                dom.gameSidebar.classList.toggle('open');
+                dom.sidebarTrigger.classList.toggle('open');
+            }
+        };
         
-        // You would also need to paste all your other functions here
-        // like signInWithGoogle, saveTasks, restoreTasks, toggleEditProfile, saveNewUsername, etc.
-        // The key is that they should all use the `dom` object to find elements.
+        // --- Stub functions for features not fully implemented in this snippet ---
+        saveTasks = () => console.log("Saving tasks...");
+        restoreTasks = () => console.log("Restoring tasks...");
+        addTaskLine = () => console.log("Adding a new task line...");
 
         // =======================================================
         // INITIALIZATION
@@ -584,9 +587,29 @@
             console.log("DOM Loaded. Initializing app...");
 
             // Step 1: Cache ALL your DOM elements into the `dom` object
-            const ids = [ 'topNavBar', 'landingPage', 'signinForm', 'homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'navLogo', 'navClockContainer', 'navButtons', 'navStreakDisplay', 'navProfileBtn', 'welcomeMessage', 'dateTimeDisplay', 'upcomingTaskDisplay', 'focusStatus', 'motivationQuote', 'youtubeInputContainer', 'playlistSelect', 'urlInputs', 'playlistName', 'playerContainer', 'player', 'videoSidebarToggleBtn', 'youtubeLecturePageControls', 'restartBtn', 'videoSidebar', 'videoThumbnailList', 'profileContainer', 'profileIcon', 'profileUsername', 'profileLevel', 'profileXP', 'profileStreak', 'profileSettings', 'browserNotificationSetting', 'focusStatsContainer', 'statsDisplay', 'statsTotalFocusTime', 'statsTotalDistractions', 'statsTotalVideosWatched', 'statsCurrentStreak', 'focusCalendar', 'calendarHeader', 'prevMonthBtn', 'calendarMonthYear', 'nextMonthBtn', 'calendarGrid', 'timerDisplay', 'timerText', 'progressBar', 'progressFill', 'pointsDisplay', 'achievementLevel', 'todoList', 'tasks', 'todoBadge', 'lofiPlayer', 'lofiPrev', 'lofiPlay', 'lofiPause', 'lofiNext', 'fireBox', 'aiPopup', 'achievementOverlay', 'confirmationDialog', 'confirmationDialogText', 'confirmBtn', 'cancelBtn', 'streakShieldDialog', 'streakShieldConfirmBtn', 'streakShieldCancelBtn', 'doublePointsDialog', 'doublePointsConfirmBtn', 'doublePointsCancelBtn', 'deadlineDialog', 'deadlineDate', 'deadlineTime', 'taskDifficulty', 'deadlineConfirmBtn', 'deadlineCancelBtn', 'sessionCompleteDialog', 'sessionContinueBtn', 'sessionEndBtn', 'mysteryBoxPopup', 'mysteryRewardText', 'openMysteryBox', 'closeMysteryBoxBtn', 'audioTracksStore', 'audioTracksList', 'closeAudioStore', 'pomodoroOverlay', 'pomodoroContainer', 'pomodoroDurationSetting', 'pomodoroDurationInput', 'pomodoroTimer', 'pomodoroStatus', 'pomodoroControls', 'pomodoroStartBtn', 'pomodoroResetBtn', 'pomodoroCloseBtn', 'logoutBtn', 'editProfileContainer', 'editUsernameInput'];
+            const ids = [
+                'topNavBar', 'landingPage', 'signinForm', 'homePage', 'youtubeLecturePage', 'profile', 'focusStats',
+                'navLogo', 'navClockContainer', 'navButtons', 'navStreakDisplay', 'navProfileBtn', 'welcomeMessage',
+                'dateTimeDisplay', 'upcomingTaskDisplay', 'focusStatus', 'motivationQuote', 'youtubeInputContainer',
+                'playlistSelect', 'urlInputs', 'playlistName', 'playerContainer', 'player', 'videoSidebarToggleBtn',
+                'youtubeLecturePageControls', 'restartBtn', 'videoSidebar', 'videoThumbnailList', 'profileContainer',
+                'profileIcon', 'profileUsername', 'profileLevel', 'profileXP', 'profileStreak', 'profileSettings',
+                'browserNotificationSetting', 'focusStatsContainer', 'statsDisplay', 'statsTotalFocusTime',
+                'statsTotalDistractions', 'statsTotalVideosWatched', 'statsCurrentStreak', 'focusCalendar', 'calendarHeader',
+                'prevMonthBtn', 'calendarMonthYear', 'nextMonthBtn', 'calendarGrid', 'timerDisplay', 'timerText',
+                'progressBar', 'progressFill', 'pointsDisplay', 'achievementLevel', 'todoList', 'tasks', 'todoBadge',
+                'lofiPlayer', 'lofiPrev', 'lofiPlay', 'lofiPause', 'lofiNext', 'fireBox', 'aiPopup', 'achievementOverlay',
+                'confirmationDialog', 'confirmationDialogText', 'confirmBtn', 'cancelBtn', 'streakShieldDialog',
+                'streakShieldConfirmBtn', 'streakShieldCancelBtn', 'doublePointsDialog', 'doublePointsConfirmBtn',
+                'doublePointsCancelBtn', 'deadlineDialog', 'deadlineDate', 'deadlineTime', 'taskDifficulty', 'deadlineConfirmBtn',
+                'deadlineCancelBtn', 'sessionCompleteDialog', 'sessionContinueBtn', 'sessionEndBtn', 'mysteryBoxPopup',
+                'mysteryRewardText', 'openMysteryBox', 'closeMysteryBoxBtn', 'audioTracksStore', 'audioTracksList',
+                'closeAudioStore', 'pomodoroOverlay', 'pomodoroContainer', 'pomodoroDurationSetting', 'pomodoroDurationInput',
+                'pomodoroTimer', 'pomodoroStatus', 'pomodoroControls', 'pomodoroStartBtn', 'pomodoroResetBtn',
+                'pomodoroCloseBtn', 'logoutBtn'
+            ];
             ids.forEach(id => dom[id] = document.getElementById(id));
-            dom.sidebarTrigger = document.querySelector('.sidebar-trigger'); 
+            dom.sidebarTrigger = document.querySelector('.sidebar-trigger');
             dom.gameSidebar = document.querySelector('.game-sidebar');
             dom.audio = {
                 focus: document.getElementById('focusAudio'),
@@ -607,27 +630,16 @@
 
             // Step 3: Specific listeners that don't use data-action
             if(dom.sidebarTrigger) dom.sidebarTrigger.addEventListener('click', toggleSidebar);
-            if(dom.lofiPlay) dom.lofiPlay.addEventListener('click', playLofi);
-            if(dom.lofiPause) dom.lofiPause.addEventListener('click', pauseLofi);
-            // ... add other specific listeners here ...
+
+            if(dom.logoutBtn) {
+                dom.logoutBtn.addEventListener('click', () => auth.signOut());
+            }
             
             console.log("Initialization complete. Awaiting Firebase auth state...");
-            // Firebase's onAuthStateChanged will take over from here.
         });
-
-        // =======================================================
-        // PASTE ALL YOUR OTHER HELPER FUNCTIONS HERE
-        // Make sure they use `dom.elementId` instead of `document.getElementById('elementId')`
-        // =======================================================
-        // e.g.,
-        // function showView(viewId) { ... }
-        // function signInWithGoogle() { ... }
-        // function saveTasks() { ... }
-        // function restoreTasks() { ... }
-        // etc...
 
     })();
   </script>
 
 </body>
-</html>
+</html>        
