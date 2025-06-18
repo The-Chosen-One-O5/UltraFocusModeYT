@@ -660,8 +660,7 @@
             document.getElementById('doublePointsBtn')?.addEventListener('click', () => showDialog('doublePointsDialog'));
             document.getElementById('audioStoreBtn')?.addEventListener('click', () => { populateAudioStore(); showDialog('audioTracksStore'); });
 
-            showView('landingPage');
-            console.log("Initialization complete.");
+             console.log("Initialization complete. Awaiting Firebase auth state...");
         });
 
     })();
