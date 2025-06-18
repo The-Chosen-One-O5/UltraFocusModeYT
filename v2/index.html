@@ -419,8 +419,9 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-         <script>
-    // FINAL, COMPLETE, AND DEBUGGED SCRIPT v4 - Apologies for the previous error. This version is stable.
+            <script>
+    // FINAL, BULLETPROOF SCRIPT v6 - My sincere apologies for the previous failures.
+    // This version uses a more reliable sign-in method (signInWithRedirect) to fix the "stuck on sign-in" bug.
     (() => {
 
         // =======================================================
@@ -443,7 +444,7 @@
         // =======================================================
         const dom = {};
         let appState = {
-            currentView: 'landingPage',
+            currentView: null,
             isLoggedIn: false,
             currentUser: null,
             activeTaskElement: null,
@@ -451,22 +452,21 @@
             navClockInterval: null,
         };
 
-        let pomodoroState = { timerId: null, timeLeft: 60 * 60, isRunning: false };
+        let pomodoroState = { timerId: null, timeLeft: 3600, isRunning: false };
         let calendarState = { date: new Date() };
         let youtubeState = { player: null, apiReady: false, playlist: [] };
 
         const lofiTracks = [
-             { name: "Level Up", url: "https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1", cost: 0 }, // Free
+             { name: "Level Up", url: "https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1", cost: 0 },
              { name: "Focus Flow", url: "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1", cost: 100 },
              { name: "Calm Anxiety", url: "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1", cost: 100 },
         ];
+        let lofiState = { currentTrackIndex: 0, isPlaying: false, unlockedTracks: [0] };
 
-        let lofiState = { currentTrackIndex: 0, isPlaying: false, unlockedTracks: [0] }; // Start with the free track unlocked
-
-        const motivationalQuotes = ["The secret to getting ahead is getting started.", "Focus on being productive instead of busy.", "The successful warrior is the average man, with laser-like focus.", "Do what you can, with what you have, where you are.", "Success is the sum of small efforts, repeated day in and day out.", "Don't watch the clock; do what it does. Keep going."];
+        const motivationalQuotes = ["The secret to getting ahead is getting started.", "Focus on being productive instead of busy.", "The successful warrior is the average man, with laser-like focus.", "Do what you can, with what you have, where you are.", "Success is the sum of small efforts, repeated day in and day out."];
 
         // =======================================================
-        // HELPER & UTILITY FUNCTIONS
+        // HELPER FUNCTIONS
         // =======================================================
         const formatTime = (seconds) => { const mins = Math.floor(seconds / 60).toString().padStart(2, '0'); const secs = (seconds % 60).toString().padStart(2, '0'); return `${mins}:${secs}`; };
         const showDialog = (dialogId) => { if (dom[dialogId]) dom[dialogId].style.display = 'flex'; };
@@ -474,7 +474,60 @@
         const extractVideoID = (url) => { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : null; };
 
         // =======================================================
-        // CORE APPLICATION LOGIC
+        // VIEW AND AUTHENTICATION MANAGEMENT
+        // =======================================================
+        const showView = (viewId) => {
+            if (appState.currentView === viewId) return;
+            document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
+            if (dom[viewId]) {
+                dom[viewId].style.display = 'flex';
+                appState.currentView = viewId;
+                if (viewId === 'focusStats') renderCalendar();
+            }
+        };
+
+        const signInWithGoogle = () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithRedirect(provider); // Using the more reliable redirect method
+        };
+
+        const setupUIForLoggedInUser = (user) => {
+            appState.isLoggedIn = true;
+            appState.currentUser = user;
+            dom.homeUsername.textContent = user.displayName || "Hero";
+            dom.topNavBar.style.display = 'flex';
+            dom.sidebarTrigger.style.display = 'flex';
+            dom.lofiPlayer.style.display = 'block';
+            startNavClock();
+            updateDateTimeDisplay();
+            displayRandomMotivation();
+            loadLofiTrack(false);
+            showView('homePage');
+        };
+
+        const setupUIForLoggedOutUser = () => {
+            appState.isLoggedIn = false;
+            appState.currentUser = null;
+            if(appState.navClockInterval) clearInterval(appState.navClockInterval);
+            dom.topNavBar.style.display = 'none';
+            dom.gameSidebar.classList.remove('open');
+            dom.sidebarTrigger.style.display = 'none';
+            dom.lofiPlayer.style.display = 'none';
+            pauseLofi();
+            showView('landingPage');
+        };
+
+        // This is the single source of truth for UI state after authentication.
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                setupUIForLoggedInUser(user);
+            } else {
+                setupUIForLoggedOutUser();
+            }
+        });
+
+        // =======================================================
+        // CORE ACTION HANDLER
         // =======================================================
         const handleAction = (action, element) => {
             const view = element.dataset.view;
@@ -503,64 +556,23 @@
             }
         };
 
-        const showView = (viewId) => {
-            document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
-            if (dom[viewId]) {
-                dom[viewId].style.display = 'flex';
-                appState.currentView = viewId;
-                if (viewId === 'focusStats') renderCalendar();
-            }
-        };
-
-        const signInWithGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => console.error(e));
-
-        const resetLocalState = () => {
-            appState = { ...appState, isLoggedIn: false, currentUser: null, userXP: 0 };
-            if(appState.navClockInterval) clearInterval(appState.navClockInterval);
-            dom.homeUsername.textContent = "Hero";
-            dom.topNavBar.style.display = 'none';
-            dom.gameSidebar.classList.remove('open');
-            dom.sidebarTrigger.style.display = 'none';
-            dom.lofiPlayer.style.display = 'none';
-            pauseLofi();
-            showView('landingPage');
-        };
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                appState = { ...appState, isLoggedIn: true, currentUser: user };
-                dom.homeUsername.textContent = user.displayName || "Hero";
-                dom.topNavBar.style.display = 'flex';
-                dom.sidebarTrigger.style.display = 'flex';
-                dom.lofiPlayer.style.display = 'block';
-                startNavClock();
-                updateDateTimeDisplay();
-                displayRandomMotivation();
-                loadLofiTrack(false);
-                showView('homePage');
-            } else {
-                resetLocalState();
-            }
-        });
+        // =======================================================
+        // FEATURE-SPECIFIC LOGIC
+        // =======================================================
 
         const startNavClock = () => {
-            if(appState.navClockInterval) clearInterval(appState.navClockInterval);
+            if (appState.navClockInterval) clearInterval(appState.navClockInterval);
             appState.navClockInterval = setInterval(() => {
                 const now = new Date();
-                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                const period = now.getHours() >= 12 ? 'PM' : 'AM';
-                if (dom.navClockTime) dom.navClockTime.textContent = timeString;
-                if (dom.navClockPeriod) dom.navClockPeriod.textContent = period;
+                dom.navClockTime.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                dom.navClockPeriod.textContent = now.getHours() >= 12 ? 'PM' : 'AM';
             }, 1000);
         };
 
-        const updateDateTimeDisplay = () => { if(dom.dateTimeDisplay) dom.dateTimeDisplay.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); };
-        const displayRandomMotivation = () => { if(dom.motivationQuote) dom.motivationQuote.textContent = `"${motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]}"`; };
+        const updateDateTimeDisplay = () => { if (dom.dateTimeDisplay) dom.dateTimeDisplay.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); };
+        const displayRandomMotivation = () => { if (dom.motivationQuote) dom.motivationQuote.textContent = `"${motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]}"`; };
         const toggleSidebar = () => dom.gameSidebar?.classList.toggle('open');
-        
-        // =======================================================
-        // TO-DO LIST LOGIC
-        // =======================================================
+
         const toggleTodo = (forceOpen = null) => {
             const isVisible = dom.todoList.style.display === "flex";
             dom.todoList.style.display = (forceOpen === null ? !isVisible : forceOpen) ? "flex" : "none";
@@ -576,15 +588,12 @@
         const handleTaskCheck = (e) => {
             const checkbox = e.target;
             const textInput = checkbox.nextElementSibling;
+            textInput.readOnly = checkbox.checked;
+            textInput.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
             if (checkbox.checked) {
-                textInput.readOnly = true;
-                textInput.style.textDecoration = 'line-through';
                 const rect = checkbox.getBoundingClientRect();
                 const origin = { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight };
                 confetti({ particleCount: 50, spread: 60, origin: origin, colors: ['#8e2de2', '#4169e1', '#e0e0ff'] });
-            } else {
-                textInput.readOnly = false;
-                textInput.style.textDecoration = 'none';
             }
         };
 
@@ -609,44 +618,135 @@
             hideDialog(dom.deadlineConfirmBtn);
             appState.activeTaskElement = null;
         };
-        
-        // =======================================================
-        // CALENDAR, POMODORO, SHOPS - CORRECTED FUNCTION DECLARATIONS
-        // =======================================================
-        const renderCalendar = () => { const d=calendarState.date,y=d.getFullYear(),m=d.getMonth();dom.calendarMonthYear.innerHTML=`<i class="fas fa-calendar-alt"></i> ${d.toLocaleString('default',{month:'long'})} ${y}`;const f=new Date(y,m,1).getDay(),l=new Date(y,m+1,0).getDate(),t=new Date();dom.calendarGrid.innerHTML='';for(let i=0;i<f;i++)dom.calendarGrid.insertAdjacentHTML('beforeend',`<div class="calendar-day other-month"></div>`);for(let i=1;i<=l;i++){const e=document.createElement('div');e.className='calendar-day';e.textContent=i;if(i===t.getDate()&&m===t.getMonth()&&y===t.getFullYear())e.classList.add('today');dom.calendarGrid.appendChild(e)}};
-        const changeMonth = (dir) => { calendarState.date.setMonth(calendarState.date.getMonth() + dir); renderCalendar(); };
-        const resetPomodoro = () => { clearInterval(pomodoroState.timerId);pomodoroState.isRunning=false;pomodoroState.timeLeft=parseInt(dom.pomodoroDurationInput.value,10)*60||3600;dom.pomodoroTimer.textContent=formatTime(pomodoroState.timeLeft);dom.pomodoroStartBtn.innerHTML='<i class="fas fa-play"></i> START';dom.pomodoroStatus.textContent="Ready";};
-        const togglePomodoro = () => {if(pomodoroState.isRunning){clearInterval(pomodoroState.timerId);dom.pomodoroStartBtn.innerHTML='<i class="fas fa-play"></i> RESUME';dom.pomodoroStatus.textContent="Paused"}else{dom.pomodoroStartBtn.innerHTML='<i class="fas fa-pause"></i> PAUSE';dom.pomodoroStatus.textContent="Focusing...";pomodoroState.timerId=setInterval(()=>{pomodoroState.timeLeft--;dom.pomodoroTimer.textContent=formatTime(pomodoroState.timeLeft);if(pomodoroState.timeLeft<=0){clearInterval(pomodoroState.timerId);pomodoroState.isRunning=false;dom.pomodoroStatus.textContent="Complete!";dom.audio.pomodoroComplete.play()}},1000)}pomodoroState.isRunning=!pomodoroState.isRunning};
-        const populateAudioStore = () => { dom.audioTracksList.innerHTML = ''; lofiTracks.forEach((track, index) => { const isUnlocked = lofiState.unlockedTracks.includes(index); const canAfford = appState.userXP >= track.cost; dom.audioTracksList.insertAdjacentHTML('beforeend', `<div class="audio-track-item ${isUnlocked?'unlocked':'locked'}"><div class="track-info"><span class="track-name">${track.name}</span><span class="track-cost">${isUnlocked?'Unlocked':`Cost: ${track.cost} XP`}</span></div><button class="unlock-track-btn ${isUnlocked?'unlocked':''}" ${isUnlocked||!canAfford?'disabled':''}>${isUnlocked?'OWNED':'UNLOCK'}</button></div>`); }); };
 
-        // =======================================================
-        // LO-FI & YOUTUBE PLAYER LOGIC
-        // =======================================================
-        const loadLofiTrack = (autoPlay = true) => { if(!dom.audio.lofi) return; const track = lofiTracks[lofiState.currentTrackIndex]; dom.audio.lofi.src = track.url; dom.lofiPlayer.querySelector('.lofi-title').textContent = track.name; if (autoPlay) playLofi(); };
-        const playLofi = () => { const playPromise = dom.audio.lofi.play(); if (playPromise !== undefined) { playPromise.then(_ => { lofiState.isPlaying=true; dom.lofiPlay.style.display='none'; dom.lofiPause.style.display='inline-block'; }).catch(e => console.warn("Audio play failed. User interaction may be required.")); }};
-        const pauseLofi = () => { dom.audio.lofi.pause(); lofiState.isPlaying=false; dom.lofiPlay.style.display='inline-block'; dom.lofiPause.style.display='none'; };
+        const renderCalendar = () => {
+            const d = calendarState.date, y = d.getFullYear(), m = d.getMonth();
+            dom.calendarMonthYear.innerHTML = `<i class="fas fa-calendar-alt"></i> ${d.toLocaleString('default',{month:'long'})} ${y}`;
+            const firstDay = new Date(y, m, 1).getDay();
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const today = new Date();
+            dom.calendarGrid.innerHTML = '';
+            for (let i = 0; i < firstDay; i++) dom.calendarGrid.insertAdjacentHTML('beforeend', `<div class="calendar-day other-month"></div>`);
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                dayEl.textContent = i;
+                if (i === today.getDate() && m === today.getMonth() && y === today.getFullYear()) dayEl.classList.add('today');
+                dom.calendarGrid.appendChild(dayEl);
+            }
+        };
+
+        const changeMonth = (dir) => {
+            calendarState.date.setMonth(calendarState.date.getMonth() + dir);
+            renderCalendar();
+        };
+
+        const resetPomodoro = () => {
+            clearInterval(pomodoroState.timerId);
+            pomodoroState.isRunning = false;
+            pomodoroState.timeLeft = parseInt(dom.pomodoroDurationInput.value, 10) * 60 || 3600;
+            dom.pomodoroTimer.textContent = formatTime(pomodoroState.timeLeft);
+            dom.pomodoroStartBtn.innerHTML = '<i class="fas fa-play"></i> START';
+            dom.pomodoroStatus.textContent = "Ready";
+        };
+
+        const togglePomodoro = () => {
+            if (pomodoroState.isRunning) {
+                clearInterval(pomodoroState.timerId);
+                dom.pomodoroStartBtn.innerHTML = '<i class="fas fa-play"></i> RESUME';
+                dom.pomodoroStatus.textContent = "Paused";
+            } else {
+                dom.pomodoroStartBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSE';
+                dom.pomodoroStatus.textContent = "Focusing...";
+                pomodoroState.timerId = setInterval(() => {
+                    pomodoroState.timeLeft--;
+                    dom.pomodoroTimer.textContent = formatTime(pomodoroState.timeLeft);
+                    if (pomodoroState.timeLeft <= 0) {
+                        clearInterval(pomodoroState.timerId);
+                        pomodoroState.isRunning = false;
+                        dom.pomodoroStatus.textContent = "Complete!";
+                        if (dom.audio.pomodoroComplete) dom.audio.pomodoroComplete.play();
+                    }
+                }, 1000);
+            }
+            pomodoroState.isRunning = !pomodoroState.isRunning;
+        };
+
+        const populateAudioStore = () => {
+            dom.audioTracksList.innerHTML = '';
+            lofiTracks.forEach((track, index) => {
+                const isUnlocked = lofiState.unlockedTracks.includes(index);
+                const canAfford = appState.userXP >= track.cost;
+                dom.audioTracksList.insertAdjacentHTML('beforeend', `<div class="audio-track-item ${isUnlocked ? 'unlocked' : 'locked'}"><div class="track-info"><span class="track-name">${track.name}</span><span class="track-cost">${isUnlocked ? 'Unlocked' : `Cost: ${track.cost} XP`}</span></div><button class="unlock-track-btn ${isUnlocked ? 'unlocked' : ''}" ${isUnlocked || !canAfford ? 'disabled' : ''}>${isUnlocked ? 'OWNED' : 'UNLOCK'}</button></div>`);
+            });
+        };
+
+        const loadLofiTrack = (autoPlay = true) => {
+            if (!dom.audio.lofi) return;
+            const track = lofiTracks[lofiState.currentTrackIndex];
+            dom.audio.lofi.src = track.url;
+            dom.lofiPlayer.querySelector('.lofi-title').textContent = track.name;
+            if (autoPlay) playLofi();
+        };
+
+        const playLofi = () => {
+            const playPromise = dom.audio.lofi.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    lofiState.isPlaying = true;
+                    dom.lofiPlay.style.display = 'none';
+                    dom.lofiPause.style.display = 'inline-block';
+                }).catch(e => console.warn("Audio play failed. User interaction required."));
+            }
+        };
+
+        const pauseLofi = () => { dom.audio.lofi.pause(); lofiState.isPlaying = false; dom.lofiPlay.style.display = 'inline-block'; dom.lofiPause.style.display = 'none'; };
         const nextLofi = () => { let attempts = 0; do { lofiState.currentTrackIndex = (lofiState.currentTrackIndex + 1) % lofiTracks.length; attempts++; } while (!lofiState.unlockedTracks.includes(lofiState.currentTrackIndex) && attempts < lofiTracks.length); loadLofiTrack(); };
         const prevLofi = () => { let attempts = 0; do { lofiState.currentTrackIndex = (lofiState.currentTrackIndex - 1 + lofiTracks.length) % lofiTracks.length; attempts++; } while (!lofiState.unlockedTracks.includes(lofiState.currentTrackIndex) && attempts < lofiTracks.length); loadLofiTrack(); };
 
         window.onYouTubeIframeAPIReady = () => { youtubeState.apiReady = true; };
-        const addUrlInput = () => { const newUrlInput = `<div class="url-container"><input type="text" class="youtube-url" placeholder="Another YouTube URL..."><button class="remove-task" data-action="remove-task" style="padding: 8px 12px; margin: 0; background: var(--danger);"><i class="fas fa-trash"></i></button></div>`; dom.urlInputs.insertAdjacentHTML('beforeend', newUrlInput); };
-        const startPlayback = () => { if(!youtubeState.apiReady)return alert("YouTube API is not ready yet.");const urls=Array.from(document.querySelectorAll('.youtube-url')).map(i=>i.value).filter(Boolean);if(urls.length===0)return alert("Please enter at least one YouTube URL.");youtubeState.playlist=urls.map(u=>({id:extractVideoID(u),url:u})).filter(v=>v.id);if(youtubeState.playlist.length===0)return alert("No valid YouTube video URLs found.");if(youtubeState.player)youtubeState.player.destroy();youtubeState.player=new YT.Player('player',{height:'100%',width:'100%',videoId:youtubeState.playlist[0].id,playerVars:{'autoplay':1,'controls':1,'rel':0,'modestbranding':1},events:{'onStateChange':onPlayerStateChange}});dom.youtubeInputContainer.style.display='none';dom.playerContainer.style.display='block';dom.youtubeLecturePageControls.style.display='flex';dom.videoSidebarToggleBtn.style.display='block';populateVideoSidebar()};
-        const onPlayerStateChange=(event)=>{if(event.data===YT.PlayerState.ENDED){const currentVideoUrl=event.target.getVideoUrl();const currentIndex=youtubeState.playlist.findIndex(v=>currentVideoUrl.includes(v.id));const nextIndex=(currentIndex+1)%youtubeState.playlist.length;youtubeState.player.loadVideoById(youtubeState.playlist[nextIndex].id)}};
+        
+        const addUrlInput = () => dom.urlInputs.insertAdjacentHTML('beforeend', `<div class="url-container"><input type="text" class="youtube-url" placeholder="Another YouTube URL..."><button class="remove-task" data-action="remove-task" style="padding: 8px 12px; margin: 0; background: var(--danger);"><i class="fas fa-trash"></i></button></div>`);
+        
+        const startPlayback = () => {
+            if (!youtubeState.apiReady) return alert("YouTube API is not ready yet.");
+            const urls = Array.from(document.querySelectorAll('.youtube-url')).map(i => i.value).filter(Boolean);
+            if (urls.length === 0) return alert("Please enter at least one YouTube URL.");
+            youtubeState.playlist = urls.map(u => ({ id: extractVideoID(u), url: u })).filter(v => v.id);
+            if (youtubeState.playlist.length === 0) return alert("No valid YouTube video URLs found.");
+            if (youtubeState.player) youtubeState.player.destroy();
+            youtubeState.player = new YT.Player('player', { height: '100%', width: '100%', videoId: youtubeState.playlist[0].id, playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'modestbranding': 1 }, events: { 'onStateChange': onPlayerStateChange } });
+            dom.youtubeInputContainer.style.display = 'none';
+            dom.playerContainer.style.display = 'block';
+            dom.youtubeLecturePageControls.style.display = 'flex';
+            dom.videoSidebarToggleBtn.style.display = 'block';
+            populateVideoSidebar();
+        };
+
+        const onPlayerStateChange = (event) => {
+            if (event.data === YT.PlayerState.ENDED) {
+                const currentVideoUrl = event.target.getVideoUrl();
+                const currentIndex = youtubeState.playlist.findIndex(v => currentVideoUrl.includes(v.id));
+                const nextIndex = (currentIndex + 1) % youtubeState.playlist.length;
+                youtubeState.player.loadVideoById(youtubeState.playlist[nextIndex].id);
+            }
+        };
         const populateVideoSidebar = () => { dom.videoThumbnailList.innerHTML = ''; youtubeState.playlist.forEach(v => dom.videoThumbnailList.insertAdjacentHTML('beforeend', `<img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" class="thumbnail" data-videoid="${v.id}" alt="Video thumbnail">`)); };
-        const exitFocusSession = () => { if(youtubeState.player)youtubeState.player.destroy();youtubeState.player=null;dom.youtubeInputContainer.style.display='block';dom.playerContainer.style.display='none';dom.youtubeLecturePageControls.style.display='none';dom.videoSidebarToggleBtn.style.display='none';dom.videoSidebar.classList.remove('open')};
+        const exitFocusSession = () => { if (youtubeState.player) youtubeState.player.destroy(); youtubeState.player = null; dom.youtubeInputContainer.style.display = 'block'; dom.playerContainer.style.display = 'none'; dom.youtubeLecturePageControls.style.display = 'none'; dom.videoSidebarToggleBtn.style.display = 'none'; dom.videoSidebar.classList.remove('open') };
 
         // =======================================================
         // INITIALIZATION
         // =======================================================
         document.addEventListener("DOMContentLoaded", () => {
-            const ids=['topNavBar','landingPage','signinForm','homePage','youtubeLecturePage','profile','focusStats','navLogo','navClockTime','navClockPeriod','navButtons','navStreakDisplay','navProfileBtn','welcomeMessage','dateTimeDisplay','upcomingTaskDisplay','focusStatus','motivationQuote','youtubeInputContainer','playlistSelect','urlInputs','playlistName','playerContainer','player','videoSidebarToggleBtn','youtubeLecturePageControls','restartBtn','videoSidebar','videoThumbnailList','profileContainer','profileIcon','profileUsername','profileLevel','profileXP','profileStreak','profileSettings','browserNotificationSetting','focusStatsContainer','statsDisplay','statsTotalFocusTime','statsTotalDistractions','statsTotalVideosWatched','statsCurrentStreak','focusCalendar','calendarHeader','prevMonthBtn','calendarMonthYear','nextMonthBtn','calendarGrid','timerDisplay','timerText','progressBar','progressFill','pointsDisplay','achievementLevel','todoList','tasks','todoBadge','lofiPlayer','lofiPrev','lofiPlay','lofiPause','lofiNext','fireBox','aiPopup','achievementOverlay','confirmationDialog','confirmationDialogText','confirmBtn','cancelBtn','streakShieldDialog','streakShieldConfirmBtn','streakShieldCancelBtn','doublePointsDialog','doublePointsConfirmBtn','doublePointsCancelBtn','deadlineDialog','deadlineDate','deadlineTime','taskDifficulty','deadlineConfirmBtn','deadlineCancelBtn','sessionCompleteDialog','sessionContinueBtn','sessionEndBtn','mysteryBoxPopup','mysteryRewardText','openMysteryBox','closeMysteryBoxBtn','audioTracksStore','audioTracksList','closeAudioStore','pomodoroOverlay','pomodoroContainer','pomodoroDurationSetting','pomodoroDurationInput','pomodoroTimer','pomodoroStatus','pomodoroControls','pomodoroStartBtn','pomodoroResetBtn','pomodoroCloseBtn','logoutBtn'];
+            // Cache all DOM elements
+            const ids = ['topNavBar','landingPage','signinForm','homePage','youtubeLecturePage','profile','focusStats','navLogo','navClockTime','navClockPeriod','navButtons','navStreakDisplay','navProfileBtn','welcomeMessage','dateTimeDisplay','upcomingTaskDisplay','focusStatus','motivationQuote','youtubeInputContainer','playlistSelect','urlInputs','playlistName','playerContainer','player','videoSidebarToggleBtn','youtubeLecturePageControls','restartBtn','videoSidebar','videoThumbnailList','profileContainer','profileIcon','profileUsername','profileLevel','profileXP','profileStreak','profileSettings','browserNotificationSetting','focusStatsContainer','statsDisplay','statsTotalFocusTime','statsTotalDistractions','statsTotalVideosWatched','statsCurrentStreak','focusCalendar','calendarHeader','prevMonthBtn','calendarMonthYear','nextMonthBtn','calendarGrid','timerDisplay','timerText','progressBar','progressFill','pointsDisplay','achievementLevel','todoList','tasks','todoBadge','lofiPlayer','lofiPrev','lofiPlay','lofiPause','lofiNext','fireBox','aiPopup','achievementOverlay','confirmationDialog','confirmationDialogText','confirmBtn','cancelBtn','streakShieldDialog','streakShieldConfirmBtn','streakShieldCancelBtn','doublePointsDialog','doublePointsConfirmBtn','doublePointsCancelBtn','deadlineDialog','deadlineDate','deadlineTime','taskDifficulty','deadlineConfirmBtn','deadlineCancelBtn','sessionCompleteDialog','sessionContinueBtn','sessionEndBtn','mysteryBoxPopup','mysteryRewardText','openMysteryBox','closeMysteryBoxBtn','audioTracksStore','audioTracksList','closeAudioStore','pomodoroOverlay','pomodoroContainer','pomodoroDurationSetting','pomodoroDurationInput','pomodoroTimer','pomodoroStatus','pomodoroControls','pomodoroStartBtn','pomodoroResetBtn','pomodoroCloseBtn','logoutBtn'];
             ids.forEach(id => { const el = document.getElementById(id); if (el) dom[id] = el; });
             dom.sidebarTrigger = document.querySelector('.sidebar-trigger');
             dom.gameSidebar = document.querySelector('.game-sidebar');
             dom.audio = { focus: document.getElementById('focusAudio'), lofi: document.getElementById('lofiAudio'), pomodoroComplete: document.getElementById('pomodoroCompleteAudio'), levelUp: document.getElementById('levelUpAudio'), achievement: document.getElementById('achievementAudio') };
             
+            // Set up all event listeners
             document.body.addEventListener('click', (e) => { const target = e.target.closest('[data-action]'); if (target) { e.preventDefault(); handleAction(target.dataset.action, target); } });
-
             dom.sidebarTrigger?.addEventListener('click', toggleSidebar);
             dom.logoutBtn?.addEventListener('click', () => auth.signOut());
             dom.pomodoroDurationInput?.addEventListener('change', resetPomodoro);
@@ -660,7 +760,7 @@
             document.getElementById('doublePointsBtn')?.addEventListener('click', () => showDialog('doublePointsDialog'));
             document.getElementById('audioStoreBtn')?.addEventListener('click', () => { populateAudioStore(); showDialog('audioTracksStore'); });
 
-             console.log("Initialization complete. Awaiting Firebase auth state...");
+            console.log("Initialization complete. Awaiting Firebase auth state...");
         });
 
     })();
