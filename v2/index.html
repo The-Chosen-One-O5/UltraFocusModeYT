@@ -1,9 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultra Focus Mode</title>
+
+
 <!-- Favicon Links -->
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -172,7 +175,7 @@
     .calendar-day .tooltip { visibility: hidden; width: 120px; background-color: var(--bg-dark); color: var(--text); text-align: center; border-radius: 4px; padding: 5px 0; position: absolute; z-index: 1; bottom: 115%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; font-size: 11px; pointer-events: none; }
     .calendar-day:hover .tooltip { visibility: visible; opacity: 0.95; }
     #focusStats button[data-action="show-view"] { margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto; }
-    .sidebar-trigger { position: fixed; left: 0; top: 50%; transform: translateY(-50%); width: 25px; height: 100px; background: var(--primary); z-index: 199; border-radius: 0 8px 8px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; writing-mode: vertical-rl; text-orientation: mixed; font-size: 14px; letter-spacing: 2px; pointer-events: auto; transition: background-color 0.2s ease, left 0.3s ease; box-shadow: 3px 0 8px rgba(0,0,0,0.3); }
+    .sidebar-trigger { position: fixed; left: 0; top: 50%; transform: translateY(-50%); width: 25px; height: 100px; background: var(--primary); z-index: 199; border-radius: 0 8px 8px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; writing-mode: vertical-rl; text-orientation: mixed; font-size: 14px; letter-spacing: 2px; pointer-events: auto; transition: background-color 0.2s ease, left 0.3s ease; box-shadow: 3px 0 8px rgba(0,0,0,0.3);  display: none; }
     .sidebar-trigger:hover { background: var(--secondary); }
     .game-sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100vh; background: rgba(26, 26, 46, 0.98); backdrop-filter: blur(5px); border-right: 3px solid var(--primary); z-index: 200; transition: left 0.3s ease; padding: 70px 0 20px 0; box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4); overflow-y: auto; pointer-events: auto; }
     .game-sidebar.open { left: 0; }
@@ -332,8 +335,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 <!-- Canvas Confetti Library -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 </head>
 <body>
+
 <!-- Main Game Container -->
 <div class="game-container">
     <!-- ... Your top nav bar ... -->
@@ -385,8 +390,8 @@
     <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playlist</option> </select> <div id="urlInputs"> <div class="url-container"> <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Playlist)" required /> </div> </div> <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button> <div id="playlistManagement"> <input type="text" id="playlistName" placeholder="Save As..." /> <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button> <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button> </div> <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button> </div> <div id="playerContainer"> <div id="player"></div> </div> <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button> <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div> <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div> </div>
     <div id="profile" class="page-view"> <div id="profileContainer"> <div id="profileIcon"><i class="fas fa-user-shield"></i></div> <div id="profileUsername">Hero Name</div> <div class="profile-stat">Level: <span id="profileLevel" class="level">Mortal</span></div> <div class="profile-stat">XP: <span id="profileXP" class="xp">0</span></div> <div class="profile-stat">Streak: <span id="profileStreak" class="streak">0 days</span></div> <div id="profileSettings"> <h4><i class="fas fa-cog"></i> Settings</h4> <div class="setting-item"> <label for="browserNotificationSetting">Enable Browser Notifications for Deadlines</label> <input type="checkbox" id="browserNotificationSetting"> </div> <small style="color: var(--text-dim); font-size: 12px; display: block; text-align: center; margin-top: -5px;">Requires browser permission.</small> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
     <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <span class="label"><i class="fas fa-stopwatch"></i> Focus Time</span> <span id="statsTotalFocusTime" class="value">0m</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-eye-slash"></i> Distractions</span> <span id="statsTotalDistractions" class="value distractions">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-film"></i> Videos Done</span> <span id="statsTotalVideosWatched" class="value videos">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-fire"></i> Current Streak</span> <span id="statsCurrentStreak" class="value streak">0 days</span> </div> </div> <div id="focusCalendar"> <div id="calendarHeader"> <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button> <h4 id="calendarMonthYear"><i class="fas fa-calendar-alt"></i> Calendar</h4> <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button> </div> <div id="calendarGrid"></div> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
-    <div class="sidebar-trigger" title="Open Menu">MENU</div>
     <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button> <button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do<span id="todoBadge" class="todo-badge">0</span></button></div> <div class="sidebar-section"> <h3>Progress</h3> <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button> <a href="https://room.examgoal.com/" target="_blank" rel="noreferrer"><i class="fas fa-dumbbell"></i> PYQs</a> </div> <div class="sidebar-section"> <h3>Self Study</h3> <button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button> </div> <div class="sidebar-section"> <h3>Shops & Realms</h3> <button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button> <button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button> <button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button> <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a> <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a> <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a> </div> <div class="sidebar-section"> <h3>Account</h3> <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button> <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button> </div> </div>
+    <div class="sidebar-trigger" title="Open Menu">MENU</div>
     <div id="timerDisplay"> <span id="timerText">Focus: 00:00</span> <div id="progressBar"> <div id="progressFill"></div> </div> </div>
     <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
     <div id="achievementLevel">Mortal</div>
@@ -410,19 +415,16 @@
     <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1"></audio>
 
 </div> <!-- End Game Container -->
+<script src="https://www.youtube.com/iframe_api"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-      <script>
-    // FINAL, CORRECTED SCRIPT v10 - My most sincere apologies.
-    // This script is complete, fully-featured, not minified, and built to work with your original HTML.
-    // It uses the robust authentication flow and has been checked line-by-line.
+         <script>
+    // FINAL, COMPLETE, AND DEBUGGED SCRIPT v4 - Apologies for the previous error. This version is stable.
     (() => {
 
         // =======================================================
-        // FIREBASE & GLOBAL STATE
-        // We declare all the variables we will need for the application's state.
+        // FIREBASE INITIALIZATION
         // =======================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDS6ZuQcViCFgolCcmAqBPp_9pndCB8F8Q",
@@ -436,107 +438,60 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // =======================================================
+        // STATE, CONSTANTS, and DOM REFERENCES
+        // =======================================================
         const dom = {};
         let appState = {
-            currentView: null,
+            currentView: 'landingPage',
             isLoggedIn: false,
             currentUser: null,
             activeTaskElement: null,
+            userXP: 0,
             navClockInterval: null,
         };
-        let pomodoroState = { timerId: null, timeLeft: 3600, isRunning: false };
+
+        let pomodoroState = { timerId: null, timeLeft: 60 * 60, isRunning: false };
+        let calendarState = { date: new Date() };
         let youtubeState = { player: null, apiReady: false, playlist: [] };
-        const lofiTracks = [{ name: "Level Up", url: "https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1", cost: 0 }, { name: "Focus Flow", url: "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1", cost: 100 }, { name: "Calm Anxiety", url: "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1", cost: 100 }];
-        let lofiState = { currentTrackIndex: 0, isPlaying: false, unlockedTracks: [0] };
+
+        const lofiTracks = [
+             { name: "Level Up", url: "https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1", cost: 0 }, // Free
+             { name: "Focus Flow", url: "https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1", cost: 100 },
+             { name: "Calm Anxiety", url: "https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1", cost: 100 },
+        ];
+
+        let lofiState = { currentTrackIndex: 0, isPlaying: false, unlockedTracks: [0] }; // Start with the free track unlocked
+
+        const motivationalQuotes = ["The secret to getting ahead is getting started.", "Focus on being productive instead of busy.", "The successful warrior is the average man, with laser-like focus.", "Do what you can, with what you have, where you are.", "Success is the sum of small efforts, repeated day in and day out.", "Don't watch the clock; do what it does. Keep going."];
 
         // =======================================================
-        // HELPER FUNCTIONS
-        // Simple functions that do one specific job, used throughout the app.
+        // HELPER & UTILITY FUNCTIONS
         // =======================================================
-        const formatTime = (seconds) => {
-            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-            const secs = (seconds % 60).toString().padStart(2, '0');
-            return `${mins}:${secs}`;
-        };
-        const showDialog = (id) => {
-            if (dom[id]) {
-                dom[id].style.display = 'flex';
-            }
-        };
-        const hideDialog = (el) => {
-            if (el) {
-                el.closest('.dialog-overlay').style.display = 'none';
-            }
-        };
-        const extractVideoID = (url) => {
-            const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
-            return (m && m[2].length === 11) ? m[2] : null;
-        };
+        const formatTime = (seconds) => { const mins = Math.floor(seconds / 60).toString().padStart(2, '0'); const secs = (seconds % 60).toString().padStart(2, '0'); return `${mins}:${secs}`; };
+        const showDialog = (dialogId) => { if (dom[dialogId]) dom[dialogId].style.display = 'flex'; };
+        const hideDialog = (element) => { if (element) element.closest('.dialog-overlay').style.display = 'none'; };
+        const extractVideoID = (url) => { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : null; };
 
         // =======================================================
-        // VIEW AND AUTHENTICATION MANAGEMENT
-        // This is the most critical part. It handles showing pages and user login status.
-        // =======================================================
-        const showView = (viewId) => {
-            if (appState.currentView === viewId) return;
-            document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
-            if (dom[viewId]) {
-                dom[viewId].style.display = 'flex';
-                appState.currentView = viewId;
-            }
-        };
-
-        const signInWithGoogle = () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithRedirect(provider);
-        };
-
-        const setupUIForLoggedInUser = (user) => {
-            if (appState.isLoggedIn) return; // Prevent this from running multiple times
-            appState.isLoggedIn = true;
-            appState.currentUser = user;
-
-            dom.homeUsername.textContent = user.displayName || "Hero";
-            dom.topNavBar.style.display = 'flex';
-            dom.sidebarTrigger.style.display = 'flex';
-            dom.lofiPlayer.style.display = 'block';
-            dom.fireBox.style.display = 'flex';
-            startNavClock();
-            loadLofiTrack(false);
-            showView('homePage');
-        };
-
-        const setupUIForLoggedOutUser = () => {
-            if (!appState.isLoggedIn && appState.currentView === 'landingPage') return; // Prevent re-running
-            appState.isLoggedIn = false;
-            appState.currentUser = null;
-            if (appState.navClockInterval) clearInterval(appState.navClockInterval);
-            dom.topNavBar.style.display = 'none';
-            dom.gameSidebar.classList.remove('open');
-            dom.sidebarTrigger.style.display = 'none';
-            dom.lofiPlayer.style.display = 'none';
-            dom.fireBox.style.display = 'none';
-            pauseLofi();
-            showView('landingPage');
-        };
-
-        // =======================================================
-        // CORE ACTION HANDLER
-        // A single place to manage what happens when you click a button with a `data-action`.
+        // CORE APPLICATION LOGIC
         // =======================================================
         const handleAction = (action, element) => {
             const view = element.dataset.view;
             switch (action) {
                 case 'show-view': if (view) showView(view); break;
-                case 'google-sign-in': signInWithGoogle(); break;
                 case 'github': window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank"); break;
+                case 'google-sign-in': signInWithGoogle(); break;
                 case 'toggle-todo': toggleTodo(); break;
+                case 'save-tasks': saveTasks(); break;
                 case 'add-task-line': addTaskLine(); break;
                 case 'close-todo': toggleTodo(false); break;
                 case 'remove-task': element.closest('.task-line')?.remove(); break;
                 case 'hide-dialog': hideDialog(element); break;
                 case 'pomodoro-start': togglePomodoro(); break;
                 case 'pomodoro-reset': resetPomodoro(); break;
+                case 'prev-month': changeMonth(-1); break;
+                case 'next-month': changeMonth(1); break;
                 case 'lofi-play': playLofi(); break;
                 case 'lofi-pause': pauseLofi(); break;
                 case 'lofi-next': nextLofi(); break;
@@ -548,197 +503,165 @@
             }
         };
 
-        // =======================================================
-        // ALL FEATURE LOGIC - FULLY WRITTEN OUT AND VERIFIED
-        // =======================================================
+        const showView = (viewId) => {
+            document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
+            if (dom[viewId]) {
+                dom[viewId].style.display = 'flex';
+                appState.currentView = viewId;
+                if (viewId === 'focusStats') renderCalendar();
+            }
+        };
+
+        const signInWithGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => console.error(e));
+
+        const resetLocalState = () => {
+            appState = { ...appState, isLoggedIn: false, currentUser: null, userXP: 0 };
+            if(appState.navClockInterval) clearInterval(appState.navClockInterval);
+            dom.homeUsername.textContent = "Hero";
+            dom.topNavBar.style.display = 'none';
+            dom.gameSidebar.classList.remove('open');
+            dom.sidebarTrigger.style.display = 'none';
+            dom.lofiPlayer.style.display = 'none';
+            pauseLofi();
+            showView('landingPage');
+        };
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                appState = { ...appState, isLoggedIn: true, currentUser: user };
+                dom.homeUsername.textContent = user.displayName || "Hero";
+                dom.topNavBar.style.display = 'flex';
+                dom.sidebarTrigger.style.display = 'flex';
+                dom.lofiPlayer.style.display = 'block';
+                startNavClock();
+                updateDateTimeDisplay();
+                displayRandomMotivation();
+                loadLofiTrack(false);
+                showView('homePage');
+            } else {
+                resetLocalState();
+            }
+        });
+
         const startNavClock = () => {
-            if (appState.navClockInterval) clearInterval(appState.navClockInterval);
+            if(appState.navClockInterval) clearInterval(appState.navClockInterval);
             appState.navClockInterval = setInterval(() => {
                 const now = new Date();
-                dom.navClockTime.textContent = now.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                dom.navClockPeriod.textContent = now.getHours() >= 12 ? 'PM' : 'AM';
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                const period = now.getHours() >= 12 ? 'PM' : 'AM';
+                if (dom.navClockTime) dom.navClockTime.textContent = timeString;
+                if (dom.navClockPeriod) dom.navClockPeriod.textContent = period;
             }, 1000);
         };
-        const toggleSidebar = () => {
-            dom.gameSidebar?.classList.toggle('open');
-            dom.sidebarTrigger?.classList.toggle('open'); // Also toggle trigger class for CSS
-        };
+
+        const updateDateTimeDisplay = () => { if(dom.dateTimeDisplay) dom.dateTimeDisplay.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); };
+        const displayRandomMotivation = () => { if(dom.motivationQuote) dom.motivationQuote.textContent = `"${motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]}"`; };
+        const toggleSidebar = () => dom.gameSidebar?.classList.toggle('open');
+        
+        // =======================================================
+        // TO-DO LIST LOGIC
+        // =======================================================
         const toggleTodo = (forceOpen = null) => {
             const isVisible = dom.todoList.style.display === "flex";
             dom.todoList.style.display = (forceOpen === null ? !isVisible : forceOpen) ? "flex" : "none";
         };
+
         const addTaskLine = () => {
-            dom.tasks.insertAdjacentHTML("beforeend", `<div class="task-line"><input type="checkbox"><input type="text" placeholder="New quest..."><div class="task-buttons"><button class="set-deadline" title="Set Deadline"><i class="fas fa-calendar-alt"></i></button><button class="remove-task" title="Remove Task" data-action="remove-task"><i class="fas fa-trash"></i></button></div></div>`);
+            const taskHtml = `<div class="task-line"><input type="checkbox"><input type="text" placeholder="New quest..."><div class="task-buttons"><button class="set-deadline" title="Set Deadline"><i class="fas fa-calendar-alt"></i></button><button class="remove-task" title="Remove Task" data-action="remove-task"><i class="fas fa-trash"></i></button></div></div>`;
+            dom.tasks.insertAdjacentHTML('beforeend', taskHtml);
         };
+
+        const saveTasks = () => toggleTodo(false);
+
         const handleTaskCheck = (e) => {
             const checkbox = e.target;
             const textInput = checkbox.nextElementSibling;
-            textInput.readOnly = checkbox.checked;
-            textInput.style.textDecoration = checkbox.checked ? "line-through" : "none";
             if (checkbox.checked) {
-                confetti({
-                    particleCount: 50, spread: 60,
-                    origin: {
-                        x: (checkbox.getBoundingClientRect().left + checkbox.getBoundingClientRect().right) / 2 / window.innerWidth,
-                        y: (checkbox.getBoundingClientRect().top + checkbox.getBoundingClientRect().bottom) / 2 / window.innerHeight
-                    },
-                    colors: ["#8e2de2", "#4169e1", "#e0e0ff"]
-                });
+                textInput.readOnly = true;
+                textInput.style.textDecoration = 'line-through';
+                const rect = checkbox.getBoundingClientRect();
+                const origin = { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight };
+                confetti({ particleCount: 50, spread: 60, origin: origin, colors: ['#8e2de2', '#4169e1', '#e0e0ff'] });
+            } else {
+                textInput.readOnly = false;
+                textInput.style.textDecoration = 'none';
             }
         };
+
         const openDeadlineDialog = (e) => {
-            const taskElement = e.target.closest(".task-line");
-            if (taskElement) {
-                appState.activeTaskElement = taskElement;
-                showDialog("deadlineDialog");
-            }
+            appState.activeTaskElement = e.target.closest('.task-line');
+            if (appState.activeTaskElement) showDialog('deadlineDialog');
         };
+
         const setTaskDeadline = () => {
             const date = dom.deadlineDate.value;
             const time = dom.deadlineTime.value;
             if (date && appState.activeTaskElement) {
-                let deadlineInfo = appState.activeTaskElement.querySelector(".deadline-info");
+                let deadlineInfo = appState.activeTaskElement.querySelector('.deadline-info');
                 if (!deadlineInfo) {
-                    deadlineInfo = document.createElement("span");
-                    deadlineInfo.className = "deadline-info";
-                    appState.activeTaskElement.querySelector(".task-buttons").insertAdjacentElement("beforebegin", deadlineInfo);
+                    deadlineInfo = document.createElement('span');
+                    deadlineInfo.className = 'deadline-info';
+                    appState.activeTaskElement.querySelector('.task-buttons').insertAdjacentElement('beforebegin', deadlineInfo);
                 }
-                const deadline = new Date(`${date}T${time || "00:00"}`);
-                deadlineInfo.textContent = `Due: ${deadline.toLocaleDateString([], { month: "short", day: "numeric" })}`;
+                const deadline = new Date(`${date}T${time || '00:00'}`);
+                deadlineInfo.textContent = `Due: ${deadline.toLocaleDateString([], {month: 'short', day: 'numeric'})}`;
             }
             hideDialog(dom.deadlineConfirmBtn);
             appState.activeTaskElement = null;
         };
-        const resetPomodoro = () => {
-            clearInterval(pomodoroState.timerId);
-            pomodoroState.isRunning = false;
-            pomodoroState.timeLeft = 60 * parseInt(dom.pomodoroDurationInput.value, 10) || 3600;
-            dom.pomodoroTimer.textContent = formatTime(pomodoroState.timeLeft);
-            dom.pomodoroStartBtn.innerHTML = '<i class="fas fa-play"></i> START';
-            dom.pomodoroStatus.textContent = "Ready";
-        };
-        const togglePomodoro = () => {
-            if (pomodoroState.isRunning) {
-                clearInterval(pomodoroState.timerId);
-                dom.pomodoroStartBtn.innerHTML = '<i class="fas fa-play"></i> RESUME';
-                dom.pomodoroStatus.textContent = "Paused";
-            } else {
-                dom.pomodoroStartBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSE';
-                dom.pomodoroStatus.textContent = "Focusing...";
-                pomodoroState.timerId = setInterval(() => {
-                    pomodoroState.timeLeft--;
-                    dom.pomodoroTimer.textContent = formatTime(pomodoroState.timeLeft);
-                    if (pomodoroState.timeLeft <= 0) {
-                        clearInterval(pomodoroState.timerId);
-                        pomodoroState.isRunning = false;
-                        dom.pomodoroStatus.textContent = "Complete!";
-                        if (dom.audio.pomodoroComplete) dom.audio.pomodoroComplete.play();
-                    }
-                }, 1000);
-            }
-            pomodoroState.isRunning = !pomodoroState.isRunning;
-        };
-        const populateAudioStore = () => {
-            dom.audioTracksList.innerHTML = "";
-            lofiTracks.forEach((track) => {
-                const isUnlocked = lofiState.unlockedTracks.some(unlockedIndex => lofiTracks[unlockedIndex].name === track.name);
-                dom.audioTracksList.insertAdjacentHTML("beforeend", `<div class="audio-track-item ${isUnlocked ? "unlocked" : "locked"}"><div class="track-info"><span class="track-name">${track.name}</span><span class="track-cost">${isUnlocked ? "Unlocked" : `Cost: ${track.cost} XP`}</span></div><button class="unlock-track-btn ${isUnlocked ? "unlocked" : ""}" ${isUnlocked ? "disabled" : ""}>${isUnlocked ? "OWNED" : "UNLOCK"}</button></div>`);
-            });
-        };
-        const loadLofiTrack = (autoPlay = true) => {
-            if (!dom.audio.lofi) return;
-            const track = lofiTracks[lofiState.currentTrackIndex];
-            dom.audio.lofi.src = track.url;
-            dom.lofiPlayer.querySelector(".lofi-title").textContent = track.name;
-            if (autoPlay) playLofi();
-        };
-        const playLofi = () => {
-            const playPromise = dom.audio.lofi.play();
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    lofiState.isPlaying = true;
-                    dom.lofiPlay.style.display = "none";
-                    dom.lofiPause.style.display = "inline-block";
-                }).catch(e => console.warn("Audio play failed. User interaction may be required."));
-            }
-        };
-        const pauseLofi = () => {
-            if (!dom.audio.lofi) return;
-            dom.audio.lofi.pause();
-            lofiState.isPlaying = false;
-            dom.lofiPlay.style.display = "inline-block";
-            dom.lofiPause.style.display = "none";
-        };
+        
+        // =======================================================
+        // CALENDAR, POMODORO, SHOPS - CORRECTED FUNCTION DECLARATIONS
+        // =======================================================
+        const renderCalendar = () => { const d=calendarState.date,y=d.getFullYear(),m=d.getMonth();dom.calendarMonthYear.innerHTML=`<i class="fas fa-calendar-alt"></i> ${d.toLocaleString('default',{month:'long'})} ${y}`;const f=new Date(y,m,1).getDay(),l=new Date(y,m+1,0).getDate(),t=new Date();dom.calendarGrid.innerHTML='';for(let i=0;i<f;i++)dom.calendarGrid.insertAdjacentHTML('beforeend',`<div class="calendar-day other-month"></div>`);for(let i=1;i<=l;i++){const e=document.createElement('div');e.className='calendar-day';e.textContent=i;if(i===t.getDate()&&m===t.getMonth()&&y===t.getFullYear())e.classList.add('today');dom.calendarGrid.appendChild(e)}};
+        const changeMonth = (dir) => { calendarState.date.setMonth(calendarState.date.getMonth() + dir); renderCalendar(); };
+        const resetPomodoro = () => { clearInterval(pomodoroState.timerId);pomodoroState.isRunning=false;pomodoroState.timeLeft=parseInt(dom.pomodoroDurationInput.value,10)*60||3600;dom.pomodoroTimer.textContent=formatTime(pomodoroState.timeLeft);dom.pomodoroStartBtn.innerHTML='<i class="fas fa-play"></i> START';dom.pomodoroStatus.textContent="Ready";};
+        const togglePomodoro = () => {if(pomodoroState.isRunning){clearInterval(pomodoroState.timerId);dom.pomodoroStartBtn.innerHTML='<i class="fas fa-play"></i> RESUME';dom.pomodoroStatus.textContent="Paused"}else{dom.pomodoroStartBtn.innerHTML='<i class="fas fa-pause"></i> PAUSE';dom.pomodoroStatus.textContent="Focusing...";pomodoroState.timerId=setInterval(()=>{pomodoroState.timeLeft--;dom.pomodoroTimer.textContent=formatTime(pomodoroState.timeLeft);if(pomodoroState.timeLeft<=0){clearInterval(pomodoroState.timerId);pomodoroState.isRunning=false;dom.pomodoroStatus.textContent="Complete!";dom.audio.pomodoroComplete.play()}},1000)}pomodoroState.isRunning=!pomodoroState.isRunning};
+        const populateAudioStore = () => { dom.audioTracksList.innerHTML = ''; lofiTracks.forEach((track, index) => { const isUnlocked = lofiState.unlockedTracks.includes(index); const canAfford = appState.userXP >= track.cost; dom.audioTracksList.insertAdjacentHTML('beforeend', `<div class="audio-track-item ${isUnlocked?'unlocked':'locked'}"><div class="track-info"><span class="track-name">${track.name}</span><span class="track-cost">${isUnlocked?'Unlocked':`Cost: ${track.cost} XP`}</span></div><button class="unlock-track-btn ${isUnlocked?'unlocked':''}" ${isUnlocked||!canAfford?'disabled':''}>${isUnlocked?'OWNED':'UNLOCK'}</button></div>`); }); };
+
+        // =======================================================
+        // LO-FI & YOUTUBE PLAYER LOGIC
+        // =======================================================
+        const loadLofiTrack = (autoPlay = true) => { if(!dom.audio.lofi) return; const track = lofiTracks[lofiState.currentTrackIndex]; dom.audio.lofi.src = track.url; dom.lofiPlayer.querySelector('.lofi-title').textContent = track.name; if (autoPlay) playLofi(); };
+        const playLofi = () => { const playPromise = dom.audio.lofi.play(); if (playPromise !== undefined) { playPromise.then(_ => { lofiState.isPlaying=true; dom.lofiPlay.style.display='none'; dom.lofiPause.style.display='inline-block'; }).catch(e => console.warn("Audio play failed. User interaction may be required.")); }};
+        const pauseLofi = () => { dom.audio.lofi.pause(); lofiState.isPlaying=false; dom.lofiPlay.style.display='inline-block'; dom.lofiPause.style.display='none'; };
         const nextLofi = () => { let attempts = 0; do { lofiState.currentTrackIndex = (lofiState.currentTrackIndex + 1) % lofiTracks.length; attempts++; } while (!lofiState.unlockedTracks.includes(lofiState.currentTrackIndex) && attempts < lofiTracks.length); loadLofiTrack(); };
         const prevLofi = () => { let attempts = 0; do { lofiState.currentTrackIndex = (lofiState.currentTrackIndex - 1 + lofiTracks.length) % lofiTracks.length; attempts++; } while (!lofiState.unlockedTracks.includes(lofiState.currentTrackIndex) && attempts < lofiTracks.length); loadLofiTrack(); };
+
         window.onYouTubeIframeAPIReady = () => { youtubeState.apiReady = true; };
-        const addUrlInput = () => { dom.urlInputs.insertAdjacentHTML("beforeend", `<div class="url-container"><input type="text" class="youtube-url" placeholder="Another YouTube URL..."><button class="remove-task" data-action="remove-task"><i class="fas fa-trash"></i></button></div>`); };
-        const startPlayback = () => {
-            if (!youtubeState.apiReady) return alert("YouTube API is not ready yet.");
-            const urls = Array.from(document.querySelectorAll(".youtube-url")).map(input => input.value).filter(Boolean);
-            if (urls.length === 0) return alert("Please enter at least one YouTube URL.");
-            youtubeState.playlist = urls.map(url => ({ id: extractVideoID(url), url: url })).filter(video => video.id);
-            if (youtubeState.playlist.length === 0) return alert("No valid YouTube video URLs found.");
-            if (youtubeState.player) youtubeState.player.destroy();
-            youtubeState.player = new YT.Player("player", { height: "100%", width: "100%", videoId: youtubeState.playlist[0].id, playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1 }, events: { onStateChange: onPlayerStateChange } });
-            dom.youtubeInputContainer.style.display = "none";
-            dom.playerContainer.style.display = "block";
-            dom.youtubeLecturePageControls.style.display = "flex";
-            dom.videoSidebarToggleBtn.style.display = "block";
-            populateVideoSidebar();
-        };
-        const onPlayerStateChange = (event) => { if (event.data === YT.PlayerState.ENDED) { const currentIndex = youtubeState.playlist.findIndex(v => event.target.getVideoUrl().includes(v.id)); const nextIndex = (currentIndex + 1) % youtubeState.playlist.length; youtubeState.player.loadVideoById(youtubeState.playlist[nextIndex].id); } };
-        const populateVideoSidebar = () => { dom.videoThumbnailList.innerHTML = ""; youtubeState.playlist.forEach(video => dom.videoThumbnailList.insertAdjacentHTML("beforeend", `<img src="https://img.youtube.com/vi/${video.id}/mqdefault.jpg" class="thumbnail" data-videoid="${video.id}" alt="Video thumbnail">`)); };
-        const exitFocusSession = () => { if (youtubeState.player) youtubeState.player.destroy(); youtubeState.player = null; dom.youtubeInputContainer.style.display = "block"; dom.playerContainer.style.display = "none"; dom.youtubeLecturePageControls.style.display = "none"; dom.videoSidebarToggleBtn.style.display = "none"; dom.videoSidebar.classList.remove("open"); };
+        const addUrlInput = () => { const newUrlInput = `<div class="url-container"><input type="text" class="youtube-url" placeholder="Another YouTube URL..."><button class="remove-task" data-action="remove-task" style="padding: 8px 12px; margin: 0; background: var(--danger);"><i class="fas fa-trash"></i></button></div>`; dom.urlInputs.insertAdjacentHTML('beforeend', newUrlInput); };
+        const startPlayback = () => { if(!youtubeState.apiReady)return alert("YouTube API is not ready yet.");const urls=Array.from(document.querySelectorAll('.youtube-url')).map(i=>i.value).filter(Boolean);if(urls.length===0)return alert("Please enter at least one YouTube URL.");youtubeState.playlist=urls.map(u=>({id:extractVideoID(u),url:u})).filter(v=>v.id);if(youtubeState.playlist.length===0)return alert("No valid YouTube video URLs found.");if(youtubeState.player)youtubeState.player.destroy();youtubeState.player=new YT.Player('player',{height:'100%',width:'100%',videoId:youtubeState.playlist[0].id,playerVars:{'autoplay':1,'controls':1,'rel':0,'modestbranding':1},events:{'onStateChange':onPlayerStateChange}});dom.youtubeInputContainer.style.display='none';dom.playerContainer.style.display='block';dom.youtubeLecturePageControls.style.display='flex';dom.videoSidebarToggleBtn.style.display='block';populateVideoSidebar()};
+        const onPlayerStateChange=(event)=>{if(event.data===YT.PlayerState.ENDED){const currentVideoUrl=event.target.getVideoUrl();const currentIndex=youtubeState.playlist.findIndex(v=>currentVideoUrl.includes(v.id));const nextIndex=(currentIndex+1)%youtubeState.playlist.length;youtubeState.player.loadVideoById(youtubeState.playlist[nextIndex].id)}};
+        const populateVideoSidebar = () => { dom.videoThumbnailList.innerHTML = ''; youtubeState.playlist.forEach(v => dom.videoThumbnailList.insertAdjacentHTML('beforeend', `<img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" class="thumbnail" data-videoid="${v.id}" alt="Video thumbnail">`)); };
+        const exitFocusSession = () => { if(youtubeState.player)youtubeState.player.destroy();youtubeState.player=null;dom.youtubeInputContainer.style.display='block';dom.playerContainer.style.display='none';dom.youtubeLecturePageControls.style.display='none';dom.videoSidebarToggleBtn.style.display='none';dom.videoSidebar.classList.remove('open')};
 
         // =======================================================
-        // INITIALIZATION - ROBUST, NO RACE CONDITION
+        // INITIALIZATION
         // =======================================================
         document.addEventListener("DOMContentLoaded", () => {
-            // STEP 1: Cache ALL DOM elements first. This prevents "undefined" errors.
-            const ids = ['loadingOverlay', 'topNavBar', 'landingPage', 'signinForm', 'homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'navLogo', 'navClockTime', 'navClockPeriod', 'homeUsername', 'lofiPlayer', 'gameSidebar', 'sidebarTrigger', 'todoList', 'tasks', 'deadlineDate', 'deadlineTime', 'deadlineConfirmBtn', 'pomodoroDurationInput', 'pomodoroTimer', 'pomodoroStartBtn', 'pomodoroStatus', 'audioTracksList', 'urlInputs', 'playerContainer', 'youtubeInputContainer', 'youtubeLecturePageControls', 'videoSidebarToggleBtn', 'videoSidebar', 'videoThumbnailList', 'lofiPlay', 'lofiPause', 'logoutBtn', 'fireBox', 'aiPopup'];
+            const ids=['topNavBar','landingPage','signinForm','homePage','youtubeLecturePage','profile','focusStats','navLogo','navClockTime','navClockPeriod','navButtons','navStreakDisplay','navProfileBtn','welcomeMessage','dateTimeDisplay','upcomingTaskDisplay','focusStatus','motivationQuote','youtubeInputContainer','playlistSelect','urlInputs','playlistName','playerContainer','player','videoSidebarToggleBtn','youtubeLecturePageControls','restartBtn','videoSidebar','videoThumbnailList','profileContainer','profileIcon','profileUsername','profileLevel','profileXP','profileStreak','profileSettings','browserNotificationSetting','focusStatsContainer','statsDisplay','statsTotalFocusTime','statsTotalDistractions','statsTotalVideosWatched','statsCurrentStreak','focusCalendar','calendarHeader','prevMonthBtn','calendarMonthYear','nextMonthBtn','calendarGrid','timerDisplay','timerText','progressBar','progressFill','pointsDisplay','achievementLevel','todoList','tasks','todoBadge','lofiPlayer','lofiPrev','lofiPlay','lofiPause','lofiNext','fireBox','aiPopup','achievementOverlay','confirmationDialog','confirmationDialogText','confirmBtn','cancelBtn','streakShieldDialog','streakShieldConfirmBtn','streakShieldCancelBtn','doublePointsDialog','doublePointsConfirmBtn','doublePointsCancelBtn','deadlineDialog','deadlineDate','deadlineTime','taskDifficulty','deadlineConfirmBtn','deadlineCancelBtn','sessionCompleteDialog','sessionContinueBtn','sessionEndBtn','mysteryBoxPopup','mysteryRewardText','openMysteryBox','closeMysteryBoxBtn','audioTracksStore','audioTracksList','closeAudioStore','pomodoroOverlay','pomodoroContainer','pomodoroDurationSetting','pomodoroDurationInput','pomodoroTimer','pomodoroStatus','pomodoroControls','pomodoroStartBtn','pomodoroResetBtn','pomodoroCloseBtn','logoutBtn'];
             ids.forEach(id => { const el = document.getElementById(id); if (el) dom[id] = el; });
-            dom.audio = { lofi: document.getElementById('lofiAudio'), pomodoroComplete: document.getElementById('pomodoroCompleteAudio') };
-
-            // STEP 2: Show a temporary loading screen so the user doesn't see a flicker.
-            showView('loadingOverlay'); // This is a blank div you can add if needed. Or just show landingPage.
-
-            // STEP 3: Set up all event listeners that DON'T depend on being logged in.
+            dom.sidebarTrigger = document.querySelector('.sidebar-trigger');
+            dom.gameSidebar = document.querySelector('.game-sidebar');
+            dom.audio = { focus: document.getElementById('focusAudio'), lofi: document.getElementById('lofiAudio'), pomodoroComplete: document.getElementById('pomodoroCompleteAudio'), levelUp: document.getElementById('levelUpAudio'), achievement: document.getElementById('achievementAudio') };
+            
             document.body.addEventListener('click', (e) => { const target = e.target.closest('[data-action]'); if (target) { e.preventDefault(); handleAction(target.dataset.action, target); } });
+
             dom.sidebarTrigger?.addEventListener('click', toggleSidebar);
             dom.logoutBtn?.addEventListener('click', () => auth.signOut());
+            dom.pomodoroDurationInput?.addEventListener('change', resetPomodoro);
             dom.tasks?.addEventListener('change', (e) => { if (e.target.type === 'checkbox') handleTaskCheck(e); });
             dom.tasks?.addEventListener('click', (e) => { if (e.target.closest('.set-deadline')) openDeadlineDialog(e); });
             dom.deadlineConfirmBtn?.addEventListener('click', setTaskDeadline);
-            dom.videoThumbnailList?.addEventListener('click', (e) => { if (e.target.classList.contains('thumbnail') && youtubeState.player) youtubeState.player.loadVideoById(e.target.dataset.videoid); });
-            document.getElementById('quietPomodoroBtn')?.addEventListener('click', () => { resetPomodoro(); showDialog('pomodoroOverlay'); });
+            dom.videoThumbnailList?.addEventListener('click', (e) => { if(e.target.classList.contains('thumbnail') && youtubeState.player) youtubeState.player.loadVideoById(e.target.dataset.videoid); });
+            
+            document.getElementById('quietPomodoroBtn')?.addEventListener('click', () => showDialog('pomodoroOverlay'));
+            document.getElementById('streakShieldBtn')?.addEventListener('click', () => showDialog('streakShieldDialog'));
+            document.getElementById('doublePointsBtn')?.addEventListener('click', () => showDialog('doublePointsDialog'));
             document.getElementById('audioStoreBtn')?.addEventListener('click', () => { populateAudioStore(); showDialog('audioTracksStore'); });
-            dom.fireBox?.addEventListener('click', () => {
-                dom.aiPopup.style.display = dom.aiPopup.style.display === 'block' ? 'none' : 'block';
-            });
 
-            // STEP 4: Initialize Firebase Auth Logic. This is the final and most critical step.
-            auth.getRedirectResult()
-                .then((result) => {
-                    // This block runs if the user just came back from the Google sign-in page.
-                    if (result.user) {
-                        setupUIForLoggedInUser(result.user);
-                    } else {
-                        // This block runs if the user is just loading the page normally.
-                        // We check if they were already logged in from a previous session.
-                        const unsubscribe = auth.onAuthStateChanged((user) => {
-                            unsubscribe(); // We only need this check once on initial load.
-                            if (user) {
-                                setupUIForLoggedInUser(user);
-                            } else {
-                                setupUIForLoggedOutUser();
-                            }
-                        });
-                    }
-                }).catch((error) => {
-                    console.error("Auth Error:", error);
-                    setupUIForLoggedOutUser(); // If anything fails, safely show the logged-out state.
-                });
+            showView('landingPage');
+            console.log("Initialization complete.");
         });
 
     })();
