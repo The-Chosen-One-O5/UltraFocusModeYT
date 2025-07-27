@@ -930,6 +930,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 </head>
 <body>
@@ -952,7 +957,28 @@
 
         <!-- == Page Views == -->
         <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div> <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button> <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button> <div id="features"> <div class="feature"> <i class="fas fa-ban"></i> <p>Ad-Free Zone<br>Focus!</p> </div> <div class="feature"> <i class="fas fa-moon"></i> <p>Dark Mode<br>Easy on eyes</p> </div> <div class="feature"> <i class="fas fa-gamepad"></i> <p>Gamified<br>Level up!</p> </div> </div> </div> </div>
-        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
+        <div id="signinForm" class="page-view">
+            <div id="signinFormContainer">
+                <div class="title">ENTER <span>REALM</span></div>
+                <div class="subtitle">Sign in with your Google account to begin your quest.</div>
+                
+                <div id="connectionStatus" style="margin: 15px 0; padding: 8px 12px; border-radius: 4px; text-align: center; font-size: 14px; display: none;">
+                    <i class="fas fa-wifi"></i> <span id="connectionStatusText">Checking connection...</span>
+                </div>
+                
+                <button id="googleSignInBtn" class="primary-btn" style="margin: 20px 0; padding: 12px 30px; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto;">
+                    <i class="fab fa-google"></i> SIGN IN WITH GOOGLE
+                </button>
+                
+                <div id="authLoadingState" style="display: none; margin: 20px 0; color: var(--text-dim); text-align: center;">
+                    <i class="fas fa-spinner fa-spin"></i> <span id="authLoadingText">Connecting...</span>
+                </div>
+                
+                <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </div>
         <div id="homePage" class="page-view">
             <div id="homePageContent">
                 <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
@@ -1046,6 +1072,487 @@
             // with strict HTTP referrer restrictions set in Google Cloud Console.
             // Consider a backend proxy for better security if this becomes a serious project.
             const YOUTUBE_API_KEY = 'AIzaSyA16li1kPmHxCkcIw87ThOHmpBB1fuBPFY'; // <-- PASTE YOUR KEY HERE
+
+            // Firebase Configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyDS6ZuQcViCFgolCcmAqBPp_9pndCB8F8Q",
+                authDomain: "ultrafocusmode-18ae4.firebaseapp.com",
+                projectId: "ultrafocusmode-18ae4",
+                storageBucket: "ultrafocusmode-18ae4.firebasestorage.app",
+                messagingSenderId: "998572603670",
+                appId: "1:998572603670:web:f14dff88199d964b0c3837"
+            };
+
+            // Initialize Firebase
+            let app, auth, db;
+            let firebaseInitialized = false;
+
+            function initializeFirebase() {
+                try {
+                    if (typeof firebase === 'undefined') {
+                        console.error('Firebase SDK not loaded');
+                        updateConnectionStatus('error', 'Firebase SDK not loaded');
+                        return false;
+                    }
+                    
+                    app = firebase.initializeApp(firebaseConfig);
+                    auth = firebase.auth();
+                    db = firebase.firestore();
+                    
+                    // Configure Google Auth Provider
+                    const googleProvider = new firebase.auth.GoogleAuthProvider();
+                    googleProvider.addScope('profile');
+                    googleProvider.addScope('email');
+                    
+                    firebaseInitialized = true;
+                    console.log('Firebase initialized successfully');
+                    updateConnectionStatus('connected', 'Connected to Firebase');
+                    return true;
+                } catch (error) {
+                    console.error('Firebase initialization error:', error);
+                    updateConnectionStatus('error', 'Firebase initialization failed');
+                    return false;
+                }
+            }
+
+            function updateConnectionStatus(status, message) {
+                const statusEl = document.getElementById('connectionStatus');
+                const statusTextEl = document.getElementById('connectionStatusText');
+                
+                if (!statusEl || !statusTextEl) return;
+                
+                statusEl.style.display = 'block';
+                statusTextEl.textContent = message;
+                
+                // Remove existing status classes
+                statusEl.classList.remove('status-connected', 'status-error', 'status-checking');
+                
+                switch (status) {
+                    case 'connected':
+                        statusEl.style.backgroundColor = 'rgba(40, 167, 69, 0.2)';
+                        statusEl.style.borderLeft = '4px solid var(--success)';
+                        statusEl.style.color = 'var(--success)';
+                        setTimeout(() => {
+                            if (statusEl) statusEl.style.display = 'none';
+                        }, 3000);
+                        break;
+                    case 'error':
+                        statusEl.style.backgroundColor = 'rgba(220, 53, 69, 0.2)';
+                        statusEl.style.borderLeft = '4px solid var(--danger)';
+                        statusEl.style.color = 'var(--danger)';
+                        break;
+                    case 'checking':
+                        statusEl.style.backgroundColor = 'rgba(255, 193, 7, 0.2)';
+                        statusEl.style.borderLeft = '4px solid var(--warning)';
+                        statusEl.style.color = 'var(--warning)';
+                        break;
+                }
+            }
+
+            function updateLoadingState(isLoading, message = 'Loading...') {
+                const loadingEl = document.getElementById('authLoadingState');
+                const loadingTextEl = document.getElementById('authLoadingText');
+                const signInBtn = document.getElementById('googleSignInBtn');
+                
+                if (loadingEl) {
+                    loadingEl.style.display = isLoading ? 'block' : 'none';
+                }
+                
+                if (loadingTextEl) {
+                    loadingTextEl.textContent = message;
+                }
+                
+                if (signInBtn) {
+                    signInBtn.disabled = isLoading;
+                    signInBtn.style.opacity = isLoading ? '0.6' : '1';
+                }
+            }
+
+            // Firebase Authentication Functions
+            async function signInWithGoogle() {
+                if (!firebaseInitialized) {
+                    showConfirmation("Firebase Error", "Firebase not initialized. Please refresh the page.", false);
+                    return;
+                }
+
+                try {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    provider.addScope('profile');
+                    provider.addScope('email');
+                    
+                    const result = await auth.signInWithPopup(provider);
+                    const user = result.user;
+                    
+                    console.log('Google sign-in successful:', user.displayName);
+                    await handleFirebaseAuthSuccess(user);
+                    
+                } catch (error) {
+                    console.error('Google sign-in error:', error);
+                    let errorMessage = "Sign-in failed. Please try again.";
+                    
+                    switch (error.code) {
+                        case 'auth/popup-closed-by-user':
+                            errorMessage = "Sign-in cancelled.";
+                            break;
+                        case 'auth/popup-blocked':
+                            errorMessage = "Popup blocked. Please allow popups and try again.";
+                            break;
+                        case 'auth/network-request-failed':
+                            errorMessage = "Network error. Please check your connection and try again.";
+                            break;
+                        case 'auth/too-many-requests':
+                            errorMessage = "Too many attempts. Please wait a moment and try again.";
+                            break;
+                        case 'auth/user-disabled':
+                            errorMessage = "This account has been disabled. Please contact support.";
+                            break;
+                        case 'auth/operation-not-allowed':
+                            errorMessage = "Google sign-in is not enabled. Please contact support.";
+                            break;
+                        default:
+                            errorMessage = `Sign-in failed: ${error.message}`;
+                    }
+                    
+                    showConfirmation("Sign-in Error", errorMessage, false);
+                }
+            }
+
+            async function handleFirebaseAuthSuccess(user) {
+                try {
+                    isSignedIn = true;
+                    currentUser = user.displayName || user.email;
+                    
+                    // Load or create user data in Firestore
+                    await loadUserDataFromFirestore(user.uid);
+                    
+                    // Set up real-time data synchronization
+                    setupRealtimeSync();
+                    
+                    // Update UI
+                    if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                    updateAchievementLevel();
+                    updateStreakDisplay();
+                    showView('homePage');
+                    restoreTasks();
+                    checkExpiredPowerups();
+                    sentNotificationTaskIds.clear();
+                    startPeriodicChecks();
+                    
+                    console.log(`Signed in: ${currentUser}`);
+                    
+                } catch (error) {
+                    console.error('Error handling auth success:', error);
+                    showConfirmation("Data Error", "Error loading user data. Please try again.", false);
+                }
+            }
+
+            async function signOutUser() {
+                if (!firebaseInitialized) return;
+                
+                try {
+                    await auth.signOut();
+                    console.log('User signed out');
+                    handleSignOut();
+                } catch (error) {
+                    console.error('Sign-out error:', error);
+                    // Force local sign out even if Firebase fails
+                    handleSignOut();
+                }
+            }
+
+            function handleSignOut() {
+                console.log(`Logging out ${currentUser}`);
+                logDailyFocus();
+                clearInterval(generalInterval);
+                
+                // Stop real-time sync
+                stopRealtimeSync();
+                
+                // Reset all state
+                isSignedIn = false;
+                currentUser = null;
+                points = 0;
+                previousPoints = 0;
+                totalFocusTime = 0;
+                totalDistractions = 0;
+                totalVideosWatched = 0;
+                tasks = [];
+                streakDays = 0;
+                lastFocusDate = null;
+                mysteryBoxCount = 0;
+                activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } };
+                playlists = [];
+                dailyFocusData = {};
+                premiumLofiTracks.forEach(t => t.unlocked = false);
+                updateAvailableLofiTracks();
+                currentSessionFocusTime = 0;
+                browserNotificationsEnabled = false;
+                browserNotificationPermission = 'default';
+                sentNotificationTaskIds.clear();
+                
+                // Stop any active sessions
+                if(isFocusModeActive) {
+                    clearInterval(countdownInterval);
+                    isFocusModeActive = false;
+                    if (player && typeof player.destroy === 'function') {
+                        player.destroy();
+                        player = null;
+                    }
+                    videoIds = [];
+                    currentVideoIndex = 0;
+                    completedVideos.clear();
+                    allVideosCompleted = false;
+                }
+                
+                if (isPomodoroActive) {
+                    clearInterval(pomodoroInterval);
+                    isPomodoroActive = false;
+                    exitFullscreen();
+                }
+                
+                // Update UI
+                if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`;
+                updateAchievementLevel();
+                updateStreakDisplay();
+                populatePlaylistSelect();
+                restoreTasks();
+                if(timerDisplay) timerDisplay.style.display = 'none';
+                
+                showView('landingPage');
+            }
+
+            // Firestore Database Functions
+            async function loadUserDataFromFirestore(uid) {
+                try {
+                    const userDoc = await db.collection('users').doc(uid).get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        console.log('Loading existing user data from Firestore');
+                        
+                        // Load user data
+                        points = userData.points || 0;
+                        previousPoints = points;
+                        totalFocusTime = userData.totalFocusTime || 0;
+                        totalDistractions = userData.totalDistractions || 0;
+                        totalVideosWatched = userData.totalVideosWatched || 0;
+                        tasks = userData.tasks || [];
+                        streakDays = userData.streakDays || 0;
+                        lastFocusDate = userData.lastFocusDate || null;
+                        mysteryBoxCount = userData.mysteryBoxCount || 0;
+                        activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } };
+                        playlists = userData.playlists || [];
+                        dailyFocusData = userData.dailyFocusData || {};
+                        browserNotificationsEnabled = userData.browserNotificationsEnabled || false;
+                        browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
+                        
+                        // Load premium tracks
+                        const savedTracks = userData.premiumLofiTracks || [];
+                        premiumLofiTracks.forEach(track => {
+                            const saved = savedTracks.find(st => st.id === track.id);
+                            track.unlocked = saved ? saved.unlocked : false;
+                        });
+                        updateAvailableLofiTracks();
+                        
+                    } else {
+                        console.log('Creating new user data in Firestore');
+                        await createNewUserInFirestore(uid);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading user data from Firestore:', error);
+                    throw error;
+                }
+            }
+
+            async function createNewUserInFirestore(uid) {
+                try {
+                    const newUserData = {
+                        points: 0,
+                        totalFocusTime: 0,
+                        totalDistractions: 0,
+                        totalVideosWatched: 0,
+                        tasks: [],
+                        streakDays: 0,
+                        lastFocusDate: null,
+                        mysteryBoxCount: 0,
+                        activePowerUps: { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } },
+                        playlists: [],
+                        dailyFocusData: {},
+                        browserNotificationsEnabled: false,
+                        premiumLofiTracks: premiumLofiTracks.map(track => ({ id: track.id, unlocked: false })),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    await db.collection('users').doc(uid).set(newUserData);
+                    
+                    // Initialize local state
+                    points = 0;
+                    previousPoints = 0;
+                    totalFocusTime = 0;
+                    totalDistractions = 0;
+                    totalVideosWatched = 0;
+                    tasks = [];
+                    streakDays = 0;
+                    lastFocusDate = null;
+                    mysteryBoxCount = 0;
+                    activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } };
+                    playlists = [];
+                    dailyFocusData = {};
+                    browserNotificationsEnabled = false;
+                    browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
+                    
+                    premiumLofiTracks.forEach(t => t.unlocked = false);
+                    updateAvailableLofiTracks();
+                    
+                    console.log('New user created in Firestore');
+                    
+                } catch (error) {
+                    console.error('Error creating new user in Firestore:', error);
+                    throw error;
+                }
+            }
+
+            async function saveUserDataToFirestore(retryCount = 0) {
+                if (!firebaseInitialized || !isSignedIn || !auth.currentUser) {
+                    console.warn('Cannot save to Firestore: not authenticated');
+                    return;
+                }
+                
+                try {
+                    const uid = auth.currentUser.uid;
+                    const userData = {
+                        points: points,
+                        totalFocusTime: totalFocusTime,
+                        totalDistractions: totalDistractions,
+                        totalVideosWatched: totalVideosWatched,
+                        tasks: tasks,
+                        streakDays: streakDays,
+                        lastFocusDate: lastFocusDate,
+                        mysteryBoxCount: mysteryBoxCount,
+                        activePowerUps: activePowerUps,
+                        playlists: playlists,
+                        dailyFocusData: dailyFocusData,
+                        browserNotificationsEnabled: browserNotificationsEnabled,
+                        premiumLofiTracks: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })),
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    await db.collection('users').doc(uid).update(userData);
+                    console.log('User data saved to Firestore');
+                    
+                } catch (error) {
+                    console.error('Error saving user data to Firestore:', error);
+                    
+                    // Handle specific Firestore errors
+                    if (error.code === 'not-found') {
+                        console.log('User document not found, creating new one...');
+                        try {
+                            await createNewUserInFirestore(auth.currentUser.uid);
+                        } catch (createError) {
+                            console.error('Error creating user document:', createError);
+                        }
+                    } else if (error.code === 'unavailable' && retryCount < 3) {
+                        // Retry on network issues
+                        console.log(`Retrying save operation (attempt ${retryCount + 1})`);
+                        setTimeout(() => saveUserDataToFirestore(retryCount + 1), 1000 * (retryCount + 1));
+                    } else if (error.code === 'permission-denied') {
+                        console.error('Permission denied - user may need to re-authenticate');
+                        showConfirmation("Sync Error", "Permission denied. Please sign out and sign in again.", false);
+                    }
+                    
+                    // Don't throw error to avoid breaking the app
+                }
+            }
+
+            // Real-time Data Syncing Functions
+            let firestoreUnsubscribe = null;
+
+            function setupRealtimeSync() {
+                if (!firebaseInitialized || !isSignedIn || !auth.currentUser) {
+                    console.warn('Cannot setup real-time sync: not authenticated');
+                    return;
+                }
+
+                const uid = auth.currentUser.uid;
+                
+                // Clean up existing listener
+                if (firestoreUnsubscribe) {
+                    firestoreUnsubscribe();
+                }
+
+                // Set up real-time listener for user data
+                firestoreUnsubscribe = db.collection('users').doc(uid).onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        console.log('Real-time data update received');
+                        
+                        // Update local state with server data (only if different to avoid loops)
+                        if (userData.points !== points) {
+                            points = userData.points || 0;
+                            if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                            updateAchievementLevel();
+                        }
+                        
+                        if (userData.streakDays !== streakDays) {
+                            streakDays = userData.streakDays || 0;
+                            updateStreakDisplay();
+                        }
+                        
+                        // Update other data that might have changed
+                        totalFocusTime = userData.totalFocusTime || 0;
+                        totalDistractions = userData.totalDistractions || 0;
+                        totalVideosWatched = userData.totalVideosWatched || 0;
+                        
+                        // Update tasks if they've changed
+                        const serverTasks = userData.tasks || [];
+                        if (JSON.stringify(serverTasks) !== JSON.stringify(tasks)) {
+                            tasks = serverTasks;
+                            restoreTasks();
+                        }
+                        
+                        // Update playlists if they've changed
+                        const serverPlaylists = userData.playlists || [];
+                        if (JSON.stringify(serverPlaylists) !== JSON.stringify(playlists)) {
+                            playlists = serverPlaylists;
+                            populatePlaylistSelect();
+                        }
+                        
+                        // Update other fields
+                        mysteryBoxCount = userData.mysteryBoxCount || 0;
+                        activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } };
+                        dailyFocusData = userData.dailyFocusData || {};
+                        browserNotificationsEnabled = userData.browserNotificationsEnabled || false;
+                        
+                        // Update premium tracks
+                        const savedTracks = userData.premiumLofiTracks || [];
+                        let tracksChanged = false;
+                        premiumLofiTracks.forEach(track => {
+                            const saved = savedTracks.find(st => st.id === track.id);
+                            const wasUnlocked = track.unlocked;
+                            track.unlocked = saved ? saved.unlocked : false;
+                            if (wasUnlocked !== track.unlocked) tracksChanged = true;
+                        });
+                        if (tracksChanged) updateAvailableLofiTracks();
+                        
+                        // Update UI if we're on relevant pages
+                        if (currentView === 'profile') displayProfileInfo();
+                        if (currentView === 'focusStats') displayFocusStatsInfo();
+                        
+                    }
+                }, (error) => {
+                    console.error('Real-time sync error:', error);
+                });
+            }
+
+            function stopRealtimeSync() {
+                if (firestoreUnsubscribe) {
+                    firestoreUnsubscribe();
+                    firestoreUnsubscribe = null;
+                    console.log('Real-time sync stopped');
+                }
+            }
 
             // --- State Variables ---
             let currentView = 'landingPage';
@@ -2045,123 +2552,22 @@
             function closeSidebar() { if (!gameSidebar || !sidebarTrigger || !isSidebarOpen) return; isSidebarOpen = false; gameSidebar.classList.remove('open'); sidebarTrigger.style.left = '0px'; }
             function showSignInForm() { showView('signinForm'); if(usernameInput) usernameInput.value = ''; if(passwordInput) passwordInput.value = ''; }
 
+            // Legacy functions replaced with Firebase authentication
             function signIn() {
-                 if(!usernameInput || !passwordInput) return;
-                 const username = usernameInput.value.trim();
-                 const password = passwordInput.value;
-                 if (!username || !password) { showConfirmation("Missing", "Enter Hero Name & Secret Code.", false); return; }
-                 try {
-                     const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     if (users[username] && users[username].password === password) {
-                         isSignedIn = true;
-                         currentUser = username;
-                         // Load data from user storage
-                         points = users[currentUser].points || 0;
-                         previousPoints = points; // Sync previous points on load
-                         totalFocusTime = users[currentUser].totalFocusTime || 0;
-                         totalDistractions = users[currentUser].totalDistractions || 0;
-                         totalVideosWatched = users[currentUser].totalVideosWatched || 0;
-                         tasks = users[currentUser].tasks || [];
-                         streakDays = users[currentUser].streakDays || 0;
-                         lastFocusDate = users[currentUser].lastFocusDate || null;
-                         mysteryBoxCount = users[currentUser].mysteryBoxCount || 0;
-                         activePowerUps = users[currentUser].activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, };
-                         if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; // Ensure structure exists
-                         if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; // Ensure structure exists
-                         playlists = users[currentUser].playlists || [];
-                         dailyFocusData = users[currentUser].dailyFocusData || {}; // Load calendar data
-                         // Load Notification Setting
-                         browserNotificationsEnabled = users[currentUser].browserNotificationsEnabled || false;
-                         // browserNotificationPermission is handled by browser, check on load maybe
-                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
+                // This function is now handled by Google Sign-In
+                signInWithGoogle();
+            }
 
-                         const savedTracks = users[currentUser].premiumLofiTracks || [];
-                         premiumLofiTracks.forEach(track => {
-                             const saved = savedTracks.find(st => st.id === track.id);
-                             track.unlocked = saved ? saved.unlocked : false;
-                         });
-                         updateAvailableLofiTracks();
+            function createAccount() {
+                // This function is now handled by Google Sign-In
+                signInWithGoogle();
+            }
 
-                         // Update UI
-                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
-                         updateAchievementLevel();
-                         updateStreakDisplay();
-                         showView('homePage');
-                         restoreTasks(); // Will call badge/upcoming updates
-                         checkExpiredPowerups();
-                         sentNotificationTaskIds.clear(); // Reset session notifications
-                         console.log(`Signed in: ${currentUser}. Streak: ${streakDays}, Last Focus: ${lastFocusDate}`);
-                     } else {
-                         showConfirmation("Login Failed", "Invalid Hero Name or Secret Code.", false);
-                         isSignedIn = false;
-                         currentUser = null;
-                     }
-                 } catch (err) {
-                     console.error("Sign-in error:", err);
-                     showConfirmation("Sign-in Error", "An error occurred during sign-in.", false);
-                 }
-             }
-
-             function createAccount() {
-                 if(!usernameInput || !passwordInput) return;
-                 const username = usernameInput.value.trim();
-                 const password = passwordInput.value;
-                 if (!username || !password) { showConfirmation("Missing", "Enter Hero Name & Secret Code.", false); return; }
-                 if (password.length < 4) { showConfirmation("Weak Code", "Secret Code needs 4+ characters.", false); return; }
-                 try {
-                     const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     if (users[username]) {
-                         showConfirmation("Name Taken", "This Hero Name is already registered.", false);
-                     } else {
-                         // Initialize new user data
-                         users[username] = {
-                             password: password,
-                             points: 0,
-                             totalFocusTime: 0,
-                             totalDistractions: 0,
-                             totalVideosWatched: 0,
-                             tasks: [],
-                             streakDays: 0,
-                             lastFocusDate: null,
-                             mysteryBoxCount: 0,
-                             activePowerUps: { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, },
-                             playlists: [],
-                             dailyFocusData: {}, // Initialize calendar data
-                             browserNotificationsEnabled: false, // Default setting
-                             premiumLofiTracks: premiumLofiTracks.map(track => ({ id: track.id, unlocked: false })) // Base tracks are free, premium start locked
-                         };
-                         localStorage.setItem("users", JSON.stringify(users));
-
-                         // Set current state
-                         isSignedIn = true;
-                         currentUser = username;
-                         points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {};
-                         browserNotificationsEnabled = false; // Default setting
-                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied'; // Check permission
-
-                         premiumLofiTracks.forEach(t => t.unlocked = false); // Ensure local state matches new user
-                         updateAvailableLofiTracks();
-
-                         // Update UI
-                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
-                         updateAchievementLevel();
-                         updateStreakDisplay();
-                         showView('homePage');
-                         restoreTasks(); // Will call badge/upcoming updates
-                         sentNotificationTaskIds.clear(); // Reset session notifications
-                         console.log(`Account created: ${currentUser}.`);
-                         showConfirmation("Account Created!", `Welcome to the Quest for Focus, ${currentUser}!`, false);
-                     }
-                 } catch (err) {
-                     console.error("Account creation error:", err);
-                     showConfirmation("Creation Error", "An error occurred creating the account.", false);
-                 }
-             }
-
-            function logout() { showConfirmation( "Logout?", "Are you sure you want to logout?", true, () => { console.log(`Logging out ${currentUser}`); logDailyFocus(); // Log any pending session time before logging out
-            clearInterval(generalInterval); // Stop periodic checks
-            isSignedIn = false; currentUser = null; points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {}; premiumLofiTracks.forEach(t => t.unlocked = false); updateAvailableLofiTracks(); currentSessionFocusTime = 0; browserNotificationsEnabled = false; browserNotificationPermission = 'default'; sentNotificationTaskIds.clear(); if(isFocusModeActive) { clearInterval(countdownInterval); isFocusModeActive = false; if (player && typeof player.destroy === 'function') { player.destroy(); player = null; } videoIds = []; currentVideoIndex = 0; completedVideos.clear(); allVideosCompleted = false; } if (isPomodoroActive) { clearInterval(pomodoroInterval); isPomodoroActive = false; exitFullscreen(); } if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: 0`; updateAchievementLevel(); updateStreakDisplay(); populatePlaylistSelect(); restoreTasks(); if(timerDisplay) timerDisplay.style.display = 'none'; localStorage.removeItem("focusModeState_v5"); // Clear session state on logout
-            showView('landingPage'); }, () => {} ); }
+            function logout() {
+                showConfirmation("Logout?", "Are you sure you want to logout?", true, () => {
+                    signOutUser();
+                }, () => {});
+            }
             function addUrlInput() { if (!urlInputsContainer) return; const container = document.createElement("div"); container.className = "url-container"; const newInput = document.createElement("input"); newInput.type = "text"; newInput.className = "youtube-url"; newInput.placeholder = "Another YouTube URL"; const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { newInput.value = ''; } }; container.appendChild(newInput); container.appendChild(removeBtn); urlInputsContainer.appendChild(container); newInput.focus(); }
             function restoreUrlInputs(urlsToRestore = []) { if (!urlInputsContainer) return; urlInputsContainer.innerHTML = ''; if (urlsToRestore.length === 0) { addUrlInput(); const firstRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if (firstRemoveBtn && urlInputsContainer.querySelectorAll(".url-container").length === 1) { firstRemoveBtn.remove(); } } else { urlsToRestore.forEach((url, index) => { const container = document.createElement("div"); container.className = "url-container"; const input = document.createElement("input"); input.type = "text"; input.className = "youtube-url"; input.placeholder = "YouTube URL"; input.value = url || ''; // Use provided URL directly
             container.appendChild(input); if (index > 0 || urlsToRestore.length > 1) { // Add remove button if not the only input OR if more than one initially
@@ -2174,108 +2580,135 @@
             function handlePlaylistSelection() { if (!playlistSelect) return; const selectedName = playlistSelect.value; if (selectedName) { const selectedPlaylist = playlists.find(p => p.name === selectedName); if (selectedPlaylist && selectedPlaylist.urls) { console.log("Loading playlist:", selectedName); restoreUrlInputs(selectedPlaylist.urls); if(playlistNameInput) playlistNameInput.value = selectedName; } else { console.warn("Selected playlist not found or has no URLs:", selectedName); restoreUrlInputs(); if(playlistNameInput) playlistNameInput.value = ""; } } else { restoreUrlInputs(); if(playlistNameInput) playlistNameInput.value = ""; } }
 
             function saveState() {
-                 if (!isSignedIn || !currentUser) return;
-                 const stateToSave = {
-                     // Session State (only if active)
-                     isFocusModeActive: isFocusModeActive, videoIds: isFocusModeActive ? videoIds : [], currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0, timerMode: isFocusModeActive ? timerMode : "Focus Time", timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000, completedVideos: isFocusModeActive ? Array.from(completedVideos) : [], allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
-                     isPomodoroActive: isPomodoroActive,
-                     pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (currentPomodoroDurationSetting * 60), // Save based on setting
-                     pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
-                     currentPomodoroDurationSetting: currentPomodoroDurationSetting, // Save the setting
-
-                     // General User State (Persisted under user data too)
-                     points: points, totalFocusTime: totalFocusTime, totalDistractions: totalDistractions, totalVideosWatched: totalVideosWatched, streakDays: streakDays, lastFocusDate: lastFocusDate, mysteryBoxCount: mysteryBoxCount, activePowerUps: activePowerUps, premiumLofiTrackState: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })), dailyFocusData: dailyFocusData, // Save calendar data
-                     browserNotificationsEnabled: browserNotificationsEnabled, // Save notification setting
-                     currentView: currentView, isSignedIn: isSignedIn, currentUser: currentUser
-                 };
-                 try {
-                     // Save potentially active session state
-                     localStorage.setItem("focusModeState_v5", JSON.stringify(stateToSave)); // Version 5
-
-                     // Save persistent user data separately
-                     const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     if (users[currentUser]) {
-                         users[currentUser].points = points;
-                         users[currentUser].totalFocusTime = totalFocusTime;
-                         users[currentUser].totalDistractions = totalDistractions;
-                         users[currentUser].totalVideosWatched = totalVideosWatched;
-                         users[currentUser].streakDays = streakDays;
-                         users[currentUser].lastFocusDate = lastFocusDate;
-                         users[currentUser].mysteryBoxCount = mysteryBoxCount;
-                         users[currentUser].activePowerUps = activePowerUps;
-                         users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
-                         users[currentUser].dailyFocusData = dailyFocusData; // Save calendar data to user profile
-                         users[currentUser].playlists = playlists; // Save playlists
-                         users[currentUser].tasks = tasks; // Save tasks
-                         users[currentUser].browserNotificationsEnabled = browserNotificationsEnabled; // Save setting to user profile
-                         // Maybe save currentPomodoroDurationSetting per user? Optional.
-                         // users[currentUser].pomodoroDuration = currentPomodoroDurationSetting;
-                         localStorage.setItem("users", JSON.stringify(users));
-                     }
-                 } catch (err) {
-                     console.error("Error saving state:", err);
-                     // Optional: Implement a more robust error handling/fallback
-                 }
-             }
+                if (!isSignedIn || !currentUser) return;
+                
+                // Save session state to localStorage for quick recovery
+                const sessionState = {
+                    isFocusModeActive: isFocusModeActive,
+                    videoIds: isFocusModeActive ? videoIds : [],
+                    currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0,
+                    timerMode: isFocusModeActive ? timerMode : "Focus Time",
+                    timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000,
+                    completedVideos: isFocusModeActive ? Array.from(completedVideos) : [],
+                    allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
+                    isPomodoroActive: isPomodoroActive,
+                    pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (currentPomodoroDurationSetting * 60),
+                    pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
+                    currentPomodoroDurationSetting: currentPomodoroDurationSetting,
+                    currentView: currentView,
+                    isSignedIn: isSignedIn,
+                    currentUser: currentUser
+                };
+                
+                try {
+                    localStorage.setItem("focusModeState_v6", JSON.stringify(sessionState));
+                } catch (err) {
+                    console.error("Error saving session state:", err);
+                }
+                
+                // Save user data to Firestore
+                saveUserDataToFirestore();
+            }
 
             function loadSavedState() {
-                console.log("Loading state (v5)...");
-                let loadedState = null;
-                try {
-                    loadedState = JSON.parse(localStorage.getItem("focusModeState_v5") || "{}");
-                } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v5"); loadedState = {}; }
-
-                if (loadedState.isSignedIn && loadedState.currentUser) {
-                     console.log("Attempting restore for:", loadedState.currentUser);
-                     const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     if (users[loadedState.currentUser]) {
-                         const userData = users[loadedState.currentUser];
-                         // Restore basic user data from persistent 'users' storage
-                         isSignedIn = true; currentUser = loadedState.currentUser; points = userData.points || 0; previousPoints = points; totalFocusTime = userData.totalFocusTime || 0; totalDistractions = userData.totalDistractions || 0; totalVideosWatched = userData.totalVideosWatched || 0; tasks = userData.tasks || []; streakDays = userData.streakDays || 0; lastFocusDate = userData.lastFocusDate || null; mysteryBoxCount = userData.mysteryBoxCount || 0; activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = userData.playlists || []; dailyFocusData = userData.dailyFocusData || {}; // Load calendar data
-                         currentPomodoroDurationSetting = loadedState.currentPomodoroDurationSetting || 60; // Restore Pomodoro duration setting
-                         browserNotificationsEnabled = userData.browserNotificationsEnabled || false; // Restore notification setting from USER data
-                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied'; // Check current permission
-
-                         if(pomodoroDurationInput) pomodoroDurationInput.value = currentPomodoroDurationSetting; // Update input field
-
-                         const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
-
-                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); restoreTasks(); // Calls badge/upcoming update
-                         checkExpiredPowerups();
-                         sentNotificationTaskIds.clear(); // Reset session notifications
-
-                         // Check for YT Focus Session restore (using loadedState for session details)
-                         if (loadedState.isFocusModeActive && loadedState.videoIds && loadedState.videoIds.length > 0 && loadedState.currentView === 'youtubeLecturePage') {
-                             console.log("Restoring active YouTube focus session...");
-                             isFocusModeActive = true; videoIds = loadedState.videoIds; currentVideoIndex = loadedState.currentVideoIndex || 0; timerMode = loadedState.timerMode || "Focus Time"; timerRemaining = loadedState.timerRemaining || (focusDuration / 1000); completedVideos = new Set(loadedState.completedVideos || []); allVideosCompleted = loadedState.allVideosCompleted || false; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time too
-
-                             loadYouTubeAPI().then(() => { showView('youtubeLecturePage'); setTimeout(() => { console.log("Re-init player."); setupYouTubePlayer(); startTimer(timerRemaining * 1000, timerMode); }, 100); }).catch(err => { console.error("YT API load fail on restore:", err); isFocusModeActive = false; showView('homePage'); });
-                         }
-                         // Check for Pomodoro Session restore
-                         else if (loadedState.isPomodoroActive && loadedState.currentView === 'homePage') { // Assuming Pomodoro runs on home/overlay
-                             console.log("Restoring active Pomodoro session...");
-                             isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (currentPomodoroDurationSetting * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time
-
-                             showPomodoroOverlay(); // Show the overlay first
-                             updatePomodoroDisplay(); // Update display immediately
-                             if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing...";
-                             if (pomodoroStartBtn) pomodoroStartBtn.disabled = true;
-                             if (pomodoroResetBtn) pomodoroResetBtn.disabled = false;
-                             if (pomodoroDurationInput) pomodoroDurationInput.disabled = true; // Disable input
-                             requestFullscreen(document.documentElement); // Re-enter fullscreen if restored
-
-                             pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; currentSessionFocusTime++; totalFocusTime++; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
-                         } else {
-                             isFocusModeActive = false; isPomodoroActive = false; currentSessionFocusTime = 0;
-                             showView(loadedState.currentView || 'homePage'); // Go to last viewed or home
-                         }
-                         startPeriodicChecks(); // Start interval checks after successful login/restore
-                         console.log("Session restored for", currentUser);
-                         return;
-                     } else { console.warn("User data mismatch:", loadedState.currentUser); localStorage.removeItem("focusModeState_v5"); }
+                console.log("Loading state (v6)...");
+                
+                // Initialize Firebase first
+                if (!initializeFirebase()) {
+                    console.error("Firebase initialization failed");
+                    showView('landingPage');
+                    updateClock();
+                    initAudio();
+                    updateAchievementLevel();
+                    updateStreakDisplay();
+                    return;
                 }
-                console.log("No active session found or error. Showing landing.");
-                showView('landingPage'); updateClock(); initAudio(); updateAchievementLevel(); updateStreakDisplay();
+                
+                // Set up Firebase auth state listener
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        console.log("User is signed in:", user.displayName || user.email);
+                        try {
+                            await handleFirebaseAuthSuccess(user);
+                            
+                            // Try to restore session state
+                            let sessionState = null;
+                            try {
+                                sessionState = JSON.parse(localStorage.getItem("focusModeState_v6") || "{}");
+                            } catch(e) {
+                                console.error("Error parsing session state:", e);
+                                localStorage.removeItem("focusModeState_v6");
+                                sessionState = {};
+                            }
+                            
+                            // Restore active sessions if any
+                            if (sessionState.isFocusModeActive && sessionState.videoIds && sessionState.videoIds.length > 0) {
+                                console.log("Restoring active YouTube focus session...");
+                                isFocusModeActive = true;
+                                videoIds = sessionState.videoIds;
+                                currentVideoIndex = sessionState.currentVideoIndex || 0;
+                                timerMode = sessionState.timerMode || "Focus Time";
+                                timerRemaining = sessionState.timerRemaining || (focusDuration / 1000);
+                                completedVideos = new Set(sessionState.completedVideos || []);
+                                allVideosCompleted = sessionState.allVideosCompleted || false;
+                                
+                                loadYouTubeAPI().then(() => {
+                                    showView('youtubeLecturePage');
+                                    setTimeout(() => {
+                                        setupYouTubePlayer();
+                                        startTimer(timerRemaining * 1000, timerMode);
+                                    }, 100);
+                                }).catch(err => {
+                                    console.error("YT API load fail on restore:", err);
+                                    isFocusModeActive = false;
+                                    showView('homePage');
+                                });
+                            } else if (sessionState.isPomodoroActive) {
+                                console.log("Restoring active Pomodoro session...");
+                                isPomodoroActive = true;
+                                pomodoroTimeRemaining = sessionState.pomodoroTimeRemaining || (currentPomodoroDurationSetting * 60);
+                                pomodoroDistractionCount = sessionState.pomodoroDistractionCount || 0;
+                                
+                                showPomodoroOverlay();
+                                updatePomodoroDisplay();
+                                if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing...";
+                                if (pomodoroStartBtn) pomodoroStartBtn.disabled = true;
+                                if (pomodoroResetBtn) pomodoroResetBtn.disabled = false;
+                                if (pomodoroDurationInput) pomodoroDurationInput.disabled = true;
+                                requestFullscreen(document.documentElement);
+                                
+                                pomodoroInterval = setInterval(() => {
+                                    pomodoroTimeRemaining--;
+                                    currentSessionFocusTime++;
+                                    totalFocusTime++;
+                                    updatePomodoroDisplay();
+                                    if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) {
+                                        const earned = applyPowerUps(1);
+                                        points += earned;
+                                        if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                                        checkLevelUp();
+                                    }
+                                    if (pomodoroTimeRemaining <= 0) {
+                                        completePomodoroSession();
+                                    }
+                                }, 1000);
+                            } else {
+                                showView(sessionState.currentView || 'homePage');
+                            }
+                            
+                        } catch (error) {
+                            console.error("Error handling auth state:", error);
+                            showView('landingPage');
+                        }
+                    } else {
+                        console.log("User is signed out");
+                        showView('landingPage');
+                        updateClock();
+                        initAudio();
+                        updateAchievementLevel();
+                        updateStreakDisplay();
+                    }
+                });
             }
 
 
@@ -2372,6 +2805,22 @@
                 document.querySelectorAll('button[data-action="show-view"], a[data-action="show-view"]').forEach(element => { element.addEventListener('click', (e) => { e.preventDefault(); const viewId = element.dataset.view; if (viewId) { showView(viewId); } else { console.warn("Element missing data-view:", element); } }); });
                 if(sidebarTrigger) sidebarTrigger.addEventListener('click', toggleSidebar);
                 document.addEventListener('click', (event) => { if (gameSidebar && !gameSidebar.contains(event.target) && sidebarTrigger && !sidebarTrigger.contains(event.target) && isSidebarOpen) { closeSidebar(); } });
+                
+                // Google Sign-In button
+                document.getElementById('googleSignInBtn')?.addEventListener('click', async () => {
+                    updateLoadingState(true, 'Signing in with Google...');
+                    
+                    try {
+                        await signInWithGoogle();
+                    } catch (error) {
+                        console.error('Sign-in button error:', error);
+                        updateConnectionStatus('error', 'Sign-in failed');
+                    } finally {
+                        updateLoadingState(false);
+                    }
+                });
+                
+                // Legacy button handlers (now redirect to Google Sign-In)
                 document.querySelector('button[data-action="sign-in"]')?.addEventListener('click', signIn);
                 document.querySelector('button[data-action="create-account"]')?.addEventListener('click', createAccount);
                 document.getElementById('logoutBtn')?.addEventListener('click', logout);
