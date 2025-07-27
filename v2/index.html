@@ -931,10 +931,103 @@
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- Firebase SDK v8 Compat -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-compat-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-compat-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-compat-firestore.js"></script>
+    <!-- Firebase SDK v9 Compat with Enhanced Loading -->
+    <script>
+        // Firebase loading configuration
+        window.firebaseLoadingConfig = {
+            version: '9.23.0',
+            cdnUrls: [
+                'https://www.gstatic.com/firebasejs/',
+                'https://cdn.jsdelivr.net/npm/firebase@',
+                'https://unpkg.com/firebase@'
+            ],
+            scripts: [
+                'firebase-compat-app.js',
+                'firebase-compat-auth.js',
+                'firebase-compat-firestore.js'
+            ],
+            loadTimeout: 15000,
+            retryAttempts: 3
+        };
+
+        // Enhanced Firebase script loader
+        window.loadFirebaseScripts = function() {
+            return new Promise((resolve, reject) => {
+                const config = window.firebaseLoadingConfig;
+                let currentCdnIndex = 0;
+                let currentAttempt = 0;
+                let loadedScripts = 0;
+                const totalScripts = config.scripts.length;
+                
+                function tryLoadFromCdn(cdnIndex) {
+                    const baseUrl = config.cdnUrls[cdnIndex] + config.version + '/';
+                    console.log(`Attempting to load Firebase from CDN ${cdnIndex + 1}: ${baseUrl}`);
+                    
+                    loadedScripts = 0;
+                    const scriptPromises = config.scripts.map(scriptName => {
+                        return new Promise((scriptResolve, scriptReject) => {
+                            const script = document.createElement('script');
+                            script.src = baseUrl + scriptName;
+                            script.async = true;
+                            script.crossOrigin = 'anonymous';
+                            
+                            const timeout = setTimeout(() => {
+                                console.error(`Timeout loading ${scriptName} from ${baseUrl}`);
+                                scriptReject(new Error(`Timeout loading ${scriptName}`));
+                            }, config.loadTimeout);
+                            
+                            script.onload = () => {
+                                clearTimeout(timeout);
+                                loadedScripts++;
+                                console.log(`Loaded ${scriptName} (${loadedScripts}/${totalScripts})`);
+                                scriptResolve();
+                            };
+                            
+                            script.onerror = (error) => {
+                                clearTimeout(timeout);
+                                console.error(`Failed to load ${scriptName} from ${baseUrl}:`, error);
+                                scriptReject(new Error(`Failed to load ${scriptName}`));
+                            };
+                            
+                            document.head.appendChild(script);
+                        });
+                    });
+                    
+                    Promise.all(scriptPromises)
+                        .then(() => {
+                            // Verify Firebase is available
+                            setTimeout(() => {
+                                if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+                                    console.log('Firebase scripts loaded successfully');
+                                    resolve();
+                                } else {
+                                    throw new Error('Firebase object not available after script load');
+                                }
+                            }, 500); // Small delay to ensure scripts are fully processed
+                        })
+                        .catch((error) => {
+                            console.error(`Failed to load from CDN ${cdnIndex + 1}:`, error);
+                            
+                            // Try next CDN
+                            if (cdnIndex + 1 < config.cdnUrls.length) {
+                                tryLoadFromCdn(cdnIndex + 1);
+                            } else {
+                                // All CDNs failed, try again if we have retries left
+                                currentAttempt++;
+                                if (currentAttempt < config.retryAttempts) {
+                                    console.log(`Retry attempt ${currentAttempt + 1}/${config.retryAttempts}`);
+                                    setTimeout(() => tryLoadFromCdn(0), 2000);
+                                } else {
+                                    reject(new Error('All Firebase CDN attempts failed'));
+                                }
+                            }
+                        });
+                }
+                
+                tryLoadFromCdn(0);
+            });
+        };
+    </script>
 
 </head>
 <body>
@@ -1086,15 +1179,53 @@
             // Initialize Firebase
             let app, auth, db;
             let firebaseInitialized = false;
+            let firebaseLoadPromise = null;
 
-            function initializeFirebase() {
+            async function ensureFirebaseLoaded() {
+                if (firebaseLoadPromise) {
+                    return firebaseLoadPromise;
+                }
+                
+                if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+                    return Promise.resolve();
+                }
+                
+                updateConnectionStatus('checking', 'Loading Firebase SDK...');
+                
+                firebaseLoadPromise = window.loadFirebaseScripts()
+                    .then(() => {
+                        console.log('Firebase SDK loaded successfully');
+                        return Promise.resolve();
+                    })
+                    .catch((error) => {
+                        console.error('Failed to load Firebase SDK:', error);
+                        updateConnectionStatus('error', 'Failed to load Firebase SDK');
+                        throw error;
+                    });
+                
+                return firebaseLoadPromise;
+            }
+
+            async function initializeFirebase() {
                 try {
+                    // Ensure Firebase scripts are loaded first
+                    await ensureFirebaseLoaded();
+                    
                     if (typeof firebase === 'undefined') {
-                        console.error('Firebase SDK not loaded');
-                        updateConnectionStatus('error', 'Firebase SDK not loaded');
-                        return false;
+                        throw new Error('Firebase SDK not available after loading');
                     }
                     
+                    // Check if already initialized
+                    if (firebaseInitialized && app) {
+                        console.log('Firebase already initialized');
+                        updateConnectionStatus('connected', 'Already connected to Firebase');
+                        return true;
+                    }
+                    
+                    console.log('Initializing Firebase...');
+                    updateConnectionStatus('checking', 'Connecting to Firebase...');
+                    
+                    // Initialize Firebase app
                     app = firebase.initializeApp(firebaseConfig);
                     auth = firebase.auth();
                     db = firebase.firestore();
@@ -1104,13 +1235,38 @@
                     googleProvider.addScope('profile');
                     googleProvider.addScope('email');
                     
+                    // Test the connection
+                    await auth.authStateReady;
+                    
                     firebaseInitialized = true;
                     console.log('Firebase initialized successfully');
                     updateConnectionStatus('connected', 'Connected to Firebase');
                     return true;
+                    
                 } catch (error) {
                     console.error('Firebase initialization error:', error);
-                    updateConnectionStatus('error', 'Firebase initialization failed');
+                    firebaseInitialized = false;
+                    
+                    let errorMessage = 'Firebase initialization failed';
+                    if (error.code) {
+                        switch (error.code) {
+                            case 'auth/invalid-api-key':
+                                errorMessage = 'Invalid Firebase API key';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Network error connecting to Firebase';
+                                break;
+                            case 'auth/too-many-requests':
+                                errorMessage = 'Too many requests to Firebase';
+                                break;
+                            default:
+                                errorMessage = `Firebase error: ${error.message}`;
+                        }
+                    } else {
+                        errorMessage = error.message || errorMessage;
+                    }
+                    
+                    updateConnectionStatus('error', errorMessage);
                     return false;
                 }
             }
@@ -2610,12 +2766,23 @@
                 saveUserDataToFirestore();
             }
 
-            function loadSavedState() {
+            async function loadSavedState() {
                 console.log("Loading state (v6)...");
                 
                 // Initialize Firebase first
-                if (!initializeFirebase()) {
-                    console.error("Firebase initialization failed");
+                try {
+                    const firebaseReady = await initializeFirebase();
+                    if (!firebaseReady) {
+                        console.error("Firebase initialization failed");
+                        showView('landingPage');
+                        updateClock();
+                        initAudio();
+                        updateAchievementLevel();
+                        updateStreakDisplay();
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Firebase initialization error:", error);
                     showView('landingPage');
                     updateClock();
                     initAudio();
