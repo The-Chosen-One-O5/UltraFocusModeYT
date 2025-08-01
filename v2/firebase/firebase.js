@@ -3,7 +3,15 @@
 // Exports initialized instances for use across your site.
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  signInWithRedirect,
+  getRedirectResult
+} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -62,11 +70,45 @@ async function loadAppState(uid) {
   return snap.exists() ? snap.data() : null;
 }
 
-// Auth helpers
+// Handle OAuth redirect completion (if any). Run ASAP.
+(async () => {
+  try {
+    const redirectResult = await getRedirectResult(auth);
+    if (redirectResult && redirectResult.user) {
+      console.log('[Auth] Redirect result user:', redirectResult.user.uid);
+      await ensureUserProfile(redirectResult.user);
+    }
+  } catch (e) {
+    console.error('[Auth] getRedirectResult error:', e);
+  }
+})();
+
+// Auth helpers with robust fallback to redirect on popup failure
 async function signInWithGooglePopup() {
-  const result = await signInWithPopup(auth, provider);
-  await ensureUserProfile(result.user);
-  return result.user;
+  console.log('[Auth] Attempting signInWithPopup...');
+  try {
+    const result = await signInWithPopup(auth, provider);
+    await ensureUserProfile(result.user);
+    console.log('[Auth] Popup sign-in success:', result.user?.uid);
+    return result.user;
+  } catch (err) {
+    console.warn('[Auth] Popup sign-in failed, considering redirect fallback:', err?.code || err);
+    const code = err?.code || '';
+    // Fallback for common production cases: popup blocked, third-party cookies, unsupported env, CSP, etc.
+    const shouldRedirect =
+      code === 'auth/popup-blocked' ||
+      code === 'auth/popup-closed-by-user' || // optional: treat as fallback
+      code === 'auth/operation-not-supported-in-this-environment' ||
+      code === 'auth/unauthorized-domain' || // if misconfigured, redirect may still succeed once config is fixed
+      code === 'auth/internal-error';
+    if (shouldRedirect) {
+      console.log('[Auth] Falling back to signInWithRedirect...');
+      await signInWithRedirect(auth, provider);
+      // The flow continues after page reload via getRedirectResult above
+      return null;
+    }
+    throw err;
+  }
 }
 
 async function signOutFromFirebase() {

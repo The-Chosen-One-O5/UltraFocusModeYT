@@ -950,6 +950,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Firebase ESM modules for v2 (relative paths, required on Vercel subpath) -->
+    <script type="module">
+      import { wireAuthButtons } from './firebase/auth.js';
+      // Wire buttons after module load; auth.js will also set onAuthStateChanged via its imports
+      document.addEventListener('DOMContentLoaded', () => {
+        try {
+          wireAuthButtons();
+          console.log('[Auth] wireAuthButtons initialized');
+        } catch (e) {
+          console.error('[Auth] Failed to initialize auth wiring:', e);
+        }
+      });
+    </script>
 
 </head>
 <body>
@@ -1303,12 +1316,57 @@
             function getAchievementLevel(currentPoints) { let currentLevel = achievementLevels[0]; for (const level of achievementLevels) { if (currentPoints >= level.points) { currentLevel = level; } else { break; } } return currentLevel; }
             function updateAchievementLevel() { if (!achievementLevelDiv || !isSignedIn) return; const level = getAchievementLevel(points); achievementLevelDiv.textContent = level.level; achievementLevelDiv.className = 'level-default'; achievementLevelDiv.removeAttribute('style'); achievementLevelDiv.classList.remove('rainbow', 'level-glow', 'level-box-glow'); achievementLevelDiv.style.border = '2px solid var(--secondary)'; if (level.color === 'rainbow') { achievementLevelDiv.classList.add('rainbow'); } else { achievementLevelDiv.style.color = level.color; } if (level.glow) achievementLevelDiv.classList.add('level-glow'); if (level.box) achievementLevelDiv.style.border = '2px solid var(--gold)'; if (level.boxGlow) achievementLevelDiv.classList.add('level-box-glow'); if (currentView === 'profile') displayProfileInfo(); }
             function playSound(soundId) { const audio = document.getElementById(soundId); if (audio) { audio.currentTime = 0; audio.play().catch(err => console.warn(`Audio error (${soundId}):`, err.message)); } }
-            function showAchievementOverlay(message) { const overlay = document.getElementById("achievementOverlay"); if (!overlay) return; overlay.textContent = message; overlay.style.display = "flex"; playSound('levelUpAudio'); setTimeout(() => { overlay.style.display = "none"; }, 5000); }
+            // Guarded SFX that must never interfere with lofi state
+            function playSfx(soundId) {
+                const el = document.getElementById(soundId);
+                if (!el) return;
+                try { el.currentTime = 0; el.volume = 1.0; el.play().catch(e => console.warn(`SFX ${soundId} blocked:`, e?.message||e)); } catch(e){ console.warn('SFX error:', e?.message||e); }
+            }
+            function showAchievementOverlay(message) { const overlay = document.getElementById("achievementOverlay"); if (!overlay) return; overlay.textContent = message; overlay.style.display = "flex"; playSfx('levelUpAudio'); setTimeout(() => { overlay.style.display = "none"; }, 5000); }
             function updateClock() { if (!navClockTime || !navClockPeriod) return; const now = new Date(); let hours = now.getHours(); const minutes = now.getMinutes().toString().padStart(2, "0"); const seconds = now.getSeconds().toString().padStart(2, "0"); const period = hours >= 12 ? "PM" : "AM"; hours = hours % 12 || 12; hours = hours.toString().padStart(2, "0"); navClockTime.textContent = `${hours}:${minutes}:${seconds}`; navClockPeriod.textContent = period; if (currentView === 'homePage') { updateDateTimeDisplay(); } }
-            function playLofi() { if (!lofiAudio || availableLofiSongs.length === 0 || lofiAudio.readyState < 3) { console.warn("Lofi not ready/available. State:", lofiAudio?.readyState); return; } lofiAudio.play().then(() => { if (document.getElementById('lofiPlay')) document.getElementById('lofiPlay').style.display = 'none'; if (document.getElementById('lofiPause')) document.getElementById('lofiPause').style.display = 'inline-block'; }).catch((err) => console.error("Lofi play error:", err, "ReadyState:", lofiAudio.readyState)); }
-            function pauseLofi() { if (!lofiAudio) return; lofiAudio.pause(); if (document.getElementById('lofiPlay')) document.getElementById('lofiPlay').style.display = 'inline-block'; if (document.getElementById('lofiPause')) document.getElementById('lofiPause').style.display = 'none'; }
-            function nextLofi() { if (!lofiAudio || availableLofiSongs.length <= 1) return; currentLofiIndex = (currentLofiIndex + 1) % availableLofiSongs.length; lofiAudio.src = availableLofiSongs[currentLofiIndex]; lofiAudio.load(); playLofi(); }
-            function prevLofi() { if (!lofiAudio || availableLofiSongs.length <= 1) return; currentLofiIndex = (currentLofiIndex - 1 + availableLofiSongs.length) % availableLofiSongs.length; lofiAudio.src = availableLofiSongs[currentLofiIndex]; lofiAudio.load(); playLofi(); }
+
+            // Lofi intent flag: only user click can start playback
+            let lofiUserInitiated = false;
+
+            function syncLofiUi() {
+                const playBtn = document.getElementById('lofiPlay');
+                const pauseBtn = document.getElementById('lofiPause');
+                const isPlaying = !!lofiAudio && !lofiAudio.paused;
+                if (playBtn) playBtn.style.display = isPlaying ? 'none' : 'inline-block';
+                if (pauseBtn) pauseBtn.style.display = isPlaying ? 'inline-block' : 'none';
+            }
+
+            function playLofi(fromUserClick = false) {
+                if (fromUserClick) lofiUserInitiated = true;
+                if (!lofiUserInitiated) return; // block programmatic auto-starts
+                if (!lofiAudio || availableLofiSongs.length === 0) return;
+                // ensure src set
+                if (!lofiAudio.src) {
+                    currentLofiIndex = Math.max(0, Math.min(currentLofiIndex, availableLofiSongs.length - 1));
+                    lofiAudio.src = availableLofiSongs[currentLofiIndex];
+                    lofiAudio.load();
+                }
+                lofiAudio.play().then(syncLofiUi).catch(err => console.error("Lofi play error:", err));
+            }
+            function pauseLofi() {
+                if (!lofiAudio) return;
+                try { lofiAudio.pause(); } catch {}
+                syncLofiUi();
+            }
+            function nextLofi() {
+                if (!lofiAudio || availableLofiSongs.length <= 1) return;
+                currentLofiIndex = (currentLofiIndex + 1) % availableLofiSongs.length;
+                lofiAudio.src = availableLofiSongs[currentLofiIndex];
+                lofiAudio.load();
+                playLofi(false); // honor intent; do not force-start if user hasn't initiated
+            }
+            function prevLofi() {
+                if (!lofiAudio || availableLofiSongs.length <= 1) return;
+                currentLofiIndex = (currentLofiIndex - 1 + availableLofiSongs.length) % availableLofiSongs.length;
+                lofiAudio.src = availableLofiSongs[currentLofiIndex];
+                lofiAudio.load();
+                playLofi(false);
+            }
 
             // --- Modified Streak Logic (REFINED) ---
             function updateStreak() {
@@ -2075,7 +2133,7 @@
                              points += earnedPoints;
                              if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
                              checkLevelUp();
-                             playSound("achievementAudio");
+                             playSfx("achievementAudio");
                              logDailyFocus(); // Log focus time at the end of the focus period
                              showSessionCompleteDialog(); // Offer break or continue
                          } else if (mode === "Break Time") { // Long break finished
@@ -2093,7 +2151,9 @@
 
             function endFocusSession(reason = "Session ended.") {
                 console.log("Ending focus:", reason);
-                pauseLofi(); // Pause Lofi when session ends
+                // Stop lofi and clear user intent so it cannot auto-resume
+                lofiUserInitiated = false;
+                pauseLofi();
                 clearInterval(countdownInterval);
                 if (isFocusModeActive) { // Only log if it was an active YT session
                     logDailyFocus(); // Log any accumulated time before ending
@@ -2124,7 +2184,7 @@
             }
 
             function showSessionCompleteDialog() { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "flex"; }
-            function handleSessionContinue(choice) { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "none"; if (choice === "continue") { const bonusPoints = applyPowerUps(100); points += bonusPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Bonus!", `+${bonusPoints} XP!`, false); playSound('achievementAudio'); checkLevelUp(); saveState(); currentSessionFocusTime = 0; // Reset session timer for continued focus
+            function handleSessionContinue(choice) { const dialog = document.getElementById("sessionCompleteDialog"); if (dialog) dialog.style.display = "none"; if (choice === "continue") { const bonusPoints = applyPowerUps(100); points += bonusPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; showConfirmation("Bonus!", `+${bonusPoints} XP!`, false); playSfx('achievementAudio'); checkLevelUp(); saveState(); currentSessionFocusTime = 0; // Reset session timer for continued focus
             startTimer(focusDuration, "Focus Time"); } else { endFocusSession("User ended session after completion."); } }
             function requestExitSession() { showConfirmation( "Exit?", "End current focus session?", true, () => { endFocusSession("User exited session manually."); }, () => {} ); }
             function toggleAIPopup() { if (!aiPopup) return; const isVisible = aiPopup.style.display === "block"; aiPopup.style.display = isVisible ? "none" : "block"; }
@@ -2559,7 +2619,10 @@
                  }
 
 
-                document.getElementById('lofiPlay')?.addEventListener('click', playLofi); document.getElementById('lofiPause')?.addEventListener('click', pauseLofi); document.getElementById('lofiPrev')?.addEventListener('click', prevLofi); document.getElementById('lofiNext')?.addEventListener('click', nextLofi);
+                document.getElementById('lofiPlay')?.addEventListener('click', () => playLofi(true));
+                document.getElementById('lofiPause')?.addEventListener('click', pauseLofi);
+                document.getElementById('lofiPrev')?.addEventListener('click', prevLofi);
+                document.getElementById('lofiNext')?.addEventListener('click', nextLofi);
                 if(fireBox) fireBox.addEventListener('click', toggleAIPopup);
                 if (timerDisplay) { let isDragging = false; let initialX, initialY; timerDisplay.addEventListener("mousedown", (e) => { if (e.target.tagName === 'BUTTON') return; isDragging = true; initialX = e.clientX - timerDisplay.offsetLeft; initialY = e.clientY - timerDisplay.offsetTop; timerDisplay.style.cursor = 'grabbing'; e.preventDefault(); }); document.addEventListener("mousemove", (e) => { if (isDragging) { e.preventDefault(); let currentX = e.clientX - initialX; let currentY = e.clientY - initialY; const maxX = window.innerWidth - timerDisplay.offsetWidth - 10; const maxY = window.innerHeight - timerDisplay.offsetHeight - 10; currentX = Math.max(10, Math.min(currentX, maxX)); currentY = Math.max(65, Math.min(currentY, maxY)); timerDisplay.style.left = `${currentX}px`; timerDisplay.style.top = `${currentY}px`; } }); document.addEventListener("mouseup", () => { if (isDragging) { isDragging = false; timerDisplay.style.cursor = 'move'; } }); }
 
@@ -2573,7 +2636,8 @@
                      let distractionOccurred = false; // Track if a distraction penalty was applied
 
                      if (isHidden) {
-                        pauseLofi(); // Always pause lofi when hidden
+                        // Always pause lofi when hidden; do not change intent
+                        pauseLofi();
 
                         if (isFocusModeActive && currentView === 'youtubeLecturePage') {
                             totalDistractions++; // Increment global counter
@@ -2637,8 +2701,9 @@
                                      if (currentView === 'profile') displayProfileInfo(); // Update profile UI
                                 }
                              }
-                            playLofi(); // Resume lofi only if a focus session is active
-                             console.log("Tab visible.");
+                            // Resume lofi only if a focus session is active AND user had initiated it
+                            if (lofiUserInitiated) playLofi(false);
+                            console.log("Tab visible.");
                          }
                      }
                  });

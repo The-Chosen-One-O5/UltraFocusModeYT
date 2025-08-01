@@ -87,16 +87,22 @@ export function wireAuthButtons() {
   if (googleBtn && !googleBtn.dataset.fbwired) {
     googleBtn.dataset.fbwired = '1';
     googleBtn.addEventListener('click', async () => {
+      console.log('[Auth] Google button clicked');
       googleBtn.disabled = true;
       const orig = googleBtn.textContent;
       googleBtn.textContent = 'Signing in...';
       try {
         const user = await googleSignIn();
-        console.log('Google signed in:', user?.uid);
+        if (user) {
+          console.log('[Auth] Google signed in (popup path):', user?.uid);
+        } else {
+          console.log('[Auth] Redirect initiated; waiting for page reload to complete sign-in');
+        }
       } catch (e) {
-        console.error('Google sign-in failed:', e);
+        console.error('[Auth] Google sign-in failed:', e);
         alert('Google sign-in failed. Check console.');
       } finally {
+        // If redirect flow started, page will navigate and this code may not run.
         googleBtn.textContent = orig;
         googleBtn.disabled = false;
       }
