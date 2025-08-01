@@ -921,6 +921,21 @@
             #calendarGrid { gap: 3px; } .calendar-day { font-size: 9px; }
          }
 
+    /* PYQ iframe styles */
+    #pyqEmbedContainer {
+        position: relative;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: calc(100vh - 140px); /* account for header/margins */
+        border: 2px solid var(--primary);
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(65,105,225,0.25);
+        overflow: hidden;
+        background: var(--bg-light);
+    }
+    #pyqEmbedPage { padding: 20px; }
+    #pyqToolbar button { margin: 0; }
+    #pyqFallback { z-index: 5; }
     </style>
     <!-- Include Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -946,13 +961,17 @@
             <div id="navClockContainer"> <span id="navClockTime">00:00:00</span> <span id="navClockPeriod">AM</span> </div>
             <div id="navButtons">
                 <span id="navStreakDisplay"><i class="fas fa-fire"></i> 0 days focus</span>
+                <span id="navUserArea" style="display:none;align-items:center;gap:8px;">
+                    <img id="navUserPhoto" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--primary);display:none;">
+                    <span id="navUserName" style="font-size:14px;color:var(--text-dim);"></span>
+                </span>
                 <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile"> <i class="fas fa-user-circle"></i> </button>
             </div>
         </nav>
 
         <!-- == Page Views == -->
         <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div> <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button> <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button> <div id="features"> <div class="feature"> <i class="fas fa-ban"></i> <p>Ad-Free Zone<br>Focus!</p> </div> <div class="feature"> <i class="fas fa-moon"></i> <p>Dark Mode<br>Easy on eyes</p> </div> <div class="feature"> <i class="fas fa-gamepad"></i> <p>Gamified<br>Level up!</p> </div> </div> </div> </div>
-        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
+        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <div style="margin-top:15px;"> <button data-action="google-sign-in" class="primary-btn" style="background:#fff;color:#333;border:1px solid #ddd;box-shadow:2px 2px 0 #bbb;"><i class="fab fa-google" style="color:#db4437;"></i> Sign in with Google</button> </div> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
         <div id="homePage" class="page-view">
             <div id="homePageContent">
                 <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
@@ -988,10 +1007,28 @@
             </div>
         </div>
         <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <span class="label"><i class="fas fa-stopwatch"></i> Focus Time</span> <span id="statsTotalFocusTime" class="value">0m</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-eye-slash"></i> Distractions</span> <span id="statsTotalDistractions" class="value distractions">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-film"></i> Videos Done</span> <span id="statsTotalVideosWatched" class="value videos">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-fire"></i> Current Streak</span> <span id="statsCurrentStreak" class="value streak">0 days</span> </div> </div> <div id="focusCalendar"> <div id="calendarHeader"> <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button> <h4 id="calendarMonthYear"><i class="fas fa-calendar-alt"></i> Calendar</h4> <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button> </div> <div id="calendarGrid"> <!-- Calendar grid will be generated here --> </div> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
+        <!-- PYQ Embedded View -->
+        <div id="pyqEmbedPage" class="page-view" style="display:none;">
+            <div id="pyqToolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <button id="pyqBackBtn" class="accent-btn" style="background: var(--bg-light);"><i class="fas fa-arrow-left"></i> Back</button>
+                <span style="color: var(--text-dim); font-size: 14px;"><i class="fas fa-dumbbell"></i> PYQs</span>
+                <span></span>
+            </div>
+            <div id="pyqEmbedContainer">
+                <iframe id="pyqIframe" title="ExamGoal PYQs" src="about:blank" loading="lazy" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write; fullscreen" style="width:100%;height:100%;border:0;background:#111;"></iframe>
+                <div id="pyqFallback" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;background:rgba(26,26,46,0.9);border:2px dashed var(--danger);border-radius:8px;">
+                    <div>
+                        <h3 style="color: var(--danger); margin-bottom:10px;"><i class="fas fa-ban"></i> Embedding blocked</h3>
+                        <p style="color: var(--text);">room.examgoal.com disallows embedding in an iframe. You can open it in a new tab:</p>
+                        <p style="margin-top:10px;"><a href="https://room.examgoal.com/" target="_blank" rel="noreferrer" style="color: var(--accent); text-decoration: underline;">Open PYQs</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- == Shared Components == -->
         <div class="sidebar-trigger" title="Open Menu">MENU</div>
-        <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button> <button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do<span id="todoBadge" class="todo-badge">0</span></button> <!-- Badge added here --> </div> <div class="sidebar-section"> <h3>Progress</h3> <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button> <a href="https://room.examgoal.com/" target="_blank" rel="noreferrer"><i class="fas fa-dumbbell"></i> PYQs</a> </div> <div class="sidebar-section"> <h3>Self Study</h3> <button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button> </div> <div class="sidebar-section"> <h3>Shops & Realms</h3> <button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button> <button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button> <button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button> <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a> <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a> <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a> </div> <div class="sidebar-section"> <h3>Account</h3> <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button> <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button> </div> </div>
+        <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button> <button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do<span id="todoBadge" class="todo-badge">0</span></button> <!-- Badge added here --> </div> <div class="sidebar-section"> <h3>Progress</h3> <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button> <button id="pyqOpenBtn"><i class="fas fa-dumbbell"></i> PYQs</button> </div> <div class="sidebar-section"> <h3>Self Study</h3> <button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button> </div> <div class="sidebar-section"> <h3>Shops & Realms</h3> <button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button> <button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button> <button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button> <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a> <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a> <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a> </div> <div class="sidebar-section"> <h3>Account</h3> <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button> <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button> </div> </div>
         <div id="timerDisplay"> <span id="timerText">Focus: 00:00</span> <div id="progressBar"> <div id="progressFill"></div> </div> </div>
         <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
         <div id="achievementLevel">Mortal</div>
@@ -1035,6 +1072,40 @@
         <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1"></audio>
 
     </div> <!-- End Game Container -->
+
+    <!-- Firebase wiring -->
+    <script type="module">
+      import { wireAuthButtons } from './firebase/auth.js';
+      import { auth, onAuthStateChanged } from './firebase/firebase.js';
+
+      // Wait for the app's main script to define globals, then wire buttons
+      const ready = () => {
+        try { wireAuthButtons(); } catch(e) { console.warn('wireAuthButtons error', e); }
+
+        // Update nav user area when auth state changes (basic UI only)
+        onAuthStateChanged(auth, (user) => {
+          const area = document.getElementById('navUserArea');
+          const photo = document.getElementById('navUserPhoto');
+          const name = document.getElementById('navUserName');
+          if (!area || !photo || !name) return;
+          if (user) {
+            area.style.display = 'flex';
+            name.textContent = user.displayName || (user.email || '').split('@')[0] || 'You';
+            if (user.photoURL) { photo.src = user.photoURL; photo.style.display = 'inline-block'; } else { photo.style.display = 'none'; }
+          } else {
+            area.style.display = 'none';
+            name.textContent = '';
+            photo.removeAttribute('src'); photo.style.display = 'none';
+          }
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ready, { once: true });
+      } else {
+        ready();
+      }
+    </script>
 
 
     <script>
@@ -1120,12 +1191,12 @@
             function showView(viewId) {
                 console.log("Show View:", viewId);
                 if (!document.getElementById(viewId)) { console.error(`View "${viewId}" missing!`); viewId = 'landingPage'; }
-                const protectedViews = ['homePage', 'youtubeLecturePage', 'profile', 'focusStats'];
+                const protectedViews = ['homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'pyqEmbedPage'];
                 if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denied to "${viewId}".`); showView('signinForm'); return; }
                 document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
                 const targetView = document.getElementById(viewId); targetView.style.display = 'flex'; currentView = viewId;
                 const showNav = isSignedIn && (viewId !== 'landingPage' && viewId !== 'signinForm');
-                const showShared = isSignedIn && (viewId === 'homePage' || viewId === 'youtubeLecturePage');
+                const showShared = isSignedIn && (viewId === 'homePage' || viewId === 'youtubeLecturePage' || viewId === 'pyqEmbedPage');
                 if(topNavBar) topNavBar.style.display = showNav ? 'flex' : 'none';
                 if(pointsDisplay) pointsDisplay.style.display = showNav ? 'block' : 'none';
                 if(achievementLevelDiv) achievementLevelDiv.style.display = showNav ? 'block' : 'none';
@@ -1143,6 +1214,8 @@
                     const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = showPlayerArea ? 'flex' : 'none';
                     if (showInput) { if (isSignedIn) { populatePlaylistSelect(); restoreUrlInputs(); } }
                     if (showPlayerArea) { highlightCurrentThumbnail(); } else { closeVideoSidebar(); }
+                } else if (viewId === 'pyqEmbedPage') {
+                    // nothing extra for now
                 } else {
                     if(timerDisplay) timerDisplay.style.display = 'none'; if(videoSidebar) videoSidebar.style.display = 'none'; if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none'; const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none'; if(playerContainer) playerContainer.style.display = 'none'; closeVideoSidebar();
                     if (player && typeof player.pauseVideo === 'function' && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) { player.pauseVideo(); console.log("Paused video: view change."); }
@@ -2376,6 +2449,52 @@
                 document.querySelector('button[data-action="create-account"]')?.addEventListener('click', createAccount);
                 document.getElementById('logoutBtn')?.addEventListener('click', logout);
                 document.querySelector('button[data-action="github"]')?.addEventListener('click', () => window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank"));
+                // PYQ open inline
+                document.getElementById('pyqOpenBtn')?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Navigate to embedded view
+                    showView('pyqEmbedPage');
+                    // try to set src and detect embed block
+                    const iframe = document.getElementById('pyqIframe');
+                    const fallback = document.getElementById('pyqFallback');
+                    if (iframe) {
+                        // Use about:blank first, then set to external to avoid blocked initial nav glitches
+                        const targetUrl = 'https://room.examgoal.com/';
+                        let showedFallback = false;
+                        // Show a temp loading style
+                        iframe.style.opacity = '0.01';
+                        // Attach onload to reveal; blocked by X-Frame-Options won't fire reliably across browsers, so add timeout
+                        iframe.onload = () => {
+                            iframe.style.opacity = '1';
+                        };
+                        // Timeout to show fallback if nothing loads
+                        setTimeout(() => {
+                            // If still almost transparent after timeout, assume blocked
+                            if (iframe.style.opacity !== '1') {
+                                iframe.style.display = 'none';
+                                if (fallback) fallback.style.display = 'flex';
+                                showedFallback = true;
+                            }
+                        }, 3000);
+                        // Set source
+                        iframe.src = targetUrl;
+                        // Ensure fallback hidden initially
+                        if (!showedFallback && fallback) fallback.style.display = 'none';
+                    }
+                });
+                // Back from PYQ
+                document.getElementById('pyqBackBtn')?.addEventListener('click', () => {
+                    // reset iframe to stop network/audio
+                    const iframe = document.getElementById('pyqIframe');
+                    const fallback = document.getElementById('pyqFallback');
+                    if (iframe) {
+                        iframe.src = 'about:blank';
+                        iframe.style.display = 'block';
+                        iframe.style.opacity = '1';
+                    }
+                    if (fallback) fallback.style.display = 'none';
+                    showView('homePage');
+                });
                 document.querySelector('#youtubeLecturePage button[data-action="add-url"]')?.addEventListener('click', addUrlInput);
                 document.querySelector('#youtubeLecturePage button[data-action="save-playlist"]')?.addEventListener('click', savePlaylist);
                 document.querySelector('#youtubeLecturePage button[data-action="remove-playlist"]')?.addEventListener('click', removePlaylist);

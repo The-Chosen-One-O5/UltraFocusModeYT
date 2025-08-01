@@ -1,0 +1,22 @@
+// Firestore Security Rules for Ultra Focus Mode
+// Apply in Firebase Console > Firestore Database > Rules
+// This design restricts each user to only their own documents under /users/{uid}/...
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Public top-level collections (none by default)
+    // Add public-readable collections here if needed (e.g., announcements)
+
+    // User subtree
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Nested subcollections like users/{uid}/app/state
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
