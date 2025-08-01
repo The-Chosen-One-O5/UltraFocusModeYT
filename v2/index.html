@@ -770,6 +770,11 @@
         .game-sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100vh; background: rgba(26, 26, 46, 0.98); backdrop-filter: blur(5px); border-right: 3px solid var(--primary); z-index: 200; transition: left 0.3s ease; padding: 70px 0 20px 0; box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4); overflow-y: auto; pointer-events: auto; }
         .game-sidebar.open { left: 0; }
          .game-sidebar.open + .sidebar-trigger { left: 280px; }
+        /* Hide sidebar trigger and sidebar on public pages (landing/signin) or when not signed in */
+        .hide-menu .sidebar-trigger,
+        .hide-menu .game-sidebar {
+            display: none !important;
+        }
         .sidebar-section { padding: 15px 20px; border-bottom: 1px solid var(--bg-light); }
         .sidebar-section:last-child { border-bottom: none; }
         .sidebar-section h3 { color: var(--secondary); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; padding-bottom: 5px; border-bottom: 1px dashed var(--primary-dark); }
@@ -1202,6 +1207,15 @@
                 if(achievementLevelDiv) achievementLevelDiv.style.display = showNav ? 'block' : 'none';
                 if(lofiPlayer) lofiPlayer.style.display = showShared ? 'block' : 'none';
                 if(fireBox) fireBox.style.display = showShared ? 'flex' : 'none';
+                // Hide or show sidebar trigger/sidebar via CSS class on body
+                const bodyEl = document.body;
+                if (bodyEl) {
+                    if (!isSignedIn || viewId === 'landingPage' || viewId === 'signinForm') {
+                        bodyEl.classList.add('hide-menu');
+                    } else {
+                        bodyEl.classList.remove('hide-menu');
+                    }
+                }
 
                 // YT Page UI Logic
                 if (viewId === 'youtubeLecturePage') {
