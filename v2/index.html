@@ -950,10 +950,280 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Firebase ESM modules for v2 (relative paths, required on Vercel subpath) -->
+    <!-- Firebase ESM modules inlined to avoid 404s -->
     <script type="module">
-      import { wireAuthButtons } from './firebase/auth.js';
-      // Wire buttons after module load; auth.js will also set onAuthStateChanged via its imports
+      // ===== BEGIN firebase/firebase.js (inlined) =====
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+        signInWithRedirect,
+        getRedirectResult
+      } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+      import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDS6ZuQcViCFgolCcmAqBPp_9pndCB8F8Q",
+        authDomain: "ultrafocusmode-18ae4.firebaseapp.com",
+        projectId: "ultrafocusmode-18ae4",
+        storageBucket: "ultrafocusmode-18ae4.firebasestorage.app",
+        messagingSenderId: "998572603670",
+        appId: "1:998572603670:web:f14dff88199d964b0c3837",
+        measurementId: "G-04LSN8085M"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      // Use unique names to avoid collisions with other inline modules
+      const fbAuth = getAuth(app);
+      const db = getFirestore(app);
+      const fbProvider = new GoogleAuthProvider();
+      fbProvider.setCustomParameters({ prompt: 'select_account' });
+
+      async function ensureUserProfile(user) {
+        if (!user) return;
+        const ref = doc(db, 'users', user.uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await setDoc(ref, {
+            uid: user.uid,
+            email: user.email || null,
+            displayName: user.displayName || null,
+            photoURL: user.photoURL || null,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          await updateDoc(ref, {
+            email: user.email || null,
+            displayName: user.displayName || null,
+            photoURL: user.photoURL || null,
+            updatedAt: serverTimestamp()
+          });
+        }
+      }
+
+      async function saveAppState(uid, state) {
+        const ref = doc(db, 'users', uid, 'app', 'state');
+        await setDoc(ref, { ...state, updatedAt: serverTimestamp() }, { merge: true });
+      }
+      async function loadAppState(uid) {
+        const ref = doc(db, 'users', uid, 'app', 'state');
+        const snap = await getDoc(ref);
+        return snap.exists() ? snap.data() : null;
+      }
+
+      (async () => {
+        try {
+          const redirectResult = await getRedirectResult(fbAuth);
+          if (redirectResult && redirectResult.user) {
+            console.log('[Auth] Redirect result user:', redirectResult.user.uid);
+            await ensureUserProfile(redirectResult.user);
+          }
+        } catch (e) {
+          console.error('[Auth] getRedirectResult error:', e);
+        }
+      })();
+
+      async function signInWithGooglePopup() {
+        console.log('[Auth] Attempting signInWithPopup...');
+        try {
+          const result = await signInWithPopup(fbAuth, fbProvider);
+          await ensureUserProfile(result.user);
+          console.log('[Auth] Popup sign-in success:', result.user?.uid);
+          return result.user;
+        } catch (err) {
+          console.warn('[Auth] Popup sign-in failed, considering redirect fallback:', err?.code || err);
+          const code = err?.code || '';
+          const shouldRedirect =
+            code === 'auth/popup-blocked' ||
+            code === 'auth/popup-closed-by-user' ||
+            code === 'auth/operation-not-supported-in-this-environment' ||
+            code === 'auth/unauthorized-domain' ||
+            code === 'auth/internal-error';
+          if (shouldRedirect) {
+            console.log('[Auth] Falling back to signInWithRedirect...');
+            await signInWithRedirect(fbAuth, fbProvider);
+            return null;
+          }
+          throw err;
+        }
+      }
+
+      async function signOutFromFirebase() {
+        await signOut(fbAuth);
+      }
+
+      // Export shim for other inline module (auth wiring) via window-scoped object
+      // expose under stable names
+      const __fbExports = { app, auth: fbAuth, db, onAuthStateChanged, signInWithGooglePopup, signOutFromFirebase, saveAppState, loadAppState };
+      // ===== END firebase/firebase.js (inlined) =====
+
+      // ===== BEGIN firebase/db.js (inlined) =====
+      async function saveStateToCloud(uid) {
+        if (!uid) throw new Error('saveStateToCloud: uid required');
+        const g = window;
+        const state = {
+          points: g.points || 0,
+          previousPoints: g.previousPoints || 0,
+          totalFocusTime: g.totalFocusTime || 0,
+          totalDistractions: g.totalDistractions || 0,
+          totalVideosWatched: g.totalVideosWatched || 0,
+          tasks: Array.isArray(g.tasks) ? g.tasks : [],
+          playlists: Array.isArray(g.playlists) ? g.playlists : [],
+          streakDays: g.streakDays || 0,
+          lastFocusDate: g.lastFocusDate || null,
+          mysteryBoxCount: g.mysteryBoxCount || 0,
+          activePowerUps: g.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } },
+          premiumLofiTracks: Array.isArray(g.premiumLofiTracks) ? g.premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })) : [],
+          dailyFocusData: g.dailyFocusData || {},
+          browserNotificationsEnabled: !!g.browserNotificationsEnabled,
+          currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
+          currentView: g.currentView || 'homePage'
+        };
+        await __fbExports.saveAppState(uid, state);
+      }
+      async function loadStateFromCloud(uid) {
+        if (!uid) throw new Error('loadStateFromCloud: uid required');
+        const data = await __fbExports.loadAppState(uid);
+        return data;
+      }
+      // Expose for other inline module
+      const __dbExports = { saveStateToCloud, loadStateFromCloud };
+      // ===== END firebase/db.js (inlined) =====
+
+      // ===== BEGIN firebase/auth.js (inlined) =====
+      function collectAppStateFromWindow() {
+        const g = window;
+        return {
+          points: g.points || 0,
+          previousPoints: g.previousPoints || 0,
+          totalFocusTime: g.totalFocusTime || 0,
+          totalDistractions: g.totalDistractions || 0,
+          totalVideosWatched: g.totalVideosWatched || 0,
+          tasks: Array.isArray(g.tasks) ? g.tasks : [],
+          playlists: Array.isArray(g.playlists) ? g.playlists : [],
+          streakDays: g.streakDays || 0,
+          lastFocusDate: g.lastFocusDate || null,
+          mysteryBoxCount: g.mysteryBoxCount || 0,
+          activePowerUps: g.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } },
+          premiumLofiTracks: Array.isArray(g.premiumLofiTracks) ? g.premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })) : [],
+          dailyFocusData: g.dailyFocusData || {},
+          browserNotificationsEnabled: !!g.browserNotificationsEnabled,
+          currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
+          currentView: g.currentView || 'landingPage'
+        };
+      }
+      function applyAppStateToWindow(data) {
+        const g = window;
+        if (!data) return;
+        g.points = data.points ?? g.points ?? 0;
+        g.previousPoints = data.previousPoints ?? g.previousPoints ?? g.points ?? 0;
+        g.totalFocusTime = data.totalFocusTime ?? g.totalFocusTime ?? 0;
+        g.totalDistractions = data.totalDistractions ?? g.totalDistractions ?? 0;
+        g.totalVideosWatched = data.totalVideosWatched ?? g.totalVideosWatched ?? 0;
+        g.tasks = Array.isArray(data.tasks) ? data.tasks : (g.tasks || []);
+        g.playlists = Array.isArray(data.playlists) ? data.playlists : (g.playlists || []);
+        g.streakDays = data.streakDays ?? g.streakDays ?? 0;
+        g.lastFocusDate = data.lastFocusDate ?? g.lastFocusDate ?? null;
+        g.mysteryBoxCount = data.mysteryBoxCount ?? g.mysteryBoxCount ?? 0;
+        g.activePowerUps = data.activePowerUps ?? g.activePowerUps ?? { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } };
+        if (Array.isArray(data.premiumLofiTracks) && Array.isArray(g.premiumLofiTracks)) {
+          const unlockedMap = new Map(data.premiumLofiTracks.map(t => [t.id, !!t.unlocked]));
+          g.premiumLofiTracks.forEach(t => { if (unlockedMap.has(t.id)) t.unlocked = unlockedMap.get(t.id); });
+        }
+        g.dailyFocusData = data.dailyFocusData ?? g.dailyFocusData ?? {};
+        g.browserNotificationsEnabled = !!(data.browserNotificationsEnabled ?? g.browserNotificationsEnabled);
+        g.currentPomodoroDurationSetting = data.currentPomodoroDurationSetting ?? g.currentPomodoroDurationSetting ?? 60;
+
+        try {
+          if (typeof g.updateAchievementLevel === 'function') g.updateAchievementLevel();
+          if (typeof g.updateStreakDisplay === 'function') g.updateStreakDisplay();
+          if (typeof g.restoreTasks === 'function') g.restoreTasks();
+          if (typeof g.populatePlaylistSelect === 'function') g.populatePlaylistSelect();
+        } catch (e) {
+          console.warn('Post-hydration UI update warning:', e.message);
+        }
+      }
+
+      async function googleSignIn() {
+        const user = await __fbExports.signInWithGooglePopup();
+        return user;
+      }
+      async function firebaseSignOut() {
+        await __fbExports.signOutFromFirebase();
+      }
+
+      export function wireAuthButtons() {
+        const googleBtn = document.querySelector('#signinFormContainer button[data-action="google-sign-in"]');
+        if (googleBtn && !googleBtn.dataset.fbwired) {
+          googleBtn.dataset.fbwired = '1';
+          googleBtn.addEventListener('click', async () => {
+            console.log('[Auth] Google button clicked');
+            googleBtn.disabled = true;
+            const orig = googleBtn.textContent;
+            googleBtn.textContent = 'Signing in...';
+            try {
+              const user = await googleSignIn();
+              if (user) {
+                console.log('[Auth] Google signed in (popup path):', user?.uid);
+              } else {
+                console.log('[Auth] Redirect initiated; waiting for page reload to complete sign-in');
+              }
+            } catch (e) {
+              console.error('[Auth] Google sign-in failed:', e);
+              alert('Google sign-in failed. Check console.');
+            } finally {
+              googleBtn.textContent = orig;
+              googleBtn.disabled = false;
+            }
+          });
+        }
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn && !logoutBtn.dataset.fbwired) {
+          logoutBtn.dataset.fbwired = '1';
+          logoutBtn.addEventListener('click', async () => {
+            try {
+              if (!window.logout) {
+                await firebaseSignOut();
+              }
+            } catch (err) {
+              console.error('Sign out error:', err);
+            }
+          });
+        }
+      }
+
+      __fbExports.onAuthStateChanged(__fbExports.auth, async (fbUser) => {
+        const g = window;
+        if (fbUser) {
+          g.isSignedIn = true;
+          g.currentUser = fbUser.uid;
+          try {
+            const remoteState = await __fbExports.loadAppState(fbUser.uid);
+            applyAppStateToWindow(remoteState);
+          } catch (e) {
+            console.error('Failed to load remote state:', e);
+          }
+          try {
+            const localMigratable = collectAppStateFromWindow();
+            await __fbExports.saveAppState(fbUser.uid, localMigratable);
+          } catch (e) {
+            console.error('Failed to save initial state:', e);
+          }
+          try { if (typeof g.showView === 'function') g.showView('homePage'); } catch (e) { console.warn('Navigation warning:', e.message); }
+        } else {
+          g.isSignedIn = false;
+          g.currentUser = null;
+          try { if (typeof g.showView === 'function') g.showView('landingPage'); } catch {}
+        }
+      });
+      // ===== END firebase/auth.js (inlined) =====
+
+      // Wire buttons after module load
       document.addEventListener('DOMContentLoaded', () => {
         try {
           wireAuthButtons();
@@ -1091,17 +1361,17 @@
 
     </div> <!-- End Game Container -->
 
-    <!-- Firebase wiring -->
+    <!-- Firebase wiring (inline) -->
     <script type="module">
-      import { wireAuthButtons } from './firebase/auth.js';
-      import { auth, onAuthStateChanged } from './firebase/firebase.js';
+      // Reuse inline exports bound above
+      const { auth: navAuth, onAuthStateChanged } = (window.__fbInline ||= { auth: __fbExports.auth, onAuthStateChanged: __fbExports.onAuthStateChanged });
 
       // Wait for the app's main script to define globals, then wire buttons
       const ready = () => {
-        try { wireAuthButtons(); } catch(e) { console.warn('wireAuthButtons error', e); }
+        try { window.wireAuthButtons && window.wireAuthButtons(); } catch(e) { console.warn('wireAuthButtons error', e); }
 
         // Update nav user area when auth state changes (basic UI only)
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(navAuth, (user) => {
           const area = document.getElementById('navUserArea');
           const photo = document.getElementById('navUserPhoto');
           const name = document.getElementById('navUserName');
