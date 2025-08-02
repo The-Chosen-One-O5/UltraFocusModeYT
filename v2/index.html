@@ -1035,19 +1035,34 @@
           console.log('[Auth] Popup sign-in success:', result.user?.uid);
           return result.user;
         } catch (err) {
-          console.warn('[Auth] Popup sign-in failed, considering redirect fallback:', err?.code || err);
-          const code = err?.code || '';
-          const shouldRedirect =
-            code === 'auth/popup-blocked' ||
-            code === 'auth/popup-closed-by-user' ||
-            code === 'auth/operation-not-supported-in-this-environment' ||
-            code === 'auth/unauthorized-domain' ||
-            code === 'auth/internal-error';
+          // Normalize code safely
+          const code = (err && err.code) ? String(err.code) : '';
+
+          // Known popup issues or environments where popup won't work
+          const popupIssues = new Set([
+            'auth/popup-blocked',
+            'auth/popup-closed-by-user',
+            'auth/operation-not-supported-in-this-environment',
+            'auth/unauthorized-domain',
+            'auth/internal-error'
+          ]);
+
+          // Additional hard fallback: if permission-denied bubbles up here (from embedded contexts),
+          // still try redirect since some browsers/extensions interfere with popups.
+          const shouldRedirect = popupIssues.has(code) || code === 'permission-denied';
+
+          console.warn('[Auth] signInWithPopup error:', code || err);
           if (shouldRedirect) {
-            console.log('[Auth] Falling back to signInWithRedirect...');
-            await signInWithRedirect(fbAuth, fbProvider);
-            return null;
+            console.log('[Auth] Falling back to signInWithRedirect due to:', code || 'unknown');
+            try {
+              await signInWithRedirect(fbAuth, fbProvider);
+              return null;
+            } catch (redirectErr) {
+              console.error('[Auth] signInWithRedirect failed:', redirectErr?.code || redirectErr);
+              throw redirectErr;
+            }
           }
+
           throw err;
         }
       }
