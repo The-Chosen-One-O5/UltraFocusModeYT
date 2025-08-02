@@ -1662,9 +1662,96 @@
                 updateTodoBadge(); // Update badge after removing
                 updateUpcomingTaskDisplay(); // Update home task display
             }
-            function restoreTasks() { if (!tasksContainer) return; tasksContainer.innerHTML = ""; if (tasks.length === 0) { addTaskLine(); } else { tasks.forEach(taskData => addTaskLine({ ...taskData, id: taskData.id || Date.now() + Math.random() })); } // Ensure ID exists
-                checkTaskDeadlines(); updateTodoBadge(); updateUpcomingTaskDisplay(); }
-            function saveTasks() { if (!tasksContainer) return; const taskLines = tasksContainer.querySelectorAll(".task-line"); tasks = Array.from(taskLines).map(line => ({ id: line.dataset.taskId || Date.now() + Math.random(), text: line.querySelector(".task-text")?.value.trim() || (line.dataset.text || ""), completed: line.querySelector(".task-check")?.checked || (line.dataset.completed === 'true'), deadline: line.dataset.deadline ? parseInt(line.dataset.deadline) : null, points: line.dataset.points ? parseInt(line.dataset.points) : null, deadlineChecked: line.dataset.deadlineChecked === 'true' })).filter(task => task.text !== ""); localStorage.setItem("tasks", JSON.stringify(tasks)); if (isSignedIn && currentUser) { try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if(users[currentUser]) { users[currentUser].tasks = tasks; localStorage.setItem("users", JSON.stringify(users)); } } catch (err) { console.error("Error saving tasks:", err); } } console.log("Tasks saved:", tasks); updateFocusStatus(); updateTodoBadge(); updateUpcomingTaskDisplay(); }
+            async function restoreTasks() {
+                if (!tasksContainer) return;
+                // Try Firestore-first if signed in
+                let loadedTasks = null;
+                if (isSignedIn && currentUser) {
+                    try {
+                        const { loadAppState } = await import('./firebase/firebase.js');
+                        const remote = await loadAppState(currentUser);
+                        if (remote && Array.isArray(remote.tasks)) {
+                            loadedTasks = remote.tasks;
+                            // Warm local cache
+                            try {
+                                const users = JSON.parse(localStorage.getItem("users") || "{}");
+                                if (users[currentUser]) {
+                                    users[currentUser].tasks = loadedTasks;
+                                    localStorage.setItem("users", JSON.stringify(users));
+                                }
+                                localStorage.setItem("tasks", JSON.stringify(loadedTasks));
+                            } catch (e) {
+                                console.warn("Local cache warm failed (tasks):", e);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Cloud load tasks failed, will use local:", e);
+                    }
+                }
+                // Fallback to local or in-memory
+                if (!loadedTasks) {
+                    // Prefer per-user stored tasks if present
+                    try {
+                        const users = JSON.parse(localStorage.getItem("users") || "{}");
+                        if (isSignedIn && currentUser && users[currentUser] && Array.isArray(users[currentUser].tasks)) {
+                            loadedTasks = users[currentUser].tasks;
+                        } else {
+                            loadedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+                        }
+                    } catch { loadedTasks = []; }
+                }
+                tasks = Array.isArray(loadedTasks) ? loadedTasks : [];
+                tasksContainer.innerHTML = "";
+                if (tasks.length === 0) {
+                    addTaskLine();
+                } else {
+                    tasks.forEach(taskData => addTaskLine({ ...taskData, id: taskData.id || Date.now() + Math.random() }));
+                }
+                checkTaskDeadlines(); updateTodoBadge(); updateUpcomingTaskDisplay();
+            }
+            async function saveTasks() {
+                if (!tasksContainer) return;
+                const taskLines = tasksContainer.querySelectorAll(".task-line");
+                tasks = Array.from(taskLines).map(line => ({
+                    id: line.dataset.taskId || Date.now() + Math.random(),
+                    text: line.querySelector(".task-text")?.value.trim() || (line.dataset.text || ""),
+                    completed: line.querySelector(".task-check")?.checked || (line.dataset.completed === 'true'),
+                    deadline: line.dataset.deadline ? parseInt(line.dataset.deadline) : null,
+                    points: line.dataset.points ? parseInt(line.dataset.points) : null,
+                    deadlineChecked: line.dataset.deadlineChecked === 'true'
+                })).filter(task => task.text !== "");
+
+                // Always cache locally
+                try {
+                    localStorage.setItem("tasks", JSON.stringify(tasks));
+                    if (isSignedIn && currentUser) {
+                        const users = JSON.parse(localStorage.getItem("users") || "{}");
+                        if (users[currentUser]) {
+                            users[currentUser].tasks = tasks;
+                            localStorage.setItem("users", JSON.stringify(users));
+                        }
+                    }
+                } catch (err) {
+                    console.error("Local save (tasks) error:", err);
+                }
+
+                // Firestore-first when signed in
+                if (isSignedIn && currentUser) {
+                    try {
+                        // Update in-memory model then persist via helper that captures from window
+                        const oldTasks = Array.isArray(window.tasks) ? window.tasks : [];
+                        window.tasks = tasks;
+                        const { saveStateToCloud } = await import('./firebase/db.js');
+                        await saveStateToCloud(currentUser);
+                        console.log("Tasks saved to cloud.");
+                    } catch (e) {
+                        console.warn("Cloud save (tasks) failed, fallback already cached locally:", e);
+                    }
+                }
+
+                console.log("Tasks saved:", tasks);
+                updateFocusStatus(); updateTodoBadge(); updateUpcomingTaskDisplay();
+            }
             function handleTaskCompletionChange(event) { const checkbox = event.target; const taskLine = checkbox.closest('.task-line'); if (!taskLine) return; const input = taskLine.querySelector('.task-text'); const deadlineBtn = taskLine.querySelector('.set-deadline'); taskLine.dataset.completed = checkbox.checked; if (checkbox.checked) { if(input) input.readOnly = true; taskLine.style.opacity = '0.7'; if(deadlineBtn) deadlineBtn.disabled = true; checkSingleTaskDeadline(taskLine); if (typeof confetti === 'function') { const rect = checkbox.getBoundingClientRect(); const origin = { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight }; confetti({ particleCount: 80, spread: 60, origin: origin, colors: ['#a855f7', '#9333ea', '#c084fc', '#6b21a8'] }); } } else { if(input) input.readOnly = false; taskLine.style.opacity = '1'; if(deadlineBtn) deadlineBtn.disabled = false; }
                 updateTodoBadge(); // Update badge on completion change
                 updateUpcomingTaskDisplay(); // Update home task display
@@ -2315,57 +2402,153 @@
             const removeBtn = document.createElement("button"); removeBtn.innerHTML = '<i class="fas fa-times"></i>'; removeBtn.title = "Remove URL"; removeBtn.onclick = () => { if (urlInputsContainer.querySelectorAll(".url-container").length > 1) { urlInputsContainer.removeChild(container); } else { input.value = ''; } }; container.appendChild(removeBtn); } urlInputsContainer.appendChild(container); }); if (urlsToRestore.length === 1) { const singleRemoveBtn = urlInputsContainer.querySelector('.url-container button'); if(singleRemoveBtn) singleRemoveBtn.remove(); } } }
             function savePlaylist() { if (!playlistNameInput || !urlInputsContainer) return; const name = playlistNameInput.value.trim(); if (!name) { showConfirmation("Missing Name", "Enter a name to save the playlist.", false); return; } const urlElements = urlInputsContainer.querySelectorAll(".youtube-url"); const currentUrls = Array.from(urlElements).map(input => input.value.trim()).filter(url => url); if (currentUrls.length === 0) { showConfirmation("No Videos", "Add at least one YouTube URL to save.", false); return; } const existingIndex = playlists.findIndex(p => p.name === name); if (existingIndex !== -1) { showConfirmation( "Overwrite?", `A playlist named "${name}" already exists. Overwrite it?`, true, () => { playlists[existingIndex] = { name: name, urls: currentUrls }; savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `Playlist "${name}" updated.`, false); }, () => {} ); } else { playlists.push({ name: name, urls: currentUrls }); savePlaylistsToUserData(); populatePlaylistSelect(); playlistNameInput.value = ""; showConfirmation("Saved", `Playlist "${name}" saved.`, false); } }
             function removePlaylist() { if (!playlistSelect) return; const selectedName = playlistSelect.value; if (!selectedName) { showConfirmation("No Selection", "Select a playlist from the dropdown to delete.", false); return; } showConfirmation( "Delete?", `Are you sure you want to delete the playlist "${selectedName}"?`, true, () => { playlists = playlists.filter(p => p.name !== selectedName); savePlaylistsToUserData(); populatePlaylistSelect(); playlistSelect.value = ""; restoreUrlInputs(); showConfirmation("Deleted", `Playlist "${selectedName}" removed.`, false); }, () => {} ); }
-            function savePlaylistsToUserData() { if (isSignedIn && currentUser) { try { const users = JSON.parse(localStorage.getItem("users") || "{}"); if(users[currentUser]) { users[currentUser].playlists = playlists; localStorage.setItem("users", JSON.stringify(users)); console.log("Playlists saved for user:", currentUser); } } catch (err) { console.error("Error saving playlists:", err); } } }
-            function populatePlaylistSelect() { if (!playlistSelect) return; const currentSelection = playlistSelect.value; playlistSelect.innerHTML = '<option value="">Load Playlist</option>'; playlists.sort((a, b) => a.name.localeCompare(b.name)); playlists.forEach(playlist => { const option = document.createElement("option"); option.value = playlist.name; option.textContent = playlist.name; playlistSelect.appendChild(option); }); // Restore selection if it still exists
-            if (playlists.some(p => p.name === currentSelection)) { playlistSelect.value = currentSelection; } else { playlistSelect.value = ""; } if (!playlistSelect.onchange) { playlistSelect.onchange = handlePlaylistSelection; } }
+            async function savePlaylistsToUserData() {
+                // Always write local cache
+                try {
+                    if (isSignedIn && currentUser) {
+                        const users = JSON.parse(localStorage.getItem("users") || "{}");
+                        if (users[currentUser]) {
+                            users[currentUser].playlists = playlists;
+                            localStorage.setItem("users", JSON.stringify(users));
+                        }
+                    }
+                    localStorage.setItem("playlists", JSON.stringify(playlists));
+                } catch (e) {
+                    console.error("Local save (playlists) error:", e);
+                }
+
+                // Firestore-first when signed in
+                if (isSignedIn && currentUser) {
+                    try {
+                        const { saveStateToCloud } = await import('./firebase/db.js');
+                        await saveStateToCloud(currentUser);
+                        console.log("Playlists saved to cloud.");
+                    } catch (e) {
+                        console.warn("Cloud save (playlists) failed, kept local:", e);
+                    }
+                }
+            }
+            async function populatePlaylistSelect() {
+                if (!playlistSelect) return;
+                // Prefer remote when signed in
+                if (isSignedIn && currentUser) {
+                    try {
+                        const { loadAppState } = await import('./firebase/firebase.js');
+                        const remote = await loadAppState(currentUser);
+                        if (remote && Array.isArray(remote.playlists)) {
+                            playlists = remote.playlists;
+                            // warm cache
+                            try {
+                                const users = JSON.parse(localStorage.getItem("users") || "{}");
+                                if (users[currentUser]) {
+                                    users[currentUser].playlists = playlists;
+                                    localStorage.setItem("users", JSON.stringify(users));
+                                }
+                                localStorage.setItem("playlists", JSON.stringify(playlists));
+                            } catch (e) { console.warn("Local cache warm failed (playlists):", e); }
+                        }
+                    } catch (e) {
+                        console.warn("Cloud load (playlists) failed, using local:", e);
+                    }
+                }
+                const currentSelection = playlistSelect.value;
+                playlistSelect.innerHTML = '<option value=\"\">Load Playlist</option>';
+                playlists.sort((a, b) => a.name.localeCompare(b.name));
+                playlists.forEach(playlist => {
+                    const option = document.createElement("option");
+                    option.value = playlist.name;
+                    option.textContent = playlist.name;
+                    playlistSelect.appendChild(option);
+                });
+                if (playlists.some(p => p.name === currentSelection)) { playlistSelect.value = currentSelection; } else { playlistSelect.value = ""; }
+                if (!playlistSelect.onchange) { playlistSelect.onchange = handlePlaylistSelection; }
+            }
             function handlePlaylistSelection() { if (!playlistSelect) return; const selectedName = playlistSelect.value; if (selectedName) { const selectedPlaylist = playlists.find(p => p.name === selectedName); if (selectedPlaylist && selectedPlaylist.urls) { console.log("Loading playlist:", selectedName); restoreUrlInputs(selectedPlaylist.urls); if(playlistNameInput) playlistNameInput.value = selectedName; } else { console.warn("Selected playlist not found or has no URLs:", selectedName); restoreUrlInputs(); if(playlistNameInput) playlistNameInput.value = ""; } } else { restoreUrlInputs(); if(playlistNameInput) playlistNameInput.value = ""; } }
 
-            function saveState() {
-                 if (!isSignedIn || !currentUser) return;
-                 const stateToSave = {
-                     // Session State (only if active)
-                     isFocusModeActive: isFocusModeActive, videoIds: isFocusModeActive ? videoIds : [], currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0, timerMode: isFocusModeActive ? timerMode : "Focus Time", timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000, completedVideos: isFocusModeActive ? Array.from(completedVideos) : [], allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
-                     isPomodoroActive: isPomodoroActive,
-                     pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (currentPomodoroDurationSetting * 60), // Save based on setting
-                     pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
-                     currentPomodoroDurationSetting: currentPomodoroDurationSetting, // Save the setting
+            async function saveState() {
+                if (!isSignedIn || !currentUser) {
+                    // Still keep a lightweight session cache even when signed out
+                    try {
+                        const stateToSave = {
+                            isFocusModeActive: isFocusModeActive,
+                            videoIds: isFocusModeActive ? videoIds : [],
+                            currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0,
+                            timerMode: isFocusModeActive ? timerMode : "Focus Time",
+                            timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000,
+                            completedVideos: isFocusModeActive ? Array.from(completedVideos) : [],
+                            allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
+                            isPomodoroActive: isPomodoroActive,
+                            pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (currentPomodoroDurationSetting * 60),
+                            pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
+                            currentPomodoroDurationSetting: currentPomodoroDurationSetting,
+                            points, totalFocusTime, totalDistractions, totalVideosWatched,
+                            streakDays, lastFocusDate, mysteryBoxCount, activePowerUps,
+                            premiumLofiTracks: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })),
+                            dailyFocusData,
+                            browserNotificationsEnabled,
+                            currentView, isSignedIn, currentUser
+                        };
+                        localStorage.setItem("focusModeState_v5", JSON.stringify(stateToSave));
+                        localStorage.setItem("tasks", JSON.stringify(tasks));
+                        localStorage.setItem("playlists", JSON.stringify(playlists));
+                    } catch {}
+                    return;
+                }
+                const stateToSave = {
+                    isFocusModeActive: isFocusModeActive,
+                    videoIds: isFocusModeActive ? videoIds : [],
+                    currentVideoIndex: isFocusModeActive ? currentVideoIndex : 0,
+                    timerMode: isFocusModeActive ? timerMode : "Focus Time",
+                    timerRemaining: isFocusModeActive ? timerRemaining : focusDuration / 1000,
+                    completedVideos: isFocusModeActive ? Array.from(completedVideos) : [],
+                    allVideosCompleted: isFocusModeActive ? allVideosCompleted : false,
+                    isPomodoroActive: isPomodoroActive,
+                    pomodoroTimeRemaining: isPomodoroActive ? pomodoroTimeRemaining : (currentPomodoroDurationSetting * 60),
+                    pomodoroDistractionCount: isPomodoroActive ? pomodoroDistractionCount : 0,
+                    currentPomodoroDurationSetting: currentPomodoroDurationSetting,
+                    points, totalFocusTime, totalDistractions, totalVideosWatched,
+                    streakDays, lastFocusDate, mysteryBoxCount, activePowerUps,
+                    premiumLofiTracks: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })),
+                    dailyFocusData,
+                    browserNotificationsEnabled,
+                    currentView, isSignedIn, currentUser
+                };
+                // Always update local mirrors
+                try {
+                    localStorage.setItem("focusModeState_v5", JSON.stringify(stateToSave));
+                    const users = JSON.parse(localStorage.getItem("users") || "{}");
+                    if (users[currentUser]) {
+                        users[currentUser].points = points;
+                        users[currentUser].totalFocusTime = totalFocusTime;
+                        users[currentUser].totalDistractions = totalDistractions;
+                        users[currentUser].totalVideosWatched = totalVideosWatched;
+                        users[currentUser].streakDays = streakDays;
+                        users[currentUser].lastFocusDate = lastFocusDate;
+                        users[currentUser].mysteryBoxCount = mysteryBoxCount;
+                        users[currentUser].activePowerUps = activePowerUps;
+                        users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
+                        users[currentUser].dailyFocusData = dailyFocusData;
+                        users[currentUser].playlists = playlists;
+                        users[currentUser].tasks = tasks;
+                        users[currentUser].browserNotificationsEnabled = browserNotificationsEnabled;
+                        localStorage.setItem("users", JSON.stringify(users));
+                    }
+                    // Also keep flat caches for quick offline restore
+                    localStorage.setItem("tasks", JSON.stringify(tasks));
+                    localStorage.setItem("playlists", JSON.stringify(playlists));
+                } catch (err) {
+                    console.error("Local save (state) error:", err);
+                }
+                // Firestore-first
+                try {
+                    const { saveStateToCloud } = await import('./firebase/db.js');
+                    await saveStateToCloud(currentUser);
+                } catch (e) {
+                    console.warn("Cloud save (state) failed, local mirrors kept:", e);
+                }
+            }
 
-                     // General User State (Persisted under user data too)
-                     points: points, totalFocusTime: totalFocusTime, totalDistractions: totalDistractions, totalVideosWatched: totalVideosWatched, streakDays: streakDays, lastFocusDate: lastFocusDate, mysteryBoxCount: mysteryBoxCount, activePowerUps: activePowerUps, premiumLofiTrackState: premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked })), dailyFocusData: dailyFocusData, // Save calendar data
-                     browserNotificationsEnabled: browserNotificationsEnabled, // Save notification setting
-                     currentView: currentView, isSignedIn: isSignedIn, currentUser: currentUser
-                 };
-                 try {
-                     // Save potentially active session state
-                     localStorage.setItem("focusModeState_v5", JSON.stringify(stateToSave)); // Version 5
-
-                     // Save persistent user data separately
-                     const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     if (users[currentUser]) {
-                         users[currentUser].points = points;
-                         users[currentUser].totalFocusTime = totalFocusTime;
-                         users[currentUser].totalDistractions = totalDistractions;
-                         users[currentUser].totalVideosWatched = totalVideosWatched;
-                         users[currentUser].streakDays = streakDays;
-                         users[currentUser].lastFocusDate = lastFocusDate;
-                         users[currentUser].mysteryBoxCount = mysteryBoxCount;
-                         users[currentUser].activePowerUps = activePowerUps;
-                         users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
-                         users[currentUser].dailyFocusData = dailyFocusData; // Save calendar data to user profile
-                         users[currentUser].playlists = playlists; // Save playlists
-                         users[currentUser].tasks = tasks; // Save tasks
-                         users[currentUser].browserNotificationsEnabled = browserNotificationsEnabled; // Save setting to user profile
-                         // Maybe save currentPomodoroDurationSetting per user? Optional.
-                         // users[currentUser].pomodoroDuration = currentPomodoroDurationSetting;
-                         localStorage.setItem("users", JSON.stringify(users));
-                     }
-                 } catch (err) {
-                     console.error("Error saving state:", err);
-                     // Optional: Implement a more robust error handling/fallback
-                 }
-             }
-
-            function loadSavedState() {
+            async function loadSavedState() {
                 console.log("Loading state (v5)...");
                 let loadedState = null;
                 try {
@@ -2373,53 +2556,105 @@
                 } catch(e) { console.error("Error parsing state:", e); localStorage.removeItem("focusModeState_v5"); loadedState = {}; }
 
                 if (loadedState.isSignedIn && loadedState.currentUser) {
-                     console.log("Attempting restore for:", loadedState.currentUser);
-                     const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     if (users[loadedState.currentUser]) {
-                         const userData = users[loadedState.currentUser];
-                         // Restore basic user data from persistent 'users' storage
-                         isSignedIn = true; currentUser = loadedState.currentUser; points = userData.points || 0; previousPoints = points; totalFocusTime = userData.totalFocusTime || 0; totalDistractions = userData.totalDistractions || 0; totalVideosWatched = userData.totalVideosWatched || 0; tasks = userData.tasks || []; streakDays = userData.streakDays || 0; lastFocusDate = userData.lastFocusDate || null; mysteryBoxCount = userData.mysteryBoxCount || 0; activePowerUps = userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; playlists = userData.playlists || []; dailyFocusData = userData.dailyFocusData || {}; // Load calendar data
-                         currentPomodoroDurationSetting = loadedState.currentPomodoroDurationSetting || 60; // Restore Pomodoro duration setting
-                         browserNotificationsEnabled = userData.browserNotificationsEnabled || false; // Restore notification setting from USER data
-                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied'; // Check current permission
+                    console.log("Attempting restore for:", loadedState.currentUser);
+                    const users = JSON.parse(localStorage.getItem("users") || "{}");
+                    isSignedIn = true;
+                    currentUser = loadedState.currentUser;
 
-                         if(pomodoroDurationInput) pomodoroDurationInput.value = currentPomodoroDurationSetting; // Update input field
+                    // Try remote baseline
+                    try {
+                        const { loadAppState } = await import('./firebase/firebase.js');
+                        const remote = await loadAppState(currentUser);
+                        if (remote) {
+                            points = remote.points ?? 0;
+                            previousPoints = points;
+                            totalFocusTime = remote.totalFocusTime ?? 0;
+                            totalDistractions = remote.totalDistractions ?? 0;
+                            totalVideosWatched = remote.totalVideosWatched ?? 0;
+                            tasks = Array.isArray(remote.tasks) ? remote.tasks : [];
+                            playlists = Array.isArray(remote.playlists) ? remote.playlists : [];
+                            streakDays = remote.streakDays ?? 0;
+                            lastFocusDate = remote.lastFocusDate ?? null;
+                            mysteryBoxCount = remote.mysteryBoxCount ?? 0;
+                            activePowerUps = remote.activePowerUps ?? { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } };
+                            dailyFocusData = remote.dailyFocusData ?? {};
+                            browserNotificationsEnabled = !!remote.browserNotificationsEnabled;
+                            currentPomodoroDurationSetting = remote.currentPomodoroDurationSetting ?? 60;
+                            if (Array.isArray(remote.premiumLofiTracks)) {
+                                const map = new Map(remote.premiumLofiTracks.map(t => [t.id, !!t.unlocked]));
+                                premiumLofiTracks.forEach(t => { if (map.has(t.id)) t.unlocked = map.get(t.id); });
+                                updateAvailableLofiTracks();
+                            }
+                            // Warm mirrors
+                            try {
+                                if (!users[currentUser]) users[currentUser] = {};
+                                users[currentUser].points = points;
+                                users[currentUser].totalFocusTime = totalFocusTime;
+                                users[currentUser].totalDistractions = totalDistractions;
+                                users[currentUser].totalVideosWatched = totalVideosWatched;
+                                users[currentUser].streakDays = streakDays;
+                                users[currentUser].lastFocusDate = lastFocusDate;
+                                users[currentUser].mysteryBoxCount = mysteryBoxCount;
+                                users[currentUser].activePowerUps = activePowerUps;
+                                users[currentUser].premiumLofiTracks = premiumLofiTracks.map(t => ({ id: t.id, unlocked: t.unlocked }));
+                                users[currentUser].dailyFocusData = dailyFocusData;
+                                users[currentUser].playlists = playlists;
+                                users[currentUser].tasks = tasks;
+                                users[currentUser].browserNotificationsEnabled = browserNotificationsEnabled;
+                                localStorage.setItem("users", JSON.stringify(users));
+                                localStorage.setItem("tasks", JSON.stringify(tasks));
+                                localStorage.setItem("playlists", JSON.stringify(playlists));
+                            } catch (e) { console.warn("Mirror warm failed:", e); }
+                        }
+                    } catch (e) {
+                        console.warn("Remote load failed, using local mirrors if present:", e);
+                    }
 
-                         const savedTracks = userData.premiumLofiTracks || []; premiumLofiTracks.forEach(track => { const saved = savedTracks.find(st => st.id === track.id); track.unlocked = saved ? saved.unlocked : false; }); updateAvailableLofiTracks();
+                    // If no remote or partial, merge in local user data
+                    const userData = users[currentUser] || null;
+                    if (userData) {
+                        points = points ?? (userData.points || 0);
+                        previousPoints = points;
+                        totalFocusTime = totalFocusTime ?? (userData.totalFocusTime || 0);
+                        totalDistractions = totalDistractions ?? (userData.totalDistractions || 0);
+                        totalVideosWatched = totalVideosWatched ?? (userData.totalVideosWatched || 0);
+                        tasks = tasks && tasks.length ? tasks : (userData.tasks || []);
+                        playlists = playlists && playlists.length ? playlists : (userData.playlists || []);
+                        streakDays = streakDays ?? (userData.streakDays || 0);
+                        lastFocusDate = lastFocusDate ?? (userData.lastFocusDate || null);
+                        mysteryBoxCount = mysteryBoxCount ?? (userData.mysteryBoxCount || 0);
+                        activePowerUps = activePowerUps || userData.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } };
+                        dailyFocusData = Object.keys(dailyFocusData || {}).length ? dailyFocusData : (userData.dailyFocusData || {});
+                        browserNotificationsEnabled = typeof browserNotificationsEnabled === 'boolean' ? browserNotificationsEnabled : (userData.browserNotificationsEnabled || false);
+                        const savedTracks = userData.premiumLofiTracks || [];
+                        premiumLofiTracks.forEach(track => {
+                            const saved = savedTracks.find(st => st.id === track.id);
+                            track.unlocked = saved ? saved.unlocked : track.unlocked;
+                        });
+                        updateAvailableLofiTracks();
+                    }
+                    browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
+                    if(pomodoroDurationInput) pomodoroDurationInput.value = currentPomodoroDurationSetting;
+                    if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                    updateAchievementLevel(); updateStreakDisplay(); await restoreTasks();
+                    checkExpiredPowerups(); sentNotificationTaskIds.clear();
 
-                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; updateAchievementLevel(); updateStreakDisplay(); restoreTasks(); // Calls badge/upcoming update
-                         checkExpiredPowerups();
-                         sentNotificationTaskIds.clear(); // Reset session notifications
-
-                         // Check for YT Focus Session restore (using loadedState for session details)
-                         if (loadedState.isFocusModeActive && loadedState.videoIds && loadedState.videoIds.length > 0 && loadedState.currentView === 'youtubeLecturePage') {
-                             console.log("Restoring active YouTube focus session...");
-                             isFocusModeActive = true; videoIds = loadedState.videoIds; currentVideoIndex = loadedState.currentVideoIndex || 0; timerMode = loadedState.timerMode || "Focus Time"; timerRemaining = loadedState.timerRemaining || (focusDuration / 1000); completedVideos = new Set(loadedState.completedVideos || []); allVideosCompleted = loadedState.allVideosCompleted || false; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time too
-
-                             loadYouTubeAPI().then(() => { showView('youtubeLecturePage'); setTimeout(() => { console.log("Re-init player."); setupYouTubePlayer(); startTimer(timerRemaining * 1000, timerMode); }, 100); }).catch(err => { console.error("YT API load fail on restore:", err); isFocusModeActive = false; showView('homePage'); });
-                         }
-                         // Check for Pomodoro Session restore
-                         else if (loadedState.isPomodoroActive && loadedState.currentView === 'homePage') { // Assuming Pomodoro runs on home/overlay
-                             console.log("Restoring active Pomodoro session...");
-                             isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (currentPomodoroDurationSetting * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0; // Restore session time
-
-                             showPomodoroOverlay(); // Show the overlay first
-                             updatePomodoroDisplay(); // Update display immediately
-                             if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing...";
-                             if (pomodoroStartBtn) pomodoroStartBtn.disabled = true;
-                             if (pomodoroResetBtn) pomodoroResetBtn.disabled = false;
-                             if (pomodoroDurationInput) pomodoroDurationInput.disabled = true; // Disable input
-                             requestFullscreen(document.documentElement); // Re-enter fullscreen if restored
-
-                             pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; currentSessionFocusTime++; totalFocusTime++; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp();} if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
-                         } else {
-                             isFocusModeActive = false; isPomodoroActive = false; currentSessionFocusTime = 0;
-                             showView(loadedState.currentView || 'homePage'); // Go to last viewed or home
-                         }
-                         startPeriodicChecks(); // Start interval checks after successful login/restore
-                         console.log("Session restored for", currentUser);
-                         return;
-                     } else { console.warn("User data mismatch:", loadedState.currentUser); localStorage.removeItem("focusModeState_v5"); }
+                    if (loadedState.isFocusModeActive && loadedState.videoIds && loadedState.videoIds.length > 0 && loadedState.currentView === 'youtubeLecturePage') {
+                        console.log("Restoring active YouTube focus session...");
+                        isFocusModeActive = true; videoIds = loadedState.videoIds; currentVideoIndex = loadedState.currentVideoIndex || 0; timerMode = loadedState.timerMode || "Focus Time"; timerRemaining = loadedState.timerRemaining || (focusDuration / 1000); completedVideos = new Set(loadedState.completedVideos || []); allVideosCompleted = loadedState.allVideosCompleted || false; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0;
+                        loadYouTubeAPI().then(() => { showView('youtubeLecturePage'); setTimeout(() => { console.log("Re-init player."); setupYouTubePlayer(); startTimer(timerRemaining * 1000, timerMode); }, 100); }).catch(err => { console.error("YT API load fail on restore:", err); isFocusModeActive = false; showView('homePage'); });
+                    } else if (loadedState.isPomodoroActive && loadedState.currentView === 'homePage') {
+                        console.log("Restoring active Pomodoro session...");
+                        isPomodoroActive = true; pomodoroTimeRemaining = loadedState.pomodoroTimeRemaining || (currentPomodoroDurationSetting * 60); pomodoroDistractionCount = loadedState.pomodoroDistractionCount || 0; currentSessionFocusTime = loadedState.currentSessionFocusTime || 0;
+                        showPomodoroOverlay(); updatePomodoroDisplay(); if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing..."; if (pomodoroStartBtn) pomodoroStartBtn.disabled = true; if (pomodoroResetBtn) pomodoroResetBtn.disabled = false; if (pomodoroDurationInput) pomodoroDurationInput.disabled = true; requestFullscreen(document.documentElement);
+                        pomodoroInterval = setInterval(() => { pomodoroTimeRemaining--; currentSessionFocusTime++; totalFocusTime++; updatePomodoroDisplay(); if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) { const earned = applyPowerUps(1); points += earned; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp(); } if (pomodoroTimeRemaining <= 0) { completePomodoroSession(); } }, 1000);
+                    } else {
+                        isFocusModeActive = false; isPomodoroActive = false; currentSessionFocusTime = 0;
+                        showView(loadedState.currentView || 'homePage');
+                    }
+                    startPeriodicChecks();
+                    console.log("Session restored for", currentUser);
+                    return;
                 }
                 console.log("No active session found or error. Showing landing.");
                 showView('landingPage'); updateClock(); initAudio(); updateAchievementLevel(); updateStreakDisplay();
@@ -2754,3 +2989,4 @@
     </script>
 </body>
 </html>
+Hey Include all that stuff inside main index.html code dont create seperate files
