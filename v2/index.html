@@ -1085,6 +1085,8 @@
       // Export shim for other inline module (auth wiring) via window-scoped object
       // expose under stable names
       const __fbExports = { app, auth: fbAuth, db, onAuthStateChanged, signInWithGooglePopup, signOutFromFirebase, saveAppState, loadAppState };
+      // Attach to window so other inline modules can access it safely
+      window.__fbExports = __fbExports;
       // ===== END firebase/firebase.js (inlined) =====
 
       // ===== BEGIN firebase/db.js (inlined) =====
@@ -1462,8 +1464,11 @@
 
     <!-- Firebase wiring (inline) -->
     <script type="module">
-      // Reuse inline exports bound above
-      const { auth: navAuth, onAuthStateChanged } = (window.__fbInline ||= { auth: __fbExports.auth, onAuthStateChanged: __fbExports.onAuthStateChanged });
+      // Reuse inline exports bound above, guarded to avoid ReferenceError if not ready yet
+      const fbInlineSrc = (window.__fbInline ||= (window.__fbExports
+        ? { auth: window.__fbExports.auth, onAuthStateChanged: window.__fbExports.onAuthStateChanged }
+        : { auth: null, onAuthStateChanged: () => {} }));
+      const { auth: navAuth, onAuthStateChanged } = fbInlineSrc;
 
       // Wait for the app's main script to define globals, then wire buttons
       const ready = () => {
