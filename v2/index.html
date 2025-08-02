@@ -1015,15 +1015,26 @@
         return snap.exists() ? snap.data() : null;
       }
 
+      // Handle redirect result once per page load and set a session flag to prevent double-handling
       (async () => {
         try {
-          const redirectResult = await getRedirectResult(fbAuth);
-          if (redirectResult && redirectResult.user) {
-            console.log('[Auth] Redirect result user:', redirectResult.user.uid);
-            await ensureUserProfile(redirectResult.user);
+          const handledKey = 'ufm_v2_redirectHandled';
+          if (!sessionStorage.getItem(handledKey)) {
+            const redirectResult = await getRedirectResult(fbAuth);
+            if (redirectResult && redirectResult.user) {
+              console.log('[Auth] Redirect result user:', redirectResult.user.uid);
+              try {
+                await ensureUserProfile(redirectResult.user);
+              } catch (profileErr) {
+                console.warn('[Auth] ensureUserProfile after redirect failed:', profileErr?.code || profileErr);
+              }
+              // Mark handled so we don't re-run on soft reloads
+              sessionStorage.setItem(handledKey, '1');
+            }
           }
         } catch (e) {
-          console.error('[Auth] getRedirectResult error:', e);
+          // Note: getRedirectResult throws on non-redirect loads sometimes; this is safe to ignore
+          console.warn('[Auth] getRedirectResult warning:', e?.code || e);
         }
       })();
 
@@ -1212,30 +1223,103 @@
         }
       }
 
-      __fbExports.onAuthStateChanged(__fbExports.auth, async (fbUser) => {
-        const g = window;
-        if (fbUser) {
-          g.isSignedIn = true;
-          g.currentUser = fbUser.uid;
-          try {
-            const remoteState = await __fbExports.loadAppState(fbUser.uid);
-            applyAppStateToWindow(remoteState);
-          } catch (e) {
-            console.error('Failed to load remote state:', e);
+      // Guard: ensure __fbExports exists before wiring auth state listener
+      if (typeof __fbExports === 'object' && __fbExports && __fbExports.onAuthStateChanged && __fbExports.auth) {
+        __fbExports.onAuthStateChanged(__fbExports.auth, async (fbUser) => {
+          const g = window;
+          if (fbUser) {
+            g.isSignedIn = true;
+            g.currentUser = fbUser.uid;
+
+            // Populate nav UI basics if present (defensive: don't block on failures)
+            try {
+              const remoteState = await __fbExports.loadAppState(fbUser.uid);
+              applyAppStateToWindow(remoteState);
+            } catch (e) {
+              console.warn('[Auth] Remote state load failed:', e?.code || e);
+            }
+
+            // Migrate any local state once, ignore permission denials
+            try {
+              const localMigratable = collectAppStateFromWindow();
+              await __fbExports.saveAppState(fbUser.uid, localMigratable);
+            } catch (e) {
+              console.warn('[Auth] Initial save/migration failed:', e?.code || e);
+            }
+
+            // Only navigate away from signin when currently on public views
+            try {
+              if (typeof g.showView === 'function') {
+                const landingEl = document.getElementById('landingPage');
+                const signinEl = document.getElementById('signinForm');
+                const landingVisible = landingEl && (landingEl.style.display === 'flex' || landingEl.style.display === 'block');
+                const signinVisible = signinEl && (signinEl.style.display === 'flex' || signinEl.style.display === 'block');
+
+                if (landingVisible || signinVisible) {
+                  g.showView('homePage');
+                }
+              }
+            } catch (e) {
+              console.warn('Navigation warning:', e?.message || e);
+            }
+          } else {
+            g.isSignedIn = false;
+            g.currentUser = null;
+            // Avoid hard navigation loops: only show landing if not already on a private view
+            try {
+              if (typeof g.showView === 'function') {
+                g.showView('landingPage');
+              }
+            } catch {}
           }
-          try {
-            const localMigratable = collectAppStateFromWindow();
-            await __fbExports.saveAppState(fbUser.uid, localMigratable);
-          } catch (e) {
-            console.error('Failed to save initial state:', e);
-          }
-          try { if (typeof g.showView === 'function') g.showView('homePage'); } catch (e) { console.warn('Navigation warning:', e.message); }
-        } else {
-          g.isSignedIn = false;
-          g.currentUser = null;
-          try { if (typeof g.showView === 'function') g.showView('landingPage'); } catch {}
-        }
-      });
+        });
+      } else {
+        // Defer listener registration until DOM ready, then try again once __fbExports is available
+        document.addEventListener('DOMContentLoaded', () => {
+          const bootAuthListener = () => {
+            if (typeof __fbExports === 'object' && __fbExports && __fbExports.onAuthStateChanged && __fbExports.auth) {
+              // Re-run the same listener attach logic
+              __fbExports.onAuthStateChanged(__fbExports.auth, async (fbUser) => {
+                const g = window;
+                if (fbUser) {
+                  g.isSignedIn = true;
+                  g.currentUser = fbUser.uid;
+                  try { const remoteState = await __fbExports.loadAppState(fbUser.uid); applyAppStateToWindow(remoteState); } catch (e) { console.warn('[Auth] Remote state load failed:', e?.code || e); }
+                  try { const localMigratable = collectAppStateFromWindow(); await __fbExports.saveAppState(fbUser.uid, localMigratable); } catch (e) { console.warn('[Auth] Initial save/migration failed:', e?.code || e); }
+                  try {
+                    if (typeof g.showView === 'function') {
+                      const landingEl = document.getElementById('landingPage');
+                      const signinEl = document.getElementById('signinForm');
+                      const landingVisible = landingEl && (landingEl.style.display === 'flex' || landingEl.style.display === 'block');
+                      const signinVisible = signinEl && (signinEl.style.display === 'flex' || signinEl.style.display === 'block');
+                      if (landingVisible || signinVisible) g.showView('homePage');
+                    }
+                  } catch (e) { console.warn('Navigation warning:', e?.message || e); }
+                } else {
+                  g.isSignedIn = false;
+                  g.currentUser = null;
+                  try { if (typeof g.showView === 'function') g.showView('landingPage'); } catch {}
+                }
+              });
+            } else {
+              // If still not ready, retry shortly a few times
+              let retries = 0;
+              const maxRetries = 20;
+              const t = setInterval(() => {
+                retries++;
+                if (typeof __fbExports === 'object' && __fbExports && __fbExports.onAuthStateChanged && __fbExports.auth) {
+                  clearInterval(t);
+                  bootAuthListener();
+                } else if (retries >= maxRetries) {
+                  clearInterval(t);
+                  console.error('[Auth] __fbExports not available; auth state listener not attached.');
+                }
+              }, 100);
+            }
+          };
+          bootAuthListener();
+        });
+      }
       // ===== END firebase/auth.js (inlined) =====
 
       // Wire buttons after module load
