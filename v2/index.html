@@ -950,8 +950,185 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Firebase ESM modules inlined to avoid 404s -->
+    <!-- Supabase + Firebase ESM modules -->
     <script type="module">
+      // ===== BEGIN supabase/client.js (inlined) =====
+      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+      const SUPABASE_URL = 'https://bwtkholsjtefxmmzzvrs.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3dGtob2xzanRlZnhtbXp6dnJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyNjc3ODAsImV4cCI6MjA2OTg0Mzc4MH0.5zbAvdL6VL_oLZOBiZoEf8VkEVvjzukpE69Rxj0ZyP4';
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      // Feature flag: keep Supabase auth button hidden until dashboard OAuth is ready
+      const ENABLE_SUPABASE_GOOGLE = false;
+
+      // Map Firebase uid -> Supabase user id (when both present, prefer Firebase uid to keep current app logic stable)
+      function getActiveUserId() {
+        const g = window;
+        if (g.currentFirebaseUser?.uid) return g.currentFirebaseUser.uid; // use Firebase uid during dual-write
+        if (g.__sbUser?.id) return g.__sbUser.id;
+        return null;
+      }
+
+      // Safe helpers (no-throw): log but do not break app
+      async function sbUpsertAppState(state) {
+        try {
+          const userId = getActiveUserId();
+          if (!userId) return;
+          // Minimal columns required; extra json stored in columns below
+          const payload = {
+            user_id: userId,
+            points: state.points ?? 0,
+            previous_points: state.previousPoints ?? 0,
+            total_focus_time: state.totalFocusTime ?? 0,
+            total_distractions: state.totalDistractions ?? 0,
+            total_videos_watched: state.totalVideosWatched ?? 0,
+            streak_days: state.streakDays ?? 0,
+            last_focus_date: state.lastFocusDate ?? null,
+            mystery_box_count: state.mysteryBoxCount ?? 0,
+            active_power_ups: state.activePowerUps ?? null,
+            premium_lofi_tracks: state.premiumLofiTracks ?? [],
+            daily_focus_data: state.dailyFocusData ?? {},
+            browser_notifications_enabled: !!state.browserNotificationsEnabled,
+            current_pomodoro_duration_setting: state.currentPomodoroDurationSetting ?? 60,
+            current_view: state.currentView ?? 'homePage',
+            updated_at: new Date().toISOString()
+          };
+          await supabase.from('app_state').upsert(payload, { onConflict: 'user_id' });
+        } catch (e) {
+          console.warn('[Supabase] app_state upsert failed:', e?.message || e);
+        }
+      }
+
+      async function sbUpsertTasks(tasks) {
+        try {
+          const userId = getActiveUserId();
+          if (!userId || !Array.isArray(tasks)) return;
+          if (tasks.length === 0) return;
+
+          // Expect tasks as [{id?, title, completed, deadline?, difficulty?, points?}]
+          const rows = tasks.map(t => ({
+            user_id: userId,
+            title: t.title ?? '',
+            completed: !!t.completed,
+            deadline: t.deadline ?? null,
+            difficulty: t.difficulty ?? null,
+            points_awarded: t.points_awarded ?? null,
+            // If you maintain client ids, include id to enable upsert by id
+          }));
+
+          // Insert in batches to avoid payload limits
+          const chunkSize = 50;
+          for (let i = 0; i < rows.length; i += chunkSize) {
+            const chunk = rows.slice(i, i + chunkSize);
+            const { error } = await supabase.from('tasks').insert(chunk);
+            if (error && error.code !== '23505') {
+              // ignore duplicates; else log warning
+              console.warn('[Supabase] tasks insert warning:', error.message);
+            }
+          }
+        } catch (e) {
+          console.warn('[Supabase] tasks upsert failed:', e?.message || e);
+        }
+      }
+
+      async function sbReplaceTasks(tasks) {
+        // Optionally replace all tasks for user to keep in sync with Firebase-local
+        try {
+          const userId = getActiveUserId();
+          if (!userId) return;
+          await supabase.from('tasks').delete().eq('user_id', userId);
+          await sbUpsertTasks(tasks);
+        } catch (e) {
+          console.warn('[Supabase] tasks replace failed:', e?.message || e);
+        }
+      }
+
+      async function sbUpsertPlaylists(playlists) {
+        try {
+          const userId = getActiveUserId();
+          if (!userId || !Array.isArray(playlists)) return;
+          // Strategy: delete-all-then-insert for idempotency by name
+          await supabase.from('playlists').delete().eq('user_id', userId);
+          if (playlists.length === 0) return;
+
+          const rows = playlists.map(p => ({
+            user_id: userId,
+            name: p.name ?? '',
+            urls: Array.isArray(p.urls) ? p.urls : []
+          }));
+
+          const chunkSize = 50;
+          for (let i = 0; i < rows.length; i += chunkSize) {
+            const chunk = rows.slice(i, i + chunkSize);
+            const { error } = await supabase.from('playlists').insert(chunk);
+            if (error) console.warn('[Supabase] playlists insert warning:', error.message);
+          }
+        } catch (e) {
+          console.warn('[Supabase] playlists upsert failed:', e?.message || e);
+        }
+      }
+
+      // Optional: read helpers (not used as primary yet)
+      async function sbLoadAppState() {
+        try {
+          const userId = getActiveUserId();
+          if (!userId) return null;
+          const { data, error } = await supabase
+            .from('app_state')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+          if (error) return null;
+          return data || null;
+        } catch {
+          return null;
+        }
+      }
+
+      // Supabase auth placeholder wiring
+      async function sbSignInWithGoogle() {
+        try {
+          const redirectTo =
+            window.location.origin.startsWith('http')
+              ? window.location.origin
+              : 'https://ultrafocusmode-yt.vercel.app';
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo }
+          });
+          if (error) throw error;
+        } catch (e) {
+          console.warn('[Supabase] Google sign-in failed:', e?.message || e);
+        }
+      }
+
+      // Auth state listener: store Supabase user for dual-write id source if Firebase not present
+      supabase.auth.onAuthStateChange((_event, session) => {
+        window.__sbUser = session?.user || null;
+      });
+
+      // Expose safe Supabase API for dual-write
+      window.__sb = {
+        client: supabase,
+        upsertAppState: sbUpsertAppState,
+        upsertTasks: sbUpsertTasks,
+        replaceTasks: sbReplaceTasks,
+        upsertPlaylists: sbUpsertPlaylists,
+        loadAppState: sbLoadAppState,
+        signInWithGoogle: sbSignInWithGoogle,
+        ENABLE_SUPABASE_GOOGLE
+      };
+      // ===== END supabase/client.js (inlined) =====
+
+      // ===== BEGIN firebase/firebase.js (inlined) =====
       // ===== BEGIN firebase/firebase.js (inlined) =====
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
       import {
@@ -1194,11 +1371,21 @@
             const orig = googleBtn.textContent;
             googleBtn.textContent = 'Signing in...';
             try {
-              const user = await googleSignIn();
-              if (user) {
-                console.log('[Auth] Google signed in (popup path):', user?.uid);
-              } else {
-                console.log('[Auth] Redirect initiated; waiting for page reload to complete sign-in');
+              // Prefer Firebase popup (existing). As fallback, use Supabase if feature enabled.
+              try {
+                const user = await googleSignIn();
+                if (user) {
+                  console.log('[Auth] Google signed in (popup path):', user?.uid);
+                } else {
+                  console.log('[Auth] Redirect initiated; waiting for page reload to complete sign-in (Firebase)');
+                }
+              } catch (fbErr) {
+                console.warn('[Auth] Firebase sign-in failed, trying Supabase OAuth...', fbErr?.code || fbErr);
+                if (window.__sb?.ENABLE_SUPABASE_GOOGLE) {
+                  await window.__sb.signInWithGoogle();
+                } else {
+                  throw fbErr;
+                }
               }
             } catch (e) {
               console.error('[Auth] Google sign-in failed:', e);
@@ -1218,6 +1405,8 @@
               if (!window.logout) {
                 await firebaseSignOut();
               }
+              // Also sign out Supabase session if any (no-throw)
+              try { await window.__sb?.client?.auth?.signOut(); } catch {}
             } catch (err) {
               console.error('Sign out error:', err);
             }
@@ -1249,17 +1438,61 @@
               console.warn('[Auth] Initial save/migration failed:', e?.code || e);
             }
 
-            // Only navigate away from signin when currently on public views
+            // Supabase: one-time migration of local data after Firebase sign-in (best-effort)
+            try {
+              const uid = fbUser.uid;
+              const flagKey = `sb_migrated_${uid}`;
+              if (!localStorage.getItem(flagKey)) {
+                const g = window;
+                // Build state for Supabase app_state
+                const stateForSb = {
+                  points: g.points || 0,
+                  previousPoints: g.previousPoints || 0,
+                  totalFocusTime: g.totalFocusTime || 0,
+                  totalDistractions: g.totalDistractions || 0,
+                  totalVideosWatched: g.totalVideosWatched || 0,
+                  streakDays: g.streakDays || 0,
+                  lastFocusDate: g.lastFocusDate || null,
+                  mysteryBoxCount: g.mysteryBoxCount || 0,
+                  activePowerUps: g.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } },
+                  premiumLofiTracks: Array.isArray(g.premiumLofiTracks) ? g.premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })) : [],
+                  dailyFocusData: g.dailyFocusData || {},
+                  browserNotificationsEnabled: !!g.browserNotificationsEnabled,
+                  currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
+                  currentView: g.currentView || 'homePage'
+                };
+                // Normalize lists
+                const flatTasks = Array.isArray(g.tasks) ? g.tasks.map(t => ({
+                  title: t.text ?? t.title ?? '',
+                  completed: !!t.completed,
+                  deadline: t.deadline ?? null,
+                  difficulty: t.points ?? t.difficulty ?? null,
+                  points_awarded: t.points_awarded ?? null
+                })) : [];
+                const flatPlaylists = Array.isArray(g.playlists) ? g.playlists.map(p => ({
+                  name: p.name ?? '',
+                  urls: Array.isArray(p.urls) ? p.urls : []
+                })) : [];
+
+                await window.__sb?.upsertAppState(stateForSb);
+                await window.__sb?.replaceTasks(flatTasks);
+                await window.__sb?.upsertPlaylists(flatPlaylists);
+                localStorage.setItem(flagKey, '1');
+                console.log('[Supabase] One-time migration completed for uid:', uid);
+              }
+            } catch (e) {
+              console.warn('[Supabase] One-time migration skipped/failed:', e?.message || e);
+            }
+
+            // Unconditional navigation to home after successful login (avoids race on view detection)
             try {
               if (typeof g.showView === 'function') {
-                const landingEl = document.getElementById('landingPage');
-                const signinEl = document.getElementById('signinForm');
-                const landingVisible = landingEl && (landingEl.style.display === 'flex' || landingEl.style.display === 'block');
-                const signinVisible = signinEl && (signinEl.style.display === 'flex' || signinEl.style.display === 'block');
-
-                if (landingVisible || signinVisible) {
-                  g.showView('homePage');
-                }
+                g.showView('homePage');
+              } else {
+                // Defer to next tick if showView not yet defined
+                setTimeout(() => {
+                  if (typeof g.showView === 'function') g.showView('homePage');
+                }, 0);
               }
             } catch (e) {
               console.warn('Navigation warning:', e?.message || e);
@@ -1288,13 +1521,58 @@
                   g.currentUser = fbUser.uid;
                   try { const remoteState = await __fbExports.loadAppState(fbUser.uid); applyAppStateToWindow(remoteState); } catch (e) { console.warn('[Auth] Remote state load failed:', e?.code || e); }
                   try { const localMigratable = collectAppStateFromWindow(); await __fbExports.saveAppState(fbUser.uid, localMigratable); } catch (e) { console.warn('[Auth] Initial save/migration failed:', e?.code || e); }
+
+                  // Supabase: one-time migration in fallback bootAuthListener path
+                  try {
+                    const uid = fbUser.uid;
+                    const flagKey = `sb_migrated_${uid}`;
+                    if (!localStorage.getItem(flagKey)) {
+                      const g = window;
+                      const stateForSb = {
+                        points: g.points || 0,
+                        previousPoints: g.previousPoints || 0,
+                        totalFocusTime: g.totalFocusTime || 0,
+                        totalDistractions: g.totalDistractions || 0,
+                        totalVideosWatched: g.totalVideosWatched || 0,
+                        streakDays: g.streakDays || 0,
+                        lastFocusDate: g.lastFocusDate || null,
+                        mysteryBoxCount: g.mysteryBoxCount || 0,
+                        activePowerUps: g.activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null } },
+                        premiumLofiTracks: Array.isArray(g.premiumLofiTracks) ? g.premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })) : [],
+                        dailyFocusData: g.dailyFocusData || {},
+                        browserNotificationsEnabled: !!g.browserNotificationsEnabled,
+                        currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
+                        currentView: g.currentView || 'homePage'
+                      };
+                      const flatTasks = Array.isArray(g.tasks) ? g.tasks.map(t => ({
+                        title: t.text ?? t.title ?? '',
+                        completed: !!t.completed,
+                        deadline: t.deadline ?? null,
+                        difficulty: t.points ?? t.difficulty ?? null,
+                        points_awarded: t.points_awarded ?? null
+                      })) : [];
+                      const flatPlaylists = Array.isArray(g.playlists) ? g.playlists.map(p => ({
+                        name: p.name ?? '',
+                        urls: Array.isArray(p.urls) ? p.urls : []
+                      })) : [];
+
+                      await window.__sb?.upsertAppState(stateForSb);
+                      await window.__sb?.replaceTasks(flatTasks);
+                      await window.__sb?.upsertPlaylists(flatPlaylists);
+                      localStorage.setItem(flagKey, '1');
+                      console.log('[Supabase] One-time migration completed (fallback) for uid:', uid);
+                    }
+                  } catch (e) {
+                    console.warn('[Supabase] One-time migration (fallback) skipped/failed:', e?.message || e);
+                  }
+                  // Unconditional navigation to home after successful login (fallback listener)
                   try {
                     if (typeof g.showView === 'function') {
-                      const landingEl = document.getElementById('landingPage');
-                      const signinEl = document.getElementById('signinForm');
-                      const landingVisible = landingEl && (landingEl.style.display === 'flex' || landingEl.style.display === 'block');
-                      const signinVisible = signinEl && (signinEl.style.display === 'flex' || signinEl.style.display === 'block');
-                      if (landingVisible || signinVisible) g.showView('homePage');
+                      g.showView('homePage');
+                    } else {
+                      setTimeout(() => {
+                        if (typeof g.showView === 'function') g.showView('homePage');
+                      }, 0);
                     }
                   } catch (e) { console.warn('Navigation warning:', e?.message || e); }
                 } else {
@@ -2123,6 +2401,13 @@
                     }
                 }
 
+                // Supabase mirror for tasks (best-effort, replace-all to keep consistency)
+                try {
+                  await window.__sb?.replaceTasks(tasks);
+                } catch (e) {
+                  console.warn('[Supabase] tasks replace failed:', e?.message || e);
+                }
+
                 console.log("Tasks saved:", tasks);
                 updateFocusStatus(); updateTodoBadge(); updateUpcomingTaskDisplay();
             }
@@ -2796,7 +3081,12 @@
                     try {
                         const { saveStateToCloud } = await import('./firebase/db.js');
                         await saveStateToCloud(currentUser);
-                        console.log("Playlists saved to cloud.");
+                        console.log("Playlists saved to Firebase.");
+
+                        // Supabase mirror (best-effort)
+                        try { await window.__sb?.upsertPlaylists(playlists); } catch (e) {
+                          console.warn("[Supabase] playlists upsert failed:", e?.message || e);
+                        }
                     } catch (e) {
                         console.warn("Cloud save (playlists) failed, kept local:", e);
                     }
@@ -2919,6 +3209,30 @@
                     await saveStateToCloud(currentUser);
                 } catch (e) {
                     console.warn("Cloud save (state) failed, local mirrors kept:", e);
+                }
+
+                // Supabase mirror for app_state (best-effort, non-blocking)
+                try {
+                  const g = window;
+                  const stateForSb = {
+                    points,
+                    previousPoints: g.previousPoints ?? points,
+                    totalFocusTime,
+                    totalDistractions,
+                    totalVideosWatched,
+                    streakDays,
+                    lastFocusDate,
+                    mysteryBoxCount,
+                    activePowerUps,
+                    premiumLofiTracks: premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })),
+                    dailyFocusData,
+                    browserNotificationsEnabled,
+                    currentPomodoroDurationSetting,
+                    currentView
+                  };
+                  await window.__sb?.upsertAppState(stateForSb);
+                } catch (e) {
+                  console.warn("[Supabase] app_state upsert failed:", e?.message || e);
                 }
             }
 
@@ -3348,6 +3662,40 @@
                 initAudio();
                 loadSavedState(); // Tries to restore session, loads user data including calendar & notification settings
                 setupEventListeners();
+
+                // Optional: try to hydrate from Supabase app_state early when signed-in later
+                (async () => {
+                  try {
+                    const sb = await window.__sb?.loadAppState();
+                    if (sb) {
+                      // Minimal merge without overriding already restored UI critically
+                      const g = window;
+                      g.points = sb.points ?? g.points ?? 0;
+                      g.previousPoints = sb.previous_points ?? g.previousPoints ?? g.points ?? 0;
+                      g.totalFocusTime = sb.total_focus_time ?? g.totalFocusTime ?? 0;
+                      g.totalDistractions = sb.total_distractions ?? g.totalDistractions ?? 0;
+                      g.totalVideosWatched = sb.total_videos_watched ?? g.totalVideosWatched ?? 0;
+                      g.streakDays = sb.streak_days ?? g.streakDays ?? 0;
+                      g.lastFocusDate = sb.last_focus_date ?? g.lastFocusDate ?? null;
+                      g.mysteryBoxCount = sb.mystery_box_count ?? g.mysteryBoxCount ?? 0;
+                      g.activePowerUps = sb.active_power_ups ?? g.activePowerUps ?? g.activePowerUps;
+                      g.dailyFocusData = sb.daily_focus_data ?? g.dailyFocusData ?? {};
+                      g.browserNotificationsEnabled = !!(sb.browser_notifications_enabled ?? g.browserNotificationsEnabled);
+                      g.currentPomodoroDurationSetting = sb.current_pomodoro_duration_setting ?? g.currentPomodoroDurationSetting ?? 60;
+                      // premium_lufi_tracks merge
+                      if (Array.isArray(sb.premium_lofi_tracks) && Array.isArray(g.premiumLofiTracks)) {
+                        const map = new Map(sb.premium_lofi_tracks.map(t => [t.id, !!t.unlocked]));
+                        g.premiumLofiTracks.forEach(t => { if (map.has(t.id)) t.unlocked = map.get(t.id); });
+                      }
+                      try {
+                        if (typeof g.updateAchievementLevel === 'function') g.updateAchievementLevel();
+                        if (typeof g.updateStreakDisplay === 'function') g.updateStreakDisplay();
+                        if (typeof g.restoreTasks === 'function') g.restoreTasks();
+                        if (typeof g.populatePlaylistSelect === 'function') g.populatePlaylistSelect();
+                      } catch {}
+                    }
+                  } catch {}
+                })();
 
                 setInterval(updateClock, 1000);
                 // Periodic checks are started *after* successful login/restore in loadSavedState()
