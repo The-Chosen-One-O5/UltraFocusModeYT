@@ -1330,7 +1330,7 @@
 
       export function wireAuthButtons() {
         window.wireAuthButtons = wireAuthButtons;
-        const googleBtn = document.querySelector('#signinFormContainer button[data-action="google-sign-in"]');
+        const googleBtn = document.querySelector('#googleSignInBtn') || document.querySelector('#signinFormContainer button[data-action="google-sign-in"]');
         if (googleBtn && !googleBtn.dataset.fbwired) {
           googleBtn.dataset.fbwired = '1';
           googleBtn.addEventListener('click', async (ev) => {
@@ -1376,6 +1376,10 @@
           });
         }
       }
+
+      // Expose handlers globally for robustness
+      window.wireAuthButtons = wireAuthButtons;
+      window.__googleSignin = async () => { try { await googleSignIn(); } catch (e) { console.error('[Auth] Global google signin failed:', e); } };
 
       // Guard: ensure __fbExports exists before wiring auth state listener
       if (typeof __fbExports === 'object' && __fbExports && __fbExports.onAuthStateChanged && __fbExports.auth) {
@@ -1611,7 +1615,7 @@
 
         <!-- == Page Views == -->
         <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div> <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button> <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button> <div id="features"> <div class="feature"> <i class="fas fa-ban"></i> <p>Ad-Free Zone<br>Focus!</p> </div> <div class="feature"> <i class="fas fa-moon"></i> <p>Dark Mode<br>Easy on eyes</p> </div> <div class="feature"> <i class="fas fa-gamepad"></i> <p>Gamified<br>Level up!</p> </div> </div> </div> </div>
-        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <div style="margin-top:15px;"> <button data-action="google-sign-in" onclick="window.__googleSignin && window.__googleSignin()" class="primary-btn" style="background:#fff;color:#333;border:1px solid #ddd;box-shadow:2px 2px 0 #bbb;"><i class="fab fa-google" style="color:#db4437;"></i> Sign in with Google</button> </div> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
+        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <div style="margin-top:15px;"> <button id="googleSignInBtn" data-action="google-sign-in" onclick="window.__googleSignin && window.__googleSignin()" class="primary-btn" style="background:#fff;color:#333;border:1px solid #ddd;box-shadow:2px 2px 0 #bbb;"><i class="fab fa-google" style="color:#db4437;"></i> Sign in with Google</button> </div> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
         <div id="homePage" class="page-view">
             <div id="homePageContent">
                 <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
