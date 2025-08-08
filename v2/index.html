@@ -1388,7 +1388,7 @@
       } else {
         // Defer listener registration until DOM ready, then try again once __fbExports is available
         document.addEventListener('DOMContentLoaded', () => {
-          const bootAuthListener = () => {
+          const bootAuthListener = () => { return; /* Firebase removed */
             if (typeof __fbExports === 'object' && __fbExports && __fbExports.onAuthStateChanged && __fbExports.auth) {
               // Re-run the same listener attach logic
               __fbExports.onAuthStateChanged(__fbExports.auth, async (fbUser) => {
@@ -1746,9 +1746,9 @@
                 console.log("Show View:", viewId);
                 if (!document.getElementById(viewId)) { console.error(`View "${viewId}" missing!`); viewId = 'landingPage'; }
                 const protectedViews = ['homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'pyqEmbedPage'];
-                // Re-evaluate auth from Firebase to avoid stale local flag
-const fbUser = window.__fbExports?.auth?.currentUser || null;
-if (fbUser && !isSignedIn) { isSignedIn = true; currentUser = fbUser.uid; }
+                // Check Supabase session for auth
+const sbUser = window.__sbUser;
+if (sbUser && !isSignedIn) { isSignedIn = true; currentUser = sbUser.id; }
 if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denied to "${viewId}".`); showView('signinForm'); return; }
                 document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
                 const targetView = document.getElementById(viewId); targetView.style.display = 'flex'; currentView = viewId;
