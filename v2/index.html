@@ -1288,6 +1288,11 @@
       // Supabase auth state: simple session listener
       window.__sb?.client?.auth?.onAuthStateChange?.((_event, session) => {
         window.__sbUser = session?.user || null;
+        if (window.__sbUser) {
+          window.isSignedIn = true;
+          window.currentUser = window.__sbUser.id;
+          try { if (typeof window.showView === 'function') window.showView('homePage'); } catch {}
+        }
       });
 
       // Guard: ensure __fbExports exists before wiring auth state listener
