@@ -1138,7 +1138,9 @@
         signOut,
         onAuthStateChanged,
         signInWithRedirect,
-        getRedirectResult
+        getRedirectResult,
+        setPersistence,
+        browserLocalPersistence
       } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
       import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
@@ -1155,6 +1157,8 @@
       const app = initializeApp(firebaseConfig);
       // Use unique names to avoid collisions with other inline modules
       const fbAuth = getAuth(app);
+      // Persist auth across redirects and reloads
+      try { await setPersistence(fbAuth, browserLocalPersistence); } catch (e) { console.warn('[Auth] setPersistence warning:', e?.code || e); }
       const db = getFirestore(app);
       const fbProvider = new GoogleAuthProvider();
       fbProvider.setCustomParameters({ prompt: 'select_account', ux_mode: 'redirect' });
@@ -1196,21 +1200,17 @@
       (async () => {
         try {
           const handledKey = 'ufm_v2_redirectHandled';
-          if (!sessionStorage.getItem(handledKey)) {
-            const redirectResult = await getRedirectResult(fbAuth);
-            if (redirectResult && redirectResult.user) {
-              console.log('[Auth] Redirect result user:', redirectResult.user.uid);
-              try {
-                await ensureUserProfile(redirectResult.user);
-              } catch (profileErr) {
-                console.warn('[Auth] ensureUserProfile after redirect failed:', profileErr?.code || profileErr);
-              }
-              // Mark handled so we don't re-run on soft reloads
-              sessionStorage.setItem(handledKey, '1');
+          const redirectResult = await getRedirectResult(fbAuth).catch(() => null);
+          if (redirectResult && redirectResult.user) {
+            console.log('[Auth] Redirect result user:', redirectResult.user.uid);
+            try { await ensureUserProfile(redirectResult.user); } catch (profileErr) {
+              console.warn('[Auth] ensureUserProfile after redirect failed:', profileErr?.code || profileErr);
             }
+            sessionStorage.setItem(handledKey, '1');
+            // Force navigation to home immediately after redirect
+            try { if (typeof window.showView === 'function') window.showView('homePage'); } catch {}
           }
         } catch (e) {
-          // Note: getRedirectResult throws on non-redirect loads sometimes; this is safe to ignore
           console.warn('[Auth] getRedirectResult warning:', e?.code || e);
         }
       })();
