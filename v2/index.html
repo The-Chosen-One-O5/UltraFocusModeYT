@@ -1124,6 +1124,8 @@
         signInWithGoogle: sbSignInWithGoogle,
         ENABLE_SUPABASE_GOOGLE
       };
+      // Hydrate session immediately on load
+      try { supabase.auth.getSession().then(({ data }) => { window.__sbUser = data?.session?.user || null; }); } catch {}
       // ===== END supabase/client.js (inlined) =====
 
       // ===== Firebase removed =====
@@ -1484,12 +1486,19 @@
         try {
           wireAuthButtons();
           // If Supabase session exists, mark signed in
-          const sbUser = window.__sbUser;
-          if (sbUser) {
-            window.isSignedIn = true;
-            window.currentUser = sbUser.id;
-            if (typeof window.showView === 'function') window.showView('homePage');
-          }
+          const updateFromSession = async () => {
+            try {
+              const { data } = await (window.__sb?.client?.auth?.getSession?.() || Promise.resolve({ data: { session: null } }));
+              const sbUser = data?.session?.user || window.__sbUser;
+              if (sbUser) {
+                window.__sbUser = sbUser;
+                window.isSignedIn = true;
+                window.currentUser = sbUser.id;
+                if (typeof window.showView === 'function') window.showView('homePage');
+              }
+            } catch {}
+          };
+          updateFromSession();
           console.log('[Auth] wireAuthButtons initialized');
         } catch (e) {
           console.error('[Auth] Failed to initialize auth wiring:', e);
@@ -1747,8 +1756,9 @@
                 if (!document.getElementById(viewId)) { console.error(`View "${viewId}" missing!`); viewId = 'landingPage'; }
                 const protectedViews = ['homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'pyqEmbedPage'];
                 // Check Supabase session for auth
-const sbUser = window.__sbUser;
-if (sbUser && !isSignedIn) { isSignedIn = true; currentUser = sbUser.id; }
+const getUser = () => window.__sbUser || null;
+const u = getUser();
+if (u && !isSignedIn) { isSignedIn = true; currentUser = u.id; }
 if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denied to "${viewId}".`); showView('signinForm'); return; }
                 document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
                 const targetView = document.getElementById(viewId); targetView.style.display = 'flex'; currentView = viewId;
