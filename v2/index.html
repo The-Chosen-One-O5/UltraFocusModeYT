@@ -1129,110 +1129,9 @@
       };
       // ===== END supabase/client.js (inlined) =====
 
-      // ===== BEGIN firebase/firebase.js (inlined) =====
-      // ===== BEGIN firebase/firebase.js (inlined) =====
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
-      import {
-        getAuth,
-        GoogleAuthProvider,
-        signOut,
-        onAuthStateChanged,
-        signInWithRedirect,
-        getRedirectResult,
-        setPersistence,
-        browserLocalPersistence
-      } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-      import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+      // ===== Firebase removed =====
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyDS6ZuQcViCFgolCcmAqBPp_9pndCB8F8Q",
-        authDomain: "ultrafocusmode-18ae4.firebaseapp.com",
-        projectId: "ultrafocusmode-18ae4",
-        storageBucket: "ultrafocusmode-18ae4.firebasestorage.app",
-        messagingSenderId: "998572603670",
-        appId: "1:998572603670:web:f14dff88199d964b0c3837",
-        measurementId: "G-04LSN8085M"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      // Use unique names to avoid collisions with other inline modules
-      const fbAuth = getAuth(app);
-      // Persist auth across redirects and reloads
-      try { await setPersistence(fbAuth, browserLocalPersistence); } catch (e) { console.warn('[Auth] setPersistence warning:', e?.code || e); }
-      const db = getFirestore(app);
-      const fbProvider = new GoogleAuthProvider();
-      fbProvider.setCustomParameters({ prompt: 'select_account', ux_mode: 'redirect' });
-
-      async function ensureUserProfile(user) {
-        if (!user) return;
-        const ref = doc(db, 'users', user.uid);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          await setDoc(ref, {
-            uid: user.uid,
-            email: user.email || null,
-            displayName: user.displayName || null,
-            photoURL: user.photoURL || null,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        } else {
-          await updateDoc(ref, {
-            email: user.email || null,
-            displayName: user.displayName || null,
-            photoURL: user.photoURL || null,
-            updatedAt: serverTimestamp()
-          });
-        }
-      }
-
-      async function saveAppState(uid, state) {
-        const ref = doc(db, 'users', uid, 'app', 'state');
-        await setDoc(ref, { ...state, updatedAt: serverTimestamp() }, { merge: true });
-      }
-      async function loadAppState(uid) {
-        const ref = doc(db, 'users', uid, 'app', 'state');
-        const snap = await getDoc(ref);
-        return snap.exists() ? snap.data() : null;
-      }
-
-      // Handle redirect result once per page load and set a session flag to prevent double-handling
-      (async () => {
-        try {
-          const handledKey = 'ufm_v2_redirectHandled';
-          const redirectResult = await getRedirectResult(fbAuth).catch(() => null);
-          if (redirectResult && redirectResult.user) {
-            console.log('[Auth] Redirect result user:', redirectResult.user.uid);
-            try { await ensureUserProfile(redirectResult.user); } catch (profileErr) {
-              console.warn('[Auth] ensureUserProfile after redirect failed:', profileErr?.code || profileErr);
-            }
-            sessionStorage.setItem(handledKey, '1');
-            // Force navigation to home immediately after redirect
-            try { if (typeof window.showView === 'function') window.showView('homePage'); } catch {}
-          }
-        } catch (e) {
-          console.warn('[Auth] getRedirectResult warning:', e?.code || e);
-        }
-      })();
-
-      async function signInWithGoogleRedirect() {
-        console.log('[Auth] Using signInWithRedirect (popup disabled due to COOP)');
-        await signInWithRedirect(fbAuth, fbProvider);
-        return null;
-      }
-
-      async function signOutFromFirebase() {
-        await signOut(fbAuth);
-      }
-
-      // Export shim for other inline module (auth wiring) via window-scoped object
-      // expose under stable names
-      const __fbExports = { app, auth: fbAuth, db, onAuthStateChanged, signInWithGoogleRedirect, signOutFromFirebase, saveAppState, loadAppState };
-      // Attach to window so other inline modules can access it safely
-      window.__fbExports = __fbExports;
-      // ===== END firebase/firebase.js (inlined) =====
-
-      // ===== BEGIN firebase/db.js (inlined) =====
+      // ===== Storage: cloud save/load via Supabase =====
       async function saveStateToCloud(uid) {
         if (!uid) throw new Error('saveStateToCloud: uid required');
         const g = window;
@@ -1254,18 +1153,18 @@
           currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
           currentView: g.currentView || 'homePage'
         };
-        await __fbExports.saveAppState(uid, state);
+        await window.__sb?.upsertAppState(state);
       }
       async function loadStateFromCloud(uid) {
         if (!uid) throw new Error('loadStateFromCloud: uid required');
-        const data = await __fbExports.loadAppState(uid);
+        const data = await window.__sb?.loadAppState();
         return data;
       }
       // Expose for other inline module
-      const __dbExports = { saveStateToCloud, loadStateFromCloud };
-      // ===== END firebase/db.js (inlined) =====
+      const __dbExports = { saveStateToCloud, loadStateFromCloud }; // kept for compatibility
+      // ===== End storage helpers =====
 
-      // ===== BEGIN firebase/auth.js (inlined) =====
+      // ===== Auth wiring (Supabase only) =====
       function collectAppStateFromWindow() {
         const g = window;
         return {
@@ -1320,12 +1219,14 @@
       }
 
       async function googleSignIn() {
-        // Always use redirect to avoid COOP/popup blockers
-        const user = await __fbExports.signInWithGoogleRedirect();
-        return user;
+        if (window.__sb?.signInWithGoogle) {
+          await window.__sb.signInWithGoogle();
+          return null;
+        }
+        throw new Error('Supabase client not initialized');
       }
-      async function firebaseSignOut() {
-        await __fbExports.signOutFromFirebase();
+      async function supabaseSignOut() {
+        try { await window.__sb?.client?.auth?.signOut(); } catch {}
       }
 
       export function wireAuthButtons() {
@@ -1372,13 +1273,8 @@
           logoutBtn.dataset.fbwired = '1';
           logoutBtn.addEventListener('click', async () => {
             try { sessionStorage.removeItem('ufm_v2_logged_in'); } catch {}
-
             try {
-              if (!window.logout) {
-                await firebaseSignOut();
-              }
-              // Also sign out Supabase session if any (no-throw)
-              try { await window.__sb?.client?.auth?.signOut(); } catch {}
+              await supabaseSignOut();
             } catch (err) {
               console.error('Sign out error:', err);
             }
@@ -1390,8 +1286,13 @@
       window.wireAuthButtons = wireAuthButtons;
       window.__googleSignin = async () => { try { await googleSignIn(); } catch (e) { console.error('[Auth] Global google signin failed:', e); } };
 
+      // Supabase auth state: simple session listener
+      window.__sb?.client?.auth?.onAuthStateChange?.((_event, session) => {
+        window.__sbUser = session?.user || null;
+      });
+
       // Guard: ensure __fbExports exists before wiring auth state listener
-      if (typeof __fbExports === 'object' && __fbExports && __fbExports.onAuthStateChanged && __fbExports.auth) {
+      if (false) {
         __fbExports.onAuthStateChanged(__fbExports.auth, async (fbUser) => {
           const g = window;
           if (fbUser) {
@@ -1579,17 +1480,17 @@
           bootAuthListener();
         });
       }
-      // ===== END firebase/auth.js (inlined) =====
+      // ===== End auth wiring =====
 
       // Wire buttons after module load
       document.addEventListener('DOMContentLoaded', () => {
         try {
           wireAuthButtons();
-          // If already signed in (redirect flow), immediately navigate to home once UI is ready
-          const fbUser = window.__fbExports?.auth?.currentUser || null;
-          if (fbUser) {
+          // If Supabase session exists, mark signed in
+          const sbUser = window.__sbUser;
+          if (sbUser) {
             window.isSignedIn = true;
-            window.currentUser = fbUser.uid;
+            window.currentUser = sbUser.id;
             if (typeof window.showView === 'function') window.showView('homePage');
           }
           console.log('[Auth] wireAuthButtons initialized');
@@ -2309,8 +2210,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 let loadedTasks = null;
                 if (isSignedIn && currentUser) {
                     try {
-                        const { loadAppState } = await import('/v2/firebase/firebase.js');
-                        const remote = await loadAppState(currentUser);
+                        const remote = await window.__sb?.loadAppState();
                         if (remote && Array.isArray(remote.tasks)) {
                             loadedTasks = remote.tasks;
                             // Warm local cache
@@ -2382,8 +2282,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                         // Update in-memory model then persist via helper that captures from window
                         const oldTasks = Array.isArray(window.tasks) ? window.tasks : [];
                         window.tasks = tasks;
-                        const { saveStateToCloud } = await import('/v2/firebase/db.js');
-                        await saveStateToCloud(currentUser);
+                        await __dbExports.saveStateToCloud(currentUser);
                         console.log("Tasks saved to cloud.");
                     } catch (e) {
                         console.warn("Cloud save (tasks) failed, fallback already cached locally:", e);
@@ -3068,9 +2967,8 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 // Firestore-first when signed in
                 if (isSignedIn && currentUser) {
                     try {
-                        const { saveStateToCloud } = await import('/v2/firebase/db.js');
-                        await saveStateToCloud(currentUser);
-                        console.log("Playlists saved to Firebase.");
+                        await __dbExports.saveStateToCloud(currentUser);
+                        console.log("Playlists saved to cloud.");
 
                         // Supabase mirror (best-effort)
                         try { await window.__sb?.upsertPlaylists(playlists); } catch (e) {
@@ -3086,8 +2984,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 // Prefer remote when signed in
                 if (isSignedIn && currentUser) {
                     try {
-                        const { loadAppState } = await import('/v2/firebase/firebase.js');
-                        const remote = await loadAppState(currentUser);
+                        const remote = await window.__sb?.loadAppState();
                         if (remote && Array.isArray(remote.playlists)) {
                             playlists = remote.playlists;
                             // warm cache
@@ -3192,12 +3089,11 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 } catch (err) {
                     console.error("Local save (state) error:", err);
                 }
-                // Firestore-first
+                // Cloud save via helper
                 try {
-                                       const { saveStateToCloud } = await import('/v2/firebase/db.js');
-                   await saveStateToCloud(currentUser);
+                  await __dbExports.saveStateToCloud(currentUser);
                 } catch (e) {
-                    console.warn("Cloud save (state) failed, local mirrors kept:", e);
+                  console.warn("Cloud save (state) failed, local mirrors kept:", e);
                 }
 
                 // Supabase mirror for app_state (best-effort, non-blocking)
@@ -3240,8 +3136,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
 
                     // Try remote baseline
                     try {
-                        const { loadAppState } = await import('/v2/firebase/firebase.js');
-                        const remote = await loadAppState(currentUser);
+                        const remote = await window.__sb?.loadAppState();
                         if (remote) {
                             points = remote.points ?? 0;
                             previousPoints = points;
