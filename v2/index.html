@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+    
     <title>Ultra Focus Mode</title>
 
     <!-- Favicon Links -->
@@ -1135,7 +1136,6 @@
       import {
         getAuth,
         GoogleAuthProvider,
-        signInWithPopup,
         signOut,
         onAuthStateChanged,
         signInWithRedirect,
@@ -1158,7 +1158,7 @@
       const fbAuth = getAuth(app);
       const db = getFirestore(app);
       const fbProvider = new GoogleAuthProvider();
-      fbProvider.setCustomParameters({ prompt: 'select_account' });
+      fbProvider.setCustomParameters({ prompt: 'select_account', ux_mode: 'redirect' });
 
       async function ensureUserProfile(user) {
         if (!user) return;
@@ -1216,44 +1216,10 @@
         }
       })();
 
-      async function signInWithGooglePopup() {
-        console.log('[Auth] Attempting signInWithPopup...');
-        try {
-          const result = await signInWithPopup(fbAuth, fbProvider);
-          await ensureUserProfile(result.user);
-          console.log('[Auth] Popup sign-in success:', result.user?.uid);
-          return result.user;
-        } catch (err) {
-          // Normalize code safely
-          const code = (err && err.code) ? String(err.code) : '';
-
-          // Known popup issues or environments where popup won't work
-          const popupIssues = new Set([
-            'auth/popup-blocked',
-            'auth/popup-closed-by-user',
-            'auth/operation-not-supported-in-this-environment',
-            'auth/unauthorized-domain',
-            'auth/internal-error'
-          ]);
-
-          // Additional hard fallback: if permission-denied bubbles up here (from embedded contexts),
-          // still try redirect since some browsers/extensions interfere with popups.
-          const shouldRedirect = popupIssues.has(code) || code === 'permission-denied';
-
-          console.warn('[Auth] signInWithPopup error:', code || err);
-          if (shouldRedirect) {
-            console.log('[Auth] Falling back to signInWithRedirect due to:', code || 'unknown');
-            try {
-              await signInWithRedirect(fbAuth, fbProvider);
-              return null;
-            } catch (redirectErr) {
-              console.error('[Auth] signInWithRedirect failed:', redirectErr?.code || redirectErr);
-              throw redirectErr;
-            }
-          }
-
-          throw err;
-        }
+      async function signInWithGoogleRedirect() {
+        console.log('[Auth] Using signInWithRedirect (popup disabled due to COOP)');
+        await signInWithRedirect(fbAuth, fbProvider);
+        return null;
       }
 
       async function signOutFromFirebase() {
@@ -1262,7 +1228,7 @@
 
       // Export shim for other inline module (auth wiring) via window-scoped object
       // expose under stable names
-      const __fbExports = { app, auth: fbAuth, db, onAuthStateChanged, signInWithGooglePopup, signOutFromFirebase, saveAppState, loadAppState };
+      const __fbExports = { app, auth: fbAuth, db, onAuthStateChanged, signInWithGoogleRedirect, signOutFromFirebase, saveAppState, loadAppState };
       // Attach to window so other inline modules can access it safely
       window.__fbExports = __fbExports;
       // ===== END firebase/firebase.js (inlined) =====
@@ -1355,7 +1321,8 @@
       }
 
       async function googleSignIn() {
-        const user = await __fbExports.signInWithGooglePopup();
+        // Always use redirect to avoid COOP/popup blockers
+        const user = await __fbExports.signInWithGoogleRedirect();
         return user;
       }
       async function firebaseSignOut() {
@@ -1367,31 +1334,15 @@
         if (googleBtn && !googleBtn.dataset.fbwired) {
           googleBtn.dataset.fbwired = '1';
           googleBtn.addEventListener('click', async () => {
-            console.log('[Auth] Google button clicked');
+            console.log('[Auth] Google button clicked (redirect flow)');
             googleBtn.disabled = true;
             const orig = googleBtn.textContent;
-            googleBtn.textContent = 'Signing in...';
+            googleBtn.textContent = 'Redirecting to Google...';
             try {
-              // Prefer Firebase popup (existing). As fallback, use Supabase if feature enabled.
-              try {
-                const user = await googleSignIn();
-                if (user) {
-                  console.log('[Auth] Google signed in (popup path):', user?.uid);
-                } else {
-                  console.log('[Auth] Redirect initiated; waiting for page reload to complete sign-in (Firebase)');
-                }
-              } catch (fbErr) {
-                console.warn('[Auth] Firebase sign-in failed, trying Supabase OAuth...', fbErr?.code || fbErr);
-                if (window.__sb?.ENABLE_SUPABASE_GOOGLE) {
-                  await window.__sb.signInWithGoogle();
-                } else {
-                  throw fbErr;
-                }
-              }
+              await googleSignIn(); // triggers redirect, returns null
             } catch (e) {
-              console.error('[Auth] Google sign-in failed:', e);
+              console.error('[Auth] Google redirect sign-in failed:', e);
               alert('Google sign-in failed. Check console.');
-            } finally {
               googleBtn.textContent = orig;
               googleBtn.disabled = false;
             }
