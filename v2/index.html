@@ -1097,10 +1097,7 @@
       // Supabase auth placeholder wiring
       async function sbSignInWithGoogle() {
         try {
-          const redirectTo =
-            window.location.origin.startsWith('http')
-              ? window.location.origin
-              : 'https://ultrafocusmode-yt.vercel.app';
+          const redirectTo = `${window.location.origin}/v2`;
           const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: { redirectTo }
