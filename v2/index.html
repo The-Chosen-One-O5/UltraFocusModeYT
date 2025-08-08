@@ -2300,7 +2300,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 let loadedTasks = null;
                 if (isSignedIn && currentUser) {
                     try {
-                        const { loadAppState } = await import('./firebase/firebase.js');
+                        const { loadAppState } = await import('/v2/firebase/firebase.js');
                         const remote = await loadAppState(currentUser);
                         if (remote && Array.isArray(remote.tasks)) {
                             loadedTasks = remote.tasks;
@@ -2373,7 +2373,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                         // Update in-memory model then persist via helper that captures from window
                         const oldTasks = Array.isArray(window.tasks) ? window.tasks : [];
                         window.tasks = tasks;
-                        const { saveStateToCloud } = await import('./firebase/db.js');
+                        const { saveStateToCloud } = await import('/v2/firebase/db.js');
                         await saveStateToCloud(currentUser);
                         console.log("Tasks saved to cloud.");
                     } catch (e) {
@@ -3059,7 +3059,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 // Firestore-first when signed in
                 if (isSignedIn && currentUser) {
                     try {
-                        const { saveStateToCloud } = await import('./firebase/db.js');
+                        const { saveStateToCloud } = await import('/v2/firebase/db.js');
                         await saveStateToCloud(currentUser);
                         console.log("Playlists saved to Firebase.");
 
@@ -3077,7 +3077,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 // Prefer remote when signed in
                 if (isSignedIn && currentUser) {
                     try {
-                        const { loadAppState } = await import('./firebase/firebase.js');
+                        const { loadAppState } = await import('/v2/firebase/firebase.js');
                         const remote = await loadAppState(currentUser);
                         if (remote && Array.isArray(remote.playlists)) {
                             playlists = remote.playlists;
@@ -3185,8 +3185,8 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 }
                 // Firestore-first
                 try {
-                    const { saveStateToCloud } = await import('./firebase/db.js');
-                    await saveStateToCloud(currentUser);
+                                       const { saveStateToCloud } = await import('/v2/firebase/db.js');
+                   await saveStateToCloud(currentUser);
                 } catch (e) {
                     console.warn("Cloud save (state) failed, local mirrors kept:", e);
                 }
@@ -3231,7 +3231,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
 
                     // Try remote baseline
                     try {
-                        const { loadAppState } = await import('./firebase/firebase.js');
+                        const { loadAppState } = await import('/v2/firebase/firebase.js');
                         const remote = await loadAppState(currentUser);
                         if (remote) {
                             points = remote.points ?? 0;
