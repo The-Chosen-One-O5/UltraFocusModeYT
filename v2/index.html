@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
     <title>Ultra Focus Mode</title>
 
     <!-- Favicon Links -->
@@ -1401,6 +1402,8 @@
         if (logoutBtn && !logoutBtn.dataset.fbwired) {
           logoutBtn.dataset.fbwired = '1';
           logoutBtn.addEventListener('click', async () => {
+            try { sessionStorage.removeItem('ufm_v2_logged_in'); } catch {}
+
             try {
               if (!window.logout) {
                 await firebaseSignOut();
@@ -1421,6 +1424,8 @@
           if (fbUser) {
             g.isSignedIn = true;
             g.currentUser = fbUser.uid;
+            // Persist a short-lived session marker
+            try { sessionStorage.setItem('ufm_v2_logged_in', '1'); } catch {}
 
             // Populate nav UI basics if present (defensive: don't block on failures)
             try {
@@ -1500,6 +1505,7 @@
           } else {
             g.isSignedIn = false;
             g.currentUser = null;
+            try { sessionStorage.removeItem('ufm_v2_logged_in'); } catch {}
             // Avoid hard navigation loops: only show landing if not already on a private view
             try {
               if (typeof g.showView === 'function') {
@@ -1606,6 +1612,13 @@
       document.addEventListener('DOMContentLoaded', () => {
         try {
           wireAuthButtons();
+          // If already signed in (redirect flow), immediately navigate to home once UI is ready
+          const fbUser = window.__fbExports?.auth?.currentUser || null;
+          if (fbUser) {
+            window.isSignedIn = true;
+            window.currentUser = fbUser.uid;
+            if (typeof window.showView === 'function') window.showView('homePage');
+          }
           console.log('[Auth] wireAuthButtons initialized');
         } catch (e) {
           console.error('[Auth] Failed to initialize auth wiring:', e);
@@ -1792,7 +1805,7 @@
             let currentView = 'landingPage';
             let player; let videoIds = []; let currentVideoIndex = 0;
             let isFocusModeActive = false; let countdownInterval;
-            let points = 0; let isSignedIn = false; let currentUser = null;
+            let points = 0; let isSignedIn = !!(window.__fbExports?.auth?.currentUser); let currentUser = window.__fbExports?.auth?.currentUser?.uid || null;
             const focusDuration = 50 * 60 * 1000; const firstBreakDuration = 15 * 60 * 1000; const secondBreakDuration = 10 * 60 * 1000;
             let timerMode = "Focus Time"; let timerRemaining = focusDuration / 1000;
             let completedVideos = new Set(); let allVideosCompleted = false;
@@ -1862,7 +1875,10 @@
                 console.log("Show View:", viewId);
                 if (!document.getElementById(viewId)) { console.error(`View "${viewId}" missing!`); viewId = 'landingPage'; }
                 const protectedViews = ['homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'pyqEmbedPage'];
-                if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denied to "${viewId}".`); showView('signinForm'); return; }
+                // Re-evaluate auth from Firebase to avoid stale local flag
+const fbUser = window.__fbExports?.auth?.currentUser || null;
+if (fbUser && !isSignedIn) { isSignedIn = true; currentUser = fbUser.uid; }
+if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denied to "${viewId}".`); showView('signinForm'); return; }
                 document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
                 const targetView = document.getElementById(viewId); targetView.style.display = 'flex'; currentView = viewId;
                 const showNav = isSignedIn && (viewId !== 'landingPage' && viewId !== 'signinForm');
