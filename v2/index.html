@@ -1536,7 +1536,11 @@
 
         <!-- == Page Views == -->
         <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div> <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button> <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button> <div id="features"> <div class="feature"> <i class="fas fa-ban"></i> <p>Ad-Free Zone<br>Focus!</p> </div> <div class="feature"> <i class="fas fa-moon"></i> <p>Dark Mode<br>Easy on eyes</p> </div> <div class="feature"> <i class="fas fa-gamepad"></i> <p>Gamified<br>Level up!</p> </div> </div> </div> </div>
-        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="text" id="username" placeholder="Hero Name" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <div style="margin-top:15px;"> <button id="googleSignInBtn" data-action="google-sign-in" onclick="window.__googleSignin && window.__googleSignin()" class="primary-btn" style="background:#fff;color:#333;border:1px solid #ddd;box-shadow:2px 2px 0 #bbb;"><i class="fab fa-google" style="color:#db4437;"></i> Sign in with Google</button> </div> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
+        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="email" id="username" placeholder="Email" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <div style="margin-top:15px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+  <button data-action="email-sign-up" class="primary-btn">CREATE ACCOUNT</button>
+  <button data-action="email-sign-in" class="primary-btn" style="background: var(--bg-light);">SIGN IN</button>
+  <button data-action="email-sign-out" class="primary-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;">SIGN OUT</button>
+</div> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
         <div id="homePage" class="page-view">
             <div id="homePageContent">
                 <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
@@ -2838,64 +2842,60 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
             function closeSidebar() { if (!gameSidebar || !sidebarTrigger || !isSidebarOpen) return; isSidebarOpen = false; gameSidebar.classList.remove('open'); sidebarTrigger.style.left = '0px'; }
             function showSignInForm() { showView('signinForm'); if(usernameInput) usernameInput.value = ''; if(passwordInput) passwordInput.value = ''; }
 
-            function signIn() {
+                         async function signIn() {
                  if(!usernameInput || !passwordInput) return;
-                 const username = usernameInput.value.trim();
+                 const email = usernameInput.value.trim();
                  const password = passwordInput.value;
-                 if (!username || !password) { showConfirmation("Missing", "Enter Hero Name & Secret Code.", false); return; }
+                 if (!email || !password) { showConfirmation("Missing", "Enter Email & Password.", false); return; }
                  try {
-                     const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     if (users[username] && users[username].password === password) {
-                         isSignedIn = true;
-                         currentUser = username;
-                         // Load data from user storage
-                         points = users[currentUser].points || 0;
-                         previousPoints = points; // Sync previous points on load
-                         totalFocusTime = users[currentUser].totalFocusTime || 0;
-                         totalDistractions = users[currentUser].totalDistractions || 0;
-                         totalVideosWatched = users[currentUser].totalVideosWatched || 0;
-                         tasks = users[currentUser].tasks || [];
-                         streakDays = users[currentUser].streakDays || 0;
-                         lastFocusDate = users[currentUser].lastFocusDate || null;
-                         mysteryBoxCount = users[currentUser].mysteryBoxCount || 0;
-                         activePowerUps = users[currentUser].activePowerUps || { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, };
-                         if (!activePowerUps.doublePoints) activePowerUps.doublePoints = { active: false, expiry: null }; // Ensure structure exists
-                         if (!activePowerUps.streakShield) activePowerUps.streakShield = { active: false, used: false, expiry: null }; // Ensure structure exists
-                         playlists = users[currentUser].playlists || [];
-                         dailyFocusData = users[currentUser].dailyFocusData || {}; // Load calendar data
-                         // Load Notification Setting
-                         browserNotificationsEnabled = users[currentUser].browserNotificationsEnabled || false;
-                         // browserNotificationPermission is handled by browser, check on load maybe
-                         browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
-
-                         const savedTracks = users[currentUser].premiumLofiTracks || [];
-                         premiumLofiTracks.forEach(track => {
-                             const saved = savedTracks.find(st => st.id === track.id);
-                             track.unlocked = saved ? saved.unlocked : false;
-                         });
-                         updateAvailableLofiTracks();
-
-                         // Update UI
-                         if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
-                         updateAchievementLevel();
-                         updateStreakDisplay();
-                         showView('homePage');
-                         restoreTasks(); // Will call badge/upcoming updates
-                         checkExpiredPowerups();
-                         sentNotificationTaskIds.clear(); // Reset session notifications
-                         console.log(`Signed in: ${currentUser}. Streak: ${streakDays}, Last Focus: ${lastFocusDate}`);
-                     } else {
-                         showConfirmation("Login Failed", "Invalid Hero Name or Secret Code.", false);
-                         isSignedIn = false;
-                         currentUser = null;
-                     }
+                     const { data, error } = await window.__sb?.client?.auth?.signInWithPassword({ email, password }) || {};
+                     if (error) { showConfirmation("Login Failed", error.message || "Invalid credentials.", false); return; }
+                     const user = data?.user;
+                     if (!user) { showConfirmation("Login Failed", "No user returned.", false); return; }
+                     // Mark session and migrate local data once
+                     isSignedIn = true; currentUser = user.id;
+                     try {
+                         const flagKey = `sb_migrated_${user.id}`;
+                         if (!localStorage.getItem(flagKey)) {
+                             const g = window;
+                             const stateForSb = {
+                               points: g.points || 0,
+                               previousPoints: g.previousPoints || 0,
+                               totalFocusTime: g.totalFocusTime || 0,
+                               totalDistractions: g.totalDistractions || 0,
+                               totalVideosWatched: g.totalVideosWatched || 0,
+                               streakDays: g.streakDays || 0,
+                               lastFocusDate: g.lastFocusDate || null,
+                               mysteryBoxCount: g.mysteryBoxCount || 0,
+                               activePowerUps: g.activePowerUps || null,
+                               premiumLofiTracks: Array.isArray(g.premiumLofiTracks) ? g.premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })) : [],
+                               dailyFocusData: g.dailyFocusData || {},
+                               browserNotificationsEnabled: !!g.browserNotificationsEnabled,
+                               currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
+                               currentView: 'homePage'
+                             };
+                             const flatTasks = Array.isArray(g.tasks) ? g.tasks.map(t => ({
+                               title: t.text ?? t.title ?? '',
+                               completed: !!t.completed,
+                               deadline: t.deadline ?? null,
+                               difficulty: t.points ?? t.difficulty ?? null,
+                               points_awarded: t.points_awarded ?? null
+                             })) : [];
+                             const flatPlaylists = Array.isArray(g.playlists) ? g.playlists.map(p => ({ name: p.name ?? '', urls: Array.isArray(p.urls) ? p.urls : [] })) : [];
+                             await window.__sb?.upsertAppState(stateForSb);
+                             await window.__sb?.replaceTasks(flatTasks);
+                             await window.__sb?.upsertPlaylists(flatPlaylists);
+                             localStorage.setItem(flagKey, '1');
+                         }
+                     } catch {}
+                     showView('homePage');
                  } catch (err) {
                      console.error("Sign-in error:", err);
                      showConfirmation("Sign-in Error", "An error occurred during sign-in.", false);
                  }
              }
 
-             function createAccount() {
+             async function createAccount() {
                  if(!usernameInput || !passwordInput) return;
                  const username = usernameInput.value.trim();
                  const password = passwordInput.value;
