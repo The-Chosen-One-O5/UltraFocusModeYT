@@ -968,7 +968,7 @@
       });
 
       // Feature flag: keep Supabase auth button hidden until dashboard OAuth is ready
-      const ENABLE_SUPABASE_GOOGLE = false;
+      const ENABLE_SUPABASE_GOOGLE = true;
 
       // Map Firebase uid -> Supabase user id (when both present, prefer Firebase uid to keep current app logic stable)
       function getActiveUserId() {
@@ -1340,9 +1340,18 @@
             const orig = googleBtn.textContent;
             googleBtn.textContent = 'Redirecting to Google...';
             try {
-              await googleSignIn(); // triggers redirect, returns null
+              try {
+                await googleSignIn(); // Firebase path (redirect)
+              } catch (fbErr) {
+                console.warn('[Auth] Firebase redirect failed, trying Supabase OAuth...', fbErr?.code || fbErr);
+                if (window.__sb?.ENABLE_SUPABASE_GOOGLE) {
+                  await window.__sb.signInWithGoogle();
+                } else {
+                  throw fbErr;
+                }
+              }
             } catch (e) {
-              console.error('[Auth] Google redirect sign-in failed:', e);
+              console.error('[Auth] Google sign-in failed:', e);
               alert('Google sign-in failed. Check console.');
               googleBtn.textContent = orig;
               googleBtn.disabled = false;
