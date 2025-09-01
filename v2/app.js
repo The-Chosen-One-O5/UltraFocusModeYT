@@ -1,4 +1,5 @@
 // ===== BEGIN supabase/client.js (inlined) =====
+      const { createClient } = supabase;
       const SUPABASE_URL = 'https://romjrhmjuopphgdkjeuz.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvbWpyaG1qdW9wcGhnZGtqZXV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2MTIyNjUsImV4cCI6MjA3MDE4ODI2NX0.FSudiaK1c17KyRBnh9ZKuaVSW3VAq4pUZICnAPhN2NE';
 
