@@ -1,0 +1,12 @@
+{
+  "name": "Ultra Focus Mode",
+  "short_name": "UFocus",
+  "start_url": "/v2/",
+  "display": "standalone",
+  "background_color": "#0b0b1a",
+  "theme_color": "#ffcc00",
+  "icons": [
+    { "src": "/v2/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/v2/favicon-32x32.png", "sizes": "32x32", "type": "image/png" }
+  ]
+}
