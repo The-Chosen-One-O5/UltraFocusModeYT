@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
     <title>Ultra Focus Mode</title>
 
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <link rel="stylesheet" href="./styles.css">
+    <!-- Updated to include /v2/ so absolute asset requests always resolve correctly -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/v2/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/v2/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/v2/favicon-16x16.png">
+    <link rel="manifest" href="/v2/site.webmanifest">
+
+    <!-- Stylesheet served from /v2/ -->
+    <link rel="stylesheet" href="/v2/styles.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
@@ -25,7 +28,7 @@
     <div class="game-container">
 
         <nav id="topNavBar">
-             <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
+            <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
                 <img src="logo.png" alt="Quest for Focus Logo">
             </a>
             <div id="navClockContainer"> <span id="navClockTime">00:00:00</span> <span id="navClockPeriod">AM</span> </div>
@@ -61,8 +64,8 @@
                 <input type="password" id="password" placeholder="Secret Code" required />
                 <button data-action="sign-in" class="primary-btn">SIGN IN</button>
                 <button id="guestButton" class="github-btn">Sign in as Guest</button>
-                <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button></p>
-                
+                <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 #a71d2a;">Create Account</button></p>
+
                 <div style="margin-top:20px; border-top: 1px solid var(--primary-dark); padding-top: 20px;">
                     <div class="subtitle">Or use Supabase Login</div>
                     <input type="email" id="supabase-email" placeholder="Email" required />
@@ -84,7 +87,7 @@
                 <div id="motivationQuote">"Loading motivation..."</div>
             </div>
         </div>
-        
+
         <div id="youtubeLecturePage" class="page-view">
             <div id="youtubeInputContainer">
                 <div class="subtitle">Prepare Focus Session</div>
@@ -105,7 +108,7 @@
             <div id="youtubeLecturePageControls"><button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button></div>
             <div id="videoSidebar"><h3><i class="fas fa-video"></i> Playlist</h3><div id="videoThumbnailList"></div></div>
         </div>
-        
+
         <div id="profile" class="page-view">
             <div id="profileContainer">
                 <div id="profileIcon"><i class="fas fa-user-shield"></i></div>
@@ -142,7 +145,7 @@
                     </div>
                     <div id="calendarGrid"></div>
                 </div>
-                <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"><i class="fas fa-arrow-left"></i> Home</button>
+                <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;">Back</button>
             </div>
         </div>
 
@@ -153,8 +156,8 @@
                 <span></span>
             </div>
             <div id="pyqEmbedContainer">
-                <iframe id="pyqIframe" title="ExamGoal PYQs" src="about:blank" loading="lazy" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write; fullscreen" style="width:100%;height:100%;border:0;background:#111;"></iframe>
-                <div id="pyqFallback" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;background:rgba(26,26,46,0.9);border:2px dashed var(--danger);border-radius:8px;">
+                <iframe id="pyqIframe" title="ExamGoal PYQs" src="about:blank" loading="lazy" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write; fullscreen" style="width:100%;height:600px;border:0;"></iframe>
+                <div id="pyqFallback" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;background:rgba(26,26,46,0.8);">
                     <div>
                         <h3 style="color: var(--danger); margin-bottom:10px;"><i class="fas fa-ban"></i> Embedding blocked</h3>
                         <p style="color: var(--text);">room.examgoal.com disallows embedding in an iframe. You can open it in a new tab:</p>
@@ -166,27 +169,30 @@
 
         <div class="sidebar-trigger" title="Open Menu">MENU</div>
         <div class="game-sidebar">
-            <div class="sidebar-section"><h3>Navigation</h3><button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button><button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button><button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do<span id="todoBadge" class="todo-badge">0</span></button></div>
+            <div class="sidebar-section"><h3>Navigation</h3><button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button><button data-action="show-view" data-view="youtubeLecturePage"><i class="fas fa-video"></i> Videos</button></div>
             <div class="sidebar-section"><h3>Progress</h3><button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button><button id="pyqOpenBtn"><i class="fas fa-dumbbell"></i> PYQs</button></div>
             <div class="sidebar-section"><h3>Self Study</h3><button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button></div>
-            <div class="sidebar-section"><h3>Shops & Realms</h3><button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button><button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button><button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button><a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a><a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a><a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a></div>
+            <div class="sidebar-section"><h3>Shops & Realms</h3><button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button><button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button></div>
             <div class="sidebar-section"><h3>Account</h3><button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button><button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
         </div>
+
         <div id="timerDisplay"><span id="timerText">Focus: 00:00</span><div id="progressBar"><div id="progressFill"></div></div></div>
         <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
         <div id="achievementLevel">Mortal</div>
-        <div id="todoList"><h3><i class="fas fa-tasks"></i> Quests</h3><div id="tasks"></div><div class="dialog-buttons"><button data-action="save-tasks" class="primary-btn"><i class="fas fa-save"></i> Save</button><button data-action="add-task-line" style="background: var(--bg-light);"><i class="fas fa-plus"></i> Add</button><button data-action="close-todo" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-times"></i> Close</button></div></div>
-        <div id="lofiPlayer"><div class="lofi-title">LOFI ♬</div><button id="lofiPrev" title="Prev"><i class="fas fa-backward-step"></i></button><button id="lofiPlay" title="Play"><i class="fas fa-play"></i></button><button id="lofiPause" title="Pause"><i class="fas fa-pause"></i></button><button id="lofiNext" title="Next"><i class="fas fa-forward-step"></i></button></div>
+        <div id="todoList"><h3><i class="fas fa-tasks"></i> Quests</h3><div id="tasks"></div><div class="dialog-buttons"><button data-action="save-tasks" class="primary-btn"><i class="fas fa-save"></i> Save</button></div></div>
+        <div id="lofiPlayer"><div class="lofi-title">LOFI ♬</div><button id="lofiPrev" title="Prev"><i class="fas fa-backward-step"></i></button><button id="lofiPlay" title="Play"><i class="fas fa-play"></i></button><button id="lofiNext" title="Next"><i class="fas fa-forward-step"></i></button></div>
         <div id="fireBox" title="AI Assistant"><i class="fas fa-robot"></i></div>
-        <div id="aiPopup"><iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameBorder="0"></iframe></div>
+        <div id="aiPopup"><iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameborder="0"></iframe></div>
         <div id="achievementOverlay">LEVEL UP!</div>
-        <div id="confirmationDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-question-circle"></i> Confirm</h3><p id="confirmationDialogText">Are you sure?</p><div class="dialog-buttons"><button id="confirmBtn">YES</button><button id="cancelBtn">NO</button></div></div></div>
-        <div id="streakShieldDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-shield-alt"></i> Shield</h3><p>Protect streak (1 week)? Costs 800 XP.</p><div class="dialog-buttons"><button id="streakShieldConfirmBtn">Buy</button><button id="streakShieldCancelBtn">Cancel</button></div></div></div>
-        <div id="doublePointsDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-bolt"></i> Double XP</h3><p>Activate Double XP (24h)? Costs 800 XP.</p><div class="dialog-buttons"><button id="doublePointsConfirmBtn">Activate</button><button id="doublePointsCancelBtn">Cancel</button></div></div></div>
-        <div id="deadlineDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-calendar-check"></i> Deadline</h3><p>Set deadline & difficulty for bonus XP!</p><input type="date" id="deadlineDate" /><input type="time" id="deadlineTime" /><select id="taskDifficulty"><option value="50">Easy (+50)</option><option value="100">Medium (+100)</option><option value="200">Hard (+200)</option><option value="300">Very Hard (+300)</option></select><div class="dialog-buttons"><button id="deadlineConfirmBtn">Set</button><button id="deadlineCancelBtn">Cancel</button></div></div></div>
-        <div id="sessionCompleteDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-check-circle"></i> Session Done!</h3><p>Great focus!</p><p>Continue for +100 XP bonus?</p><div class="dialog-buttons"><button id="sessionContinueBtn">Continue</button><button id="sessionEndBtn">End</button></div></div></div>
-        <div id="mysteryBoxPopup" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-gift"></i> Mystery Box</h3><p id="mysteryRewardText">Mystery box earned!</p><div class="dialog-buttons"><button id="openMysteryBox">Open</button><button id="closeMysteryBoxBtn">Later</button></div></div></div>
-        <div id="audioTracksStore" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-store"></i> Audio Store</h3><p>Unlock Lo-Fi tracks!</p><div id="audioTracksList"></div><div class="dialog-buttons" style="margin-top: 20px;"><button id="closeAudioStore">Close</button></div></div></div>
+
+        <div id="confirmationDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-question-circle"></i> Confirm</h3><p id="confirmationDialogText">Are you sure?</p><div class="dialog-actions"><button class="primary-btn" data-action="confirm-yes">Yes</button><button class="accent-btn" data-action="confirm-no">No</button></div></div></div>
+        <div id="streakShieldDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-shield-alt"></i> Shield</h3><p>Protect streak (1 week)? Costs 800 XP.</p><div class="dialog-actions"><button class="primary-btn">Buy</button><button class="accent-btn">Cancel</button></div></div></div>
+        <div id="doublePointsDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-bolt"></i> Double XP</h3><p>Activate Double XP (24h)? Costs 800 XP.</p><div class="dialog-actions"><button class="primary-btn">Activate</button><button class="accent-btn">Cancel</button></div></div></div>
+        <div id="deadlineDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-calendar-check"></i> Deadline</h3><p>Set deadline & difficulty for bonus XP!</p><input type="date" id="deadlineInput"><div class="dialog-actions"><button class="primary-btn">Save</button><button class="accent-btn">Cancel</button></div></div></div>
+        <div id="sessionCompleteDialog" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-check-circle"></i> Session Done!</h3><p>Great focus!</p><p>Continue for +100 XP bonus?</p><div class="dialog-actions"><button class="primary-btn">Yes</button><button class="accent-btn">No</button></div></div></div>
+
+        <div id="mysteryBoxPopup" class="dialog-overlay"><div class="dialog-box"><h3><i class="fas fa-gift"></i> Mystery Box</h3><p id="mysteryRewardText">Mystery box earned!</p><div class="dialog-actions"><button class="primary-btn">Open</button><button class="accent-btn">Close</button></div></div></div>
+
         <div id="pomodoroOverlay" class="dialog-overlay">
             <div id="pomodoroContainer">
                 <h3><i class="fas fa-brain"></i> POMODORO</h3>
@@ -194,23 +200,21 @@
                 <div id="pomodoroDurationSetting"><label for="pomodoroDurationInput">Duration (min):</label><input type="number" id="pomodoroDurationInput" value="60" min="1" max="180"></div>
                 <div id="pomodoroTimer">60:00</div>
                 <div id="pomodoroStatus">Ready</div>
-                <div id="pomodoroControls"><button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button><button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button><button id="pomodoroCloseBtn"><i class="fas fa-times"></i> CLOSE</button></div>
+                <div id="pomodoroControls"><button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button><button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button><button id="pomodoroStopBtn" class="accent-btn">STOP</button></div>
             </div>
         </div>
 
+        <!-- external/absolute audio sources left as-is -->
         <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio>
         <audio id="lofiAudio" preload="metadata" loop></audio>
         <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
-        <audio id="levelUpAudio" preload="none" src="https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1"></audio>
-        <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles1d&dl=1"></audio>
+        <audio id="levelUpAudio" preload="none" src="https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oek&dl=1"></audio>
+        <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&dl=1"></audio>
 
     </div>
-    <script src="./script.js"></script>
+
+    <!-- Script served from /v2/ -->
+    <script src="/v2/script.js"></script>
 
 </body>
 </html>
-
-
-
-
-
