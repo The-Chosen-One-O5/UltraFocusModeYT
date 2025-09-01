@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
   <title>Ultra Focus Mode</title>
 
-  <!-- Favicon Links (pointing to /v2/) -->
+  <!-- Favicon / Manifest (pointing to v2/) -->
   <link rel="apple-touch-icon" sizes="180x180" href="/v2/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/v2/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/v2/favicon-16x16.png">
   <link rel="manifest" href="/v2/site.webmanifest">
 
-  <!-- App styles (single link) -->
+  <!-- App stylesheet (single, consistent path) -->
   <link rel="stylesheet" href="/v2/styles.css">
 
   <!-- Google Fonts -->
@@ -26,8 +26,8 @@
   <!-- External libs -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
 
-  <!-- App script (single, root-absolute to /v2/) -->
-  <script defer src="/v2/app.js"></script>
+  <!-- App script: use module because app.js uses import statements -->
+  <script type="module" defer src="/v2/app.js"></script>
 </head>
 <body>
 
@@ -201,7 +201,7 @@
 
     <div id="achievementOverlay" style="display:none;">LEVEL UP!</div>
 
-    <!-- Dialogs -->
+    <!-- Dialogs... (kept minimal here) -->
     <div id="confirmationDialog" class="dialog-overlay" style="display:none;">
       <div class="dialog-box">
         <h3><i class="fas fa-question-circle"></i> Confirm</h3>
@@ -209,74 +209,6 @@
         <div class="dialog-actions">
           <button id="confirmYes" class="primary-btn">Yes</button>
           <button id="confirmNo" class="accent-btn">No</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="streakShieldDialog" class="dialog-overlay" style="display:none;">
-      <div class="dialog-box">
-        <h3><i class="fas fa-shield-alt"></i> Shield</h3>
-        <p>Protect streak (1 week)? Costs 800 XP.</p>
-        <div class="dialog-actions">
-          <button class="primary-btn">Buy</button>
-          <button class="accent-btn">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="doublePointsDialog" class="dialog-overlay" style="display:none;">
-      <div class="dialog-box">
-        <h3><i class="fas fa-bolt"></i> Double XP</h3>
-        <p>Activate Double XP (24h)? Costs 800 XP.</p>
-        <div class="dialog-actions">
-          <button class="primary-btn">Activate</button>
-          <button class="accent-btn">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="deadlineDialog" class="dialog-overlay" style="display:none;">
-      <div class="dialog-box">
-        <h3><i class="fas fa-calendar-check"></i> Deadline</h3>
-        <p>Set deadline & difficulty for bonus XP!</p>
-        <input type="date" id="deadlineDate">
-        <input type="number" id="deadlineDifficulty" min="1" max="10" value="5">
-        <div class="dialog-actions">
-          <button class="primary-btn">Save</button>
-          <button class="accent-btn">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="sessionCompleteDialog" class="dialog-overlay" style="display:none;">
-      <div class="dialog-box">
-        <h3><i class="fas fa-check-circle"></i> Session Done!</h3>
-        <p>Great focus! Claim your rewards.</p>
-        <div class="dialog-actions">
-          <button class="primary-btn">Claim</button>
-          <button class="accent-btn">Close</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="mysteryBoxPopup" class="dialog-overlay" style="display:none;">
-      <div class="dialog-box">
-        <h3><i class="fas fa-gift"></i> Mystery Box</h3>
-        <p id="mysteryRewardText">Mystery box earned!</p>
-        <div class="dialog-actions">
-          <button class="primary-btn">Open</button>
-          <button class="accent-btn">Later</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="audioTracksStore" class="dialog-overlay" style="display:none;">
-      <div class="dialog-box">
-        <h3><i class="fas fa-store"></i> Audio Store</h3>
-        <p>Unlock Lo-Fi tracks!</p>
-        <div id="audioTracksList"></div>
-        <div class="dialog-actions">
-          <button class="primary-btn">Close</button>
         </div>
       </div>
     </div>
@@ -303,8 +235,6 @@
     <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio>
     <audio id="lofiAudio" preload="metadata" loop></audio>
     <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
-    <audio id="levelUpAudio" preload="none" src="https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oek"></audio>
-    <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1"></audio>
 
   </div> <!-- End Game Container -->
 
