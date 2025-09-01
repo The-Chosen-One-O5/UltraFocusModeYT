@@ -1,0 +1,930 @@
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4169e1; /* Royal Blue */
+            --primary-dark: #1e3a8a; /* Darker Blue */
+            --secondary: #8e2de2; /* Purple */
+            --accent: #ff4500; /* OrangeRed */
+            --accent-alt: #ff8c00; /* DarkOrange */
+            --bg-dark: #0f0f1b; /* Very Dark Blue/Purple */
+            --bg-medium: #1a1a2e; /* Dark Blue/Purple */
+            --bg-light: #252538; /* Medium Dark Blue/Purple */
+            --text: #e0e0ff; /* Light Lavender */
+            --text-dim: #9090b0; /* Grayish Lavender */
+            --gold: #ffd700;
+            --success: #28a745; /* Green */
+            --danger: #dc3545; /* Red */
+            --info: #17a2b8; /* Teal */
+            --warning: #ffc107; /* Yellow */
+            --calendar-focus-low: rgba(65, 105, 225, 0.2);
+            --calendar-focus-medium: rgba(65, 105, 225, 0.5);
+            --calendar-focus-high: rgba(65, 105, 225, 0.8);
+            --calendar-today-border: var(--accent);
+            --timer-warning-color: var(--danger); /* Added for timer warning */
+            --notification-badge-bg: var(--danger); /* Added for notification badge */
+            --notification-badge-text: white; /* Added for notification badge text */
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary) var(--bg-medium);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-medium);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 0;
+            border: 2px solid var(--bg-medium);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            font-family: 'Roboto Mono', monospace;
+            color: var(--text);
+            overflow-x: hidden;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Game Container and Background */
+        .game-container {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(142, 45, 226, 0.1) 0%, transparent 25%),
+                            radial-gradient(circle at 90% 80%, rgba(65, 105, 225, 0.1) 0%, transparent 25%),
+                            linear-gradient(to bottom, var(--bg-dark) 0%, var(--bg-medium) 100%);
+            display: flex;
+            flex-direction: column; /* Stack nav and content */
+            z-index: 1;
+        }
+
+        .game-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.04' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 5v1H5V0zm1 5v1H5v-1h1z'/%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.5;
+        }
+
+        /* Page/View Containers */
+        .page-view {
+            width: 100%;
+            flex-grow: 1; /* Allow view to take remaining space */
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+            overflow-y: auto;
+            pointer-events: auto;
+        }
+
+        /* Landing Page & Signin Form Styles */
+        #landingPageContainer, #signinFormContainer {
+            text-align: center;
+            width: 100%;
+            max-width: 700px;
+            margin: auto;
+            padding: 40px 30px;
+            background-color: rgba(15, 15, 27, 0.85);
+            border: 2px solid var(--secondary);
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(142, 45, 226, 0.4);
+            backdrop-filter: blur(4px);
+            pointer-events: auto;
+        }
+
+         #landingPage, #signinForm {
+             justify-content: center;
+             align-items: center;
+         }
+
+
+        /* Titles and Subtitles */
+        .title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 28px;
+            font-weight: 400;
+            color: var(--text);
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 0px var(--primary-dark), 4px 4px 0px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+
+        .title span {
+            color: var(--secondary);
+            position: relative;
+            display: inline-block;
+        }
+
+        .title span::after {
+            content: "";
+            position: absolute;
+            bottom: -6px;
+            left: 5%;
+            width: 90%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.8;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-dim);
+            margin-bottom: 35px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Buttons */
+        button {
+            display: inline-block;
+            padding: 10px 25px;
+            font-size: 14px;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 600;
+            background: var(--secondary);
+            border: none;
+            color: var(--text);
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 8px 15px;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            box-shadow: 3px 3px 0 var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 11;
+            pointer-events: auto;
+            outline: none;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary);
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0 var(--primary-dark);
+        }
+
+        button:active:not(:disabled) {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+
+        button:disabled {
+            background: var(--bg-light);
+            color: var(--text-dim);
+            cursor: not-allowed;
+            box-shadow: 2px 2px 0 var(--bg-medium);
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .github-btn {
+            background: var(--bg-light);
+            box-shadow: 3px 3px 0 var(--bg-medium);
+        }
+
+        .github-btn:hover:not(:disabled) {
+            background: var(--bg-medium);
+            box-shadow: 2px 2px 0 var(--bg-medium);
+        }
+
+        .accent-btn {
+            background: var(--accent);
+            box-shadow: 3px 3px 0 #b33000;
+        }
+
+        .accent-btn:hover:not(:disabled) {
+            background: var(--accent-alt);
+             box-shadow: 2px 2px 0 #b33000;
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            box-shadow: 3px 3px 0 var(--primary-dark);
+        }
+        .primary-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            box-shadow: 2px 2px 0 var(--primary-dark);
+        }
+
+
+        /* Landing Page Features */
+        #features {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+
+        .feature {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            width: 220px;
+            box-shadow: 4px 4px 0 var(--bg-medium);
+            border: 1px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+             text-align: center;
+        }
+         .feature:hover {
+            transform: translateY(-3px);
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+
+        .feature::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .feature i {
+            font-size: 28px;
+            color: var(--secondary);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .feature p {
+            font-size: 15px;
+            color: var(--text);
+            text-align: center;
+        }
+
+        /* Input Fields */
+        input[type="text"],
+        input[type="password"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"], /* Added number type */
+        select {
+            display: block;
+            width: 100%;
+            /* Removed max-width: 350px here to allow parent control */
+            margin: 15px auto; /* Default margin */
+            padding: 12px 15px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: 'Roboto Mono', monospace;
+            background: var(--bg-light);
+            border: 2px solid var(--primary);
+            color: var(--text);
+            outline: none;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            z-index: 11;
+            pointer-events: auto;
+        }
+        /* Style specifically for number input spinners (optional) */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+
+
+        input:focus,
+        select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.3), inset 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Top Navigation Bar */
+        #topNavBar {
+            width: 100%;
+            height: 60px;
+            background-color: rgba(15, 15, 27, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            border-bottom: 1px solid rgba(65, 105, 225, 0.3);
+            z-index: 200;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            pointer-events: auto;
+            display: none;
+            flex-shrink: 0;
+            order: -1;
+        }
+
+        #navLogo {
+            text-decoration: none;
+            white-space: nowrap;
+            display: flex; /* Allow vertical centering of image */
+            align-items: center;
+            height: 100%; /* Take full nav height */
+        }
+        #navLogo img { /* Style for the logo image */
+             height: 50px; /* << INCREASED LOGO SIZE */
+             width: auto; /* Maintain aspect ratio */
+             object-fit: contain; /* Ensure image fits well */
+             filter: brightness(0.9) saturate(1.2); /* Optional: Adjust image appearance */
+         }
+
+        #navClockContainer {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            color: var(--text-dim);
+            text-align: center;
+            flex-grow: 1;
+            flex-shrink: 0;
+            margin: 0 20px;
+            white-space: nowrap;
+        }
+        #navClockTime {
+            color: var(--primary);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+         #navClockPeriod {
+            color: var(--secondary);
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        #navButtons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            white-space: nowrap;
+        }
+
+        /* Simple text display for streak */
+        #navStreakDisplay {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 15px;
+            color: var(--accent);
+            font-weight: 600;
+            padding: 5px 10px;
+            background-color: rgba(255, 69, 0, 0.1);
+            border-radius: 4px;
+            cursor: default;
+        }
+         #navStreakDisplay i {
+            margin-right: 5px;
+            font-style: normal;
+            display: inline-block;
+         }
+
+
+        /* Simple buttons for Profile in nav */
+         #navProfileBtn {
+             background: none;
+             border: none;
+             color: var(--text-dim);
+             font-size: 24px;
+             cursor: pointer;
+             padding: 5px;
+             margin: 0;
+             box-shadow: none;
+             transition: color 0.2s ease, transform 0.2s ease;
+         }
+          #navProfileBtn:hover {
+             color: var(--primary);
+             transform: scale(1.1);
+             box-shadow: none;
+         }
+
+
+        /* Home Page Styles (Simplified) */
+        #homePage {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #homePageContent {
+            max-width: 600px;
+            width: 90%;
+        }
+
+        #welcomeMessage {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--text);
+            font-weight: 600;
+        }
+        #welcomeMessage span {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        #dateTimeDisplay {
+            font-size: 18px;
+            color: var(--text-dim);
+            margin-bottom: 20px; /* Reduced margin */
+        }
+
+        /* Upcoming Task Display on Home */
+        #upcomingTaskDisplay {
+            font-size: 16px;
+            color: var(--warning); /* Yellow for upcoming */
+            margin-bottom: 25px; /* Spacing */
+            padding: 10px 15px;
+            background-color: rgba(37, 37, 56, 0.7); /* Slightly different bg */
+            border-radius: 6px;
+            border-left: 4px solid var(--warning);
+            min-height: 40px;
+            display: inline-block; /* Allows centering via text-align on parent */
+            max-width: 90%;
+            text-align: left; /* Align text inside */
+        }
+        #upcomingTaskDisplay i { margin-right: 8px; }
+        #upcomingTaskDisplay.overdue {
+            color: var(--danger);
+            border-left-color: var(--danger);
+        }
+        #upcomingTaskDisplay.none {
+            color: var(--text-dim);
+            border-left-color: var(--text-dim);
+            font-style: italic;
+        }
+        /* End Upcoming Task Display */
+
+        #focusStatus {
+            font-size: 20px;
+            color: var(--accent-alt);
+            margin-bottom: 30px; /* Adjusted margin */
+            font-weight: 600;
+            min-height: 25px;
+            padding: 10px;
+            background-color: rgba(26, 26, 46, 0.5);
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        #motivationQuote {
+            margin-top: 30px; /* Adjusted margin */
+            font-size: 18px;
+            color: var(--text-dim);
+            font-style: italic;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+
+        /* YouTube Lecture Page Styles */
+        #youtubeLecturePage {
+             justify-content: flex-start;
+             align-items: center;
+             padding: 20px;
+             gap: 20px;
+        }
+
+        #youtubeInputContainer {
+            background-color: rgba(26, 26, 46, 0.7);
+            padding: 20px 30px;
+            border-radius: 10px;
+            border: 1px solid var(--primary-dark);
+            max-width: 800px;
+            width: 95%;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            pointer-events: auto;
+            display: block; /* Show input section initially */
+        }
+         #youtubeInputContainer .subtitle {
+            font-size: 18px; color: var(--text-dim); margin-bottom: 20px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* --- Positioning Fix for URL Input Area --- */
+        #urlInputs {
+            margin: 0 auto 15px auto; /* Center the block */
+            max-width: 450px; /* Control max width */
+            width: 100%; /* Take available space up to max-width */
+            pointer-events: auto;
+        }
+        .url-container {
+            display: flex; align-items: center; margin-bottom: 10px; gap: 10px;
+        }
+        /* --- Override general input margin within URL container --- */
+        .url-container input {
+            margin: 0; /* Remove default auto margin */
+            flex-grow: 1; pointer-events: auto;
+            max-width: none; /* Remove max-width from input itself */
+        }
+        .url-container button {
+            padding: 8px 12px; margin: 0; background: var(--danger); font-size: 12px;
+            box-shadow: 2px 2px 0 rgba(167, 29, 42, 0.8); min-width: 35px; pointer-events: auto;
+            flex-shrink: 0; /* Prevent button from shrinking */
+        }
+        /* --- End Positioning Fix --- */
+
+        #youtubeInputContainer button[data-action="add-url"] {
+            font-size: 12px;
+            padding: 8px 15px;
+            margin-bottom: 15px; /* Keep vertical spacing */
+            pointer-events: auto;
+        }
+
+        #playlistManagement {
+            display: flex; gap: 10px; justify-content: center; align-items: center;
+            margin-top: 15px; flex-wrap: wrap; pointer-events: auto;
+        }
+         #playlistManagement select, #playlistManagement input { margin: 0; max-width: 180px; pointer-events: auto; }
+         #playlistManagement button { margin: 0; padding: 10px 15px; font-size: 12px; pointer-events: auto; }
+         #youtubeInputContainer button[data-action="start-playback"] { margin-top: 25px; padding: 12px 30px; display: block; margin-left: auto; margin-right: auto; pointer-events: auto; }
+
+
+        #playerContainer {
+            width: 100%; max-width: 1200px; aspect-ratio: 16 / 9; position: relative;
+            margin: 0 auto; pointer-events: auto;
+             display: none; /* Hidden initially */
+        }
+
+        #player {
+            width: 100%; height: 100%; border-radius: 0; overflow: hidden; background: #000;
+            border: 4px solid var(--primary); box-shadow: 0 0 25px rgba(65, 105, 225, 0.6);
+            z-index: 5; position: absolute; top: 0; left: 0;
+        }
+
+        #timerDisplay {
+            position: fixed; top: 70px; left: 10px; color: var(--text); z-index: 101; cursor: move;
+            padding: 10px 15px; background: rgba(26, 26, 46, 0.85); border: 1px solid var(--primary);
+            border-radius: 4px; font-family: 'Roboto Mono', monospace; font-size: 16px;
+            pointer-events: auto; box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px);
+            display: none;
+        }
+         #timerText { display: block; margin-bottom: 5px; }
+
+        #progressBar {
+            width: 180px; height: 8px; background: var(--bg-light); border: 1px solid var(--primary);
+            border-radius: 2px; overflow: hidden; margin-top: 5px; z-index: 101; display: block;
+        }
+
+        #progressFill { height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.5s linear; border-radius: 1px; }
+
+         #youtubeLecturePageControls {
+            position: fixed; top: 70px; right: 10px; display: flex; flex-direction: column;
+            gap: 10px; z-index: 103; display: none; pointer-events: auto;
+         }
+
+        #restartBtn {
+            background: var(--danger); box-shadow: 3px 3px 0 #a71d2a; padding: 8px 15px;
+            font-size: 12px; margin: 0; pointer-events: auto;
+        }
+         #restartBtn:hover:not(:disabled) { background: #c82333; box-shadow: 2px 2px 0 #a71d2a; }
+
+        #videoSidebar {
+            position: fixed; right: -320px; top: 60px; width: 300px; height: calc(100vh - 60px);
+            background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(8px); transition: right 0.3s ease;
+            padding: 20px; overflow-y: auto; z-index: 102; border-left: 3px solid var(--primary);
+            pointer-events: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.3); display: none;
+        }
+        #videoSidebar.open { right: 0; }
+
+         #videoSidebarToggleBtn {
+            position: fixed; top: 130px; right: 10px; z-index: 103; background: var(--secondary);
+            padding: 8px 10px; font-size: 18px; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            margin: 0; display: none; pointer-events: auto;
+         }
+          #videoSidebarToggleBtn:hover:not(:disabled) { background: var(--primary); }
+
+        .thumbnail {
+            width: 100%; margin-bottom: 15px; cursor: pointer; border: 2px solid transparent;
+            border-radius: 4px; transition: all 0.2s ease; image-rendering: auto;
+            pointer-events: auto; display: block;
+        }
+        .thumbnail:hover { border-color: var(--secondary); transform: scale(1.03); box-shadow: 0 0 10px rgba(142, 45, 226, 0.5); }
+         .thumbnail.active { border-color: var(--accent); box-shadow: 0 0 10px rgba(255, 69, 0, 0.6); }
+         #videoSidebar h3 { color: var(--secondary); margin-bottom: 15px; text-align: center; font-size: 16px; }
+
+        /* Profile Page Styles */
+        #profile { /* Changed ID */
+            justify-content: center; align-items: center;
+        }
+        #profileContainer {
+            background-color: rgba(26, 26, 46, 0.8); padding: 40px; border-radius: 12px;
+            border: 1px solid var(--primary); max-width: 500px; width: 90%; text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); pointer-events: auto;
+        }
+        #profileIcon {
+            font-size: 60px; color: var(--secondary); margin-bottom: 15px; display: inline-block;
+            background: var(--bg-light); width: 100px; height: 100px; line-height: 100px;
+            border-radius: 50%; border: 3px solid var(--primary);
+        }
+         #profileUsername { font-size: 24px; font-weight: bold; color: var(--text); margin-bottom: 10px; }
+         .profile-stat { font-size: 18px; color: var(--text-dim); margin-bottom: 12px; border-bottom: 1px dashed var(--bg-light); padding-bottom: 8px; }
+         .profile-stat span { font-weight: bold; color: var(--primary); margin-left: 8px; }
+          .profile-stat .level { color: var(--gold); }
+          .profile-stat .streak { color: var(--accent); }
+          .profile-stat .xp { color: var(--secondary); }
+          /* Settings section in Profile */
+         #profileSettings {
+             margin-top: 30px;
+             padding-top: 20px;
+             border-top: 1px solid var(--primary-dark);
+             text-align: left;
+         }
+         #profileSettings h4 {
+             color: var(--secondary);
+             font-size: 16px;
+             margin-bottom: 15px;
+             text-align: center;
+             font-family: 'Roboto Mono', monospace;
+         }
+         .setting-item {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 10px;
+             padding: 8px 0;
+         }
+         .setting-item label {
+             font-size: 15px;
+             color: var(--text-dim);
+             flex-grow: 1;
+             margin-right: 15px;
+         }
+         .setting-item input[type="checkbox"] {
+             appearance: none;
+             width: 40px;
+             height: 20px;
+             background: var(--bg-light);
+             border-radius: 10px;
+             position: relative;
+             cursor: pointer;
+             outline: none;
+             transition: background-color 0.3s;
+             border: 1px solid var(--primary);
+             flex-shrink: 0;
+         }
+         .setting-item input[type="checkbox"]::before {
+             content: "";
+             position: absolute;
+             width: 16px;
+             height: 16px;
+             border-radius: 50%;
+             background: var(--text-dim);
+             top: 1px;
+             left: 2px;
+             transition: transform 0.3s, background-color 0.3s;
+         }
+         .setting-item input[type="checkbox"]:checked {
+             background-color: var(--primary);
+         }
+         .setting-item input[type="checkbox"]:checked::before {
+             background: white;
+             transform: translateX(20px);
+         }
+          /* End Settings */
+           #profile button[data-action="show-view"] { /* Target button inside profile view */
+                margin-top: 20px; background: var(--bg-light); font-size: 12px;
+            }
+
+        /* Focus Stats Page Styles */
+        #focusStats { /* Changed ID */
+            justify-content: flex-start; /* Align content to top */
+            align-items: center;
+        }
+         #focusStatsContainer {
+             background-color: rgba(26, 26, 46, 0.8); padding: 30px; border-radius: 12px;
+             border: 1px solid var(--primary); max-width: 800px; width: 90%; /* Increased max-width */
+             box-shadow: 0 5px 20px rgba(0,0,0,0.3); pointer-events: auto;
+         }
+         #focusStatsContainer h3 { text-align: center; font-family: 'Press Start 2P', cursive; font-size: 20px; color: var(--secondary); margin-bottom: 30px; }
+         #statsDisplay { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 25px; margin-bottom: 30px; }
+         .stat-item { background: var(--bg-light); padding: 20px; border-radius: 6px; border: 1px solid var(--primary-dark); text-align: center; }
+         .stat-item .label { font-size: 14px; color: var(--text-dim); margin-bottom: 10px; display: block; }
+          .stat-item .value { font-size: 24px; font-weight: bold; color: var(--primary); }
+          .stat-item .value.streak { color: var(--accent); }
+          .stat-item .value.videos { color: var(--secondary); }
+          .stat-item .value.distractions { color: var(--warning); }
+
+         /* --- Calendar Styles --- */
+         #focusCalendar { margin-top: 30px; background: var(--bg-light); padding: 20px; border-radius: 8px; border: 1px solid var(--primary-dark); }
+         #calendarHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+         #calendarHeader h4 { margin: 0; color: var(--text-dim); flex-grow: 1; text-align: center; font-size: 16px; }
+         #calendarHeader button { background: var(--primary); box-shadow: 2px 2px 0 var(--primary-dark); padding: 5px 10px; font-size: 12px; margin: 0; min-width: 40px; }
+         #calendarHeader button:hover:not(:disabled) { background: var(--secondary); box-shadow: 1px 1px 0 var(--primary-dark); }
+         #calendarGrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+         .calendar-day { aspect-ratio: 1 / 1; background-color: var(--bg-medium); border-radius: 3px; display: flex; justify-content: center; align-items: center; font-size: 12px; color: var(--text-dim); position: relative; border: 1px solid transparent; cursor: default; transition: background-color 0.2s; }
+         .calendar-day.other-month { opacity: 0.4; pointer-events: none; }
+         .calendar-day.has-focus { background-color: var(--calendar-focus-low); color: var(--text); }
+         .calendar-day.focus-medium { background-color: var(--calendar-focus-medium); }
+         .calendar-day.focus-high { background-color: var(--calendar-focus-high); }
+         .calendar-day.today { border: 1px solid var(--calendar-today-border); }
+         .calendar-day .tooltip { visibility: hidden; width: 120px; background-color: var(--bg-dark); color: var(--text); text-align: center; border-radius: 4px; padding: 5px 0; position: absolute; z-index: 1; bottom: 115%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; font-size: 11px; pointer-events: none; }
+         .calendar-day:hover .tooltip { visibility: visible; opacity: 0.95; }
+         /* --- End Calendar Styles --- */
+
+           #focusStats button[data-action="show-view"] { /* Target button inside focusStats view */
+                margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;
+            }
+
+        /* Sidebar Styles */
+        .sidebar-trigger { position: fixed; left: 0; top: 50%; transform: translateY(-50%); width: 25px; height: 100px; background: var(--primary); z-index: 199; border-radius: 0 8px 8px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; writing-mode: vertical-rl; text-orientation: mixed; font-size: 14px; letter-spacing: 2px; pointer-events: auto; transition: background-color 0.2s ease, left 0.3s ease; box-shadow: 3px 0 8px rgba(0,0,0,0.3); }
+         .sidebar-trigger:hover { background: var(--secondary); }
+        .game-sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100vh; background: rgba(26, 26, 46, 0.98); backdrop-filter: blur(5px); border-right: 3px solid var(--primary); z-index: 200; transition: left 0.3s ease; padding: 70px 0 20px 0; box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4); overflow-y: auto; pointer-events: auto; }
+        .game-sidebar.open { left: 0; }
+         .game-sidebar.open + .sidebar-trigger { left: 280px; }
+        /* Hide sidebar trigger and sidebar on public pages (landing/signin) or when not signed in */
+        .hide-menu .sidebar-trigger,
+        .hide-menu .game-sidebar {
+            display: none !important;
+        }
+        .sidebar-section { padding: 15px 20px; border-bottom: 1px solid var(--bg-light); }
+        .sidebar-section:last-child { border-bottom: none; }
+        .sidebar-section h3 { color: var(--secondary); font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; padding-bottom: 5px; border-bottom: 1px dashed var(--primary-dark); }
+        .sidebar-section a, .sidebar-section button { position: relative; /* Needed for badge positioning */ display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 15px; margin: 8px 0; background: var(--bg-light); color: var(--text); border: 1px solid var(--primary); border-radius: 4px; text-align: left; font-size: 14px; font-family: 'Roboto Mono', monospace; cursor: pointer; transition: all 0.2s ease; pointer-events: auto; z-index: 201; text-transform: none; box-shadow: none; letter-spacing: 0.5px; }
+         .sidebar-section button i, .sidebar-section a i { width: 18px; text-align: center; color: var(--primary); }
+        .sidebar-section a:hover, .sidebar-section button:hover:not(:disabled) { background: var(--primary); color: white; transform: translateX(5px); border-color: var(--secondary); box-shadow: none; }
+         .sidebar-section a:hover i, .sidebar-section button:hover:not(:disabled) i { color: white; }
+        .sidebar-section a { text-decoration: none; }
+         /* To-Do Badge Style */
+         .todo-badge {
+             position: absolute;
+             top: 5px;
+             right: 5px;
+             background-color: var(--notification-badge-bg);
+             color: var(--notification-badge-text);
+             border-radius: 50%;
+             width: 20px;
+             height: 20px;
+             font-size: 11px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: bold;
+             line-height: 1;
+             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+             display: none; /* Hidden by default */
+         }
+         .todo-badge.visible { display: flex; }
+         /* End To-Do Badge Style */
+         #logoutBtn { background: var(--danger); border-color: #a71d2a; color: white; }
+          #logoutBtn i { color: white; }
+          #logoutBtn:hover:not(:disabled) { background: #c82333; border-color: #a71d2a; }
+
+        /* Shared Components (Points, Lofi, AI, Dialogs, Overlays) */
+        #pointsDisplay { position: fixed; top: 70px; left: 10px; font-size: 16px; color: var(--text); font-family: 'Roboto Mono', monospace; font-weight: 600; z-index: 101; background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(5px); padding: 8px 12px; border: 1px solid var(--secondary); border-radius: 4px; box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4); pointer-events: none; display: none; }
+        #achievementLevel { position: fixed; top: 120px; left: 10px; font-size: 14px; font-weight: bold; z-index: 101; font-family: 'Press Start 2P', cursive; background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(5px); padding: 6px 10px; border: 2px solid var(--secondary); box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4); border-radius: 4px; pointer-events: none; text-transform: uppercase; letter-spacing: 1px; display: none; }
+        .rainbow { background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: rainbow 3s infinite linear; border-color: transparent !important; }
+        @keyframes rainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+        .level-glow { text-shadow: 0 0 10px var(--text); }
+        .level-box-glow { box-shadow: 0 0 10px var(--gold); }
+        #lofiPlayer { position: fixed; bottom: 10px; right: 10px; z-index: 101; background: rgba(26, 26, 46, 0.9); backdrop-filter: blur(5px); padding: 12px; border: 1px solid var(--primary); border-radius: 6px; box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.3); pointer-events: auto; display: none; }
+        #lofiPlayer .lofi-title { text-align: center; margin-bottom: 8px; font-size: 12px; color: var(--text-dim); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        #lofiPlayer button { background: var(--secondary); border: none; color: var(--text); padding: 6px 12px; margin: 0 3px; cursor: pointer; font-size: 14px; border-radius: 4px; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3); font-family: 'Roboto Mono', monospace; z-index: 102; min-width: 35px; pointer-events: auto; }
+        #lofiPlayer button:hover:not(:disabled) { background: var(--primary); }
+        #lofiPlayer #lofiPause { display: none; }
+        #fireBox { position: fixed; bottom: 10px; left: 10px; width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 26px; cursor: pointer; z-index: 100; box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4); border: 2px solid var(--secondary); pointer-events: auto; transition: all 0.2s ease; display: none; }
+        #fireBox:hover { background: var(--secondary); transform: translateY(-3px) scale(1.05); box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.5); }
+        #aiPopup { position: fixed; bottom: 70px; left: 10px; width: 320px; height: 450px; background: var(--bg-medium); border-radius: 8px; padding: 5px; display: none; z-index: 101; box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.4); border: 3px solid var(--primary); pointer-events: auto; overflow: hidden; }
+        #aiPopup iframe { width: 100%; height: 100%; border: none; border-radius: 5px; }
+        .dialog-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; z-index: 105; display: none; pointer-events: auto; padding: 15px; }
+        .dialog-box { background: var(--bg-medium); padding: 25px 30px; border: 3px solid var(--accent); box-shadow: 0 0 30px rgba(255, 69, 0, 0.5); border-radius: 10px; text-align: center; pointer-events: auto; font-family: 'Roboto Mono', monospace; max-width: 450px; width: 90%; }
+        .dialog-box.warning { border-color: var(--danger); box-shadow: 0 0 30px rgba(220, 53, 69, 0.6); }
+        .dialog-box.warning h3 { color: var(--danger); }
+        .dialog-box h3 { color: var(--accent); font-size: 20px; margin-bottom: 15px; font-family: 'Press Start 2P', cursive; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .dialog-box h3 i { font-size: 18px; }
+        .dialog-box p { font-size: 16px; margin-bottom: 25px; color: var(--text); line-height: 1.5; }
+        .dialog-box .dialog-buttons { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .dialog-box button { padding: 10px 25px; margin: 0; font-size: 14px; pointer-events: auto; z-index: 106; }
+        #confirmBtn, #streakShieldConfirmBtn, #doublePointsConfirmBtn, #deadlineConfirmBtn, #sessionContinueBtn, #openMysteryBox { background: var(--accent); box-shadow: 3px 3px 0 #b33000; }
+        #confirmBtn:hover:not(:disabled), #streakShieldConfirmBtn:hover:not(:disabled), #doublePointsConfirmBtn:hover:not(:disabled), #deadlineConfirmBtn:hover:not(:disabled), #sessionContinueBtn:hover:not(:disabled), #openMysteryBox:hover:not(:disabled) { background: var(--accent-alt); box-shadow: 2px 2px 0 #b33000; }
+        #cancelBtn, #streakShieldCancelBtn, #doublePointsCancelBtn, #deadlineCancelBtn, #sessionEndBtn, #closeAudioStore, #closeMysteryBoxBtn { background: var(--bg-light); box-shadow: 3px 3px 0 var(--bg-medium); }
+        #cancelBtn:hover:not(:disabled), #streakShieldCancelBtn:hover:not(:disabled), #doublePointsCancelBtn:hover:not(:disabled), #deadlineCancelBtn:hover:not(:disabled), #sessionEndBtn:hover:not(:disabled), #closeAudioStore:hover:not(:disabled), #closeMysteryBoxBtn:hover:not(:disabled) { background: var(--bg-medium); box-shadow: 2px 2px 0 var(--bg-medium); }
+        #deadlineDialog input, #deadlineDialog select { margin: 15px auto; max-width: 300px; /* Ensure these dont stretch too much */ }
+        #mysteryBoxPopup .dialog-box { border-color: var(--gold); box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+        #mysteryBoxPopup h3 { color: var(--gold); }
+        #mysteryRewardText { font-weight: bold; color: var(--accent-alt); min-height: 40px;}
+        #audioTracksStore .dialog-box { border-color: var(--secondary); box-shadow: 0 0 30px rgba(142, 45, 226, 0.5); max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        #audioTracksStore h3 { color: var(--secondary); }
+        #audioTracksList { margin-top: 20px; }
+        .audio-track-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; margin-bottom: 10px; background: var(--bg-light); border: 1px solid var(--primary); border-radius: 4px; transition: background-color 0.2s; pointer-events: auto; }
+        .audio-track-item:hover { background-color: var(--bg-medium); }
+        .audio-track-item .track-info { text-align: left; }
+        .audio-track-item .track-name { font-weight: bold; }
+        .audio-track-item.locked .track-name { color: var(--text-dim); }
+        .audio-track-item.unlocked .track-name { color: var(--accent-alt); }
+        .audio-track-item .track-cost { font-size: 12px; color: var(--text-dim); }
+        .unlock-track-btn { padding: 6px 12px; background: var(--secondary); font-size: 12px; margin: 0; flex-shrink: 0; pointer-events: auto; }
+        .unlock-track-btn:disabled { background: var(--bg-light); color: var(--text-dim); cursor: not-allowed; opacity: 0.7; }
+        .unlock-track-btn.unlocked { background: var(--success); color: white; cursor: default; }
+        .unlock-track-btn.unlocked:hover:not(:disabled) { background: var(--success); }
+        #achievementOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 15, 27, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; color: gold; font-size: 36px; font-weight: bold; z-index: 104; display: none; font-family: 'Press Start 2P', cursive; text-align: center; text-shadow: 3px 3px 0 var(--primary-dark), 5px 5px 10px rgba(0,0,0,0.5); background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FFD700' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E"); pointer-events: none; padding: 20px; line-height: 1.4; }
+        #todoList { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; max-height: 75vh; background: var(--bg-medium); padding: 20px; border: 2px solid var(--secondary); border-radius: 8px; display: none; z-index: 100; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4); pointer-events: auto; display: flex; flex-direction: column; }
+        #todoList h3 { font-size: 18px; margin-bottom: 15px; color: var(--secondary); font-family: 'Roboto Mono', monospace; text-align: center; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #tasks { overflow-y: auto; margin-bottom: 15px; background: none; padding-right: 5px; flex-grow: 1; pointer-events: auto; }
+        .task-line { display: flex; align-items: center; margin-bottom: 10px; background: var(--bg-light); padding: 8px 10px; border: 1px solid var(--primary-dark); border-radius: 4px; pointer-events: auto; transition: background-color 0.2s, opacity 0.2s; }
+        .task-line:hover { background-color: rgba(37, 37, 56, 0.8); }
+        .task-line input[type="checkbox"] { margin-right: 12px; width: 18px; height: 18px; appearance: none; border: 2px solid var(--primary); background: var(--bg-medium); position: relative; cursor: pointer; pointer-events: auto; z-index: 11; border-radius: 3px; transition: background-color 0.2s, border-color 0.2s; flex-shrink: 0; }
+        .task-line input[type="checkbox"]:checked { background: var(--secondary); border-color: var(--secondary); }
+        .task-line input[type="checkbox"]:checked::after { content: "✔"; position: absolute; color: var(--text); font-size: 14px; font-weight: bold; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .task-line input[type="checkbox"]:hover { border-color: var(--secondary); }
+        .task-line input[type="text"] { flex-grow: 1; font-size: 15px; font-family: 'Roboto Mono', monospace; color: var(--text); background: transparent; border: none; border-bottom: 1px solid transparent; padding: 5px 0; outline: none; box-shadow: none; margin: 0; pointer-events: auto; z-index: 11; transition: border-color 0.2s; max-width: none; /* Override general input max-width */ }
+        .task-line input[type="text"]:focus { border-bottom: 1px solid var(--secondary); box-shadow: none; }
+        .task-line input[type="text"][readonly] { text-decoration: line-through; color: var(--text-dim); }
+        .task-line .task-buttons { display: flex; align-items: center; margin-left: 10px; flex-shrink: 0; pointer-events: auto; }
+        .task-line .set-deadline, .task-line .remove-task { color: var(--text-dim); font-size: 16px; cursor: pointer; background: none; border: none; padding: 5px; line-height: 1; pointer-events: auto; z-index: 11; transition: color 0.2s; margin: 0 2px; }
+        .task-line .set-deadline:hover:not(:disabled) { color: var(--primary); }
+        .task-line .set-deadline:disabled { opacity: 0.5; cursor: not-allowed;}
+        .task-line .remove-task:hover { color: var(--danger); }
+        .task-line .deadline-info, .task-line .points-info { margin-left: 8px; font-size: 11px; padding: 2px 5px; border-radius: 3px; white-space: nowrap; pointer-events: none; }
+        .task-line .deadline-info { color: var(--accent-alt); background-color: rgba(255, 140, 0, 0.1); }
+        .task-line .points-info { color: var(--secondary); background-color: rgba(142, 45, 226, 0.1); }
+        #todoList .dialog-buttons { margin-top: 15px; flex-shrink: 0; pointer-events: auto; }
+        #todoList .dialog-buttons button { pointer-events: auto; }
+
+        /* Pomodoro Styles */
+        #pomodoroOverlay { background: rgba(15, 15, 27, 0.95); backdrop-filter: blur(12px); z-index: 1000; }
+        #pomodoroContainer { width: 90%; max-width: 420px; background: transparent; padding: 30px; border: none; box-shadow: none; text-align: center; pointer-events: auto; }
+        #pomodoroContainer h3 { font-family: 'Press Start 2P', cursive; font-size: 22px; color: var(--secondary); margin-bottom: 15px; text-shadow: 2px 2px 0px var(--primary-dark); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #pomodoroContainer p { font-size: 16px; color: var(--text-dim); margin-bottom: 15px; } /* Adjusted margin */
+        #pomodoroTimer { font-size: 90px; font-weight: bold; color: var(--text); margin: 20px 0; /* Adjusted margin */ font-family: 'Press Start 2P', cursive; text-shadow: 0 0 15px rgba(65, 105, 225, 0.5), 0 0 25px rgba(142, 45, 226, 0.4); transition: color 0.3s ease; }
+        #pomodoroTimer.timer-warning { color: var(--timer-warning-color); text-shadow: 0 0 15px rgba(220, 53, 69, 0.6); }
+        #pomodoroTimer.timer-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        #pomodoroDurationSetting { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px; pointer-events: auto; }
+        #pomodoroDurationSetting label { color: var(--text-dim); font-size: 14px; }
+        #pomodoroDurationInput { width: 70px; padding: 8px 10px; font-size: 14px; text-align: center; margin: 0; pointer-events: auto; }
+        #pomodoroDurationInput:disabled { background-color: var(--bg-medium); cursor: not-allowed; opacity: 0.6; }
+        #pomodoroStatus { font-size: 18px; color: var(--accent-alt); margin-top: 15px; min-height: 25px; font-weight: 600; }
+        #pomodoroControls { display: flex; justify-content: center; gap: 25px; margin-top: 35px; pointer-events: auto; }
+        #pomodoroControls button { padding: 12px 30px; font-size: 16px; pointer-events: auto; }
+        #pomodoroStartBtn { background: var(--success); border: none; box-shadow: 3px 3px 0 #1c7430;}
+        #pomodoroStartBtn:hover:not(:disabled) { background: #218838; box-shadow: 2px 2px 0 #1c7430;}
+        #pomodoroResetBtn { background: var(--accent); box-shadow: 3px 3px 0 #b33000;}
+        #pomodoroResetBtn:hover:not(:disabled) { background: var(--accent-alt); box-shadow: 2px 2px 0 #b33000;}
+        #pomodoroCloseBtn { background: var(--bg-light); box-shadow: 3px 3px 0 var(--bg-medium);}
+        #pomodoroCloseBtn:hover:not(:disabled) { background: var(--bg-medium); box-shadow: 2px 2px 0 var(--bg-medium);}
+
+        /* Responsive Adjustments */
+        @media (max-width: 800px) {
+            body { font-size: 14px; } .title { font-size: 22px; margin-bottom: 20px;} .subtitle { font-size: 16px; margin-bottom: 25px; } button { padding: 8px 18px; font-size: 12px; margin: 5px 5px 12px; } #landingPageContainer, #signinFormContainer { padding: 30px 20px; } #features { gap: 15px; } .feature { width: 180px; padding: 15px; } .feature i { font-size: 24px; } .feature p { font-size: 14px; }
+            input[type="text"], input[type="password"], input[type="date"], input[type="time"], input[type="number"], select { padding: 10px 12px; font-size: 14px; }
+            #topNavBar { height: 50px; padding: 0 15px; }
+            #navLogo img { height: 40px; /* Adjusted logo size for medium screens */ }
+            #navClockContainer { font-size: 14px; margin: 0 10px; } #navButtons { gap: 15px; } #navStreakDisplay { font-size: 13px; padding: 4px 8px; } #navProfileBtn { font-size: 22px; } .page-view { padding: 15px; } #welcomeMessage { font-size: 20px; } #dateTimeDisplay { font-size: 16px; } #upcomingTaskDisplay { font-size: 14px; padding: 8px 12px;} #focusStatus { font-size: 18px; margin-bottom: 30px; } #motivationQuote { font-size: 16px; }
+            #urlInputs { max-width: 90%; /* Adjust centering */ }
+            #youtubeInputContainer { padding: 15px 20px; } #youtubeInputContainer .subtitle { font-size: 16px; } #timerDisplay { top: 60px; font-size: 14px; padding: 8px 12px; } #progressBar { width: 150px; height: 6px; } #pointsDisplay { top: 60px; font-size: 14px; padding: 6px 10px; } #achievementLevel { top: 105px; font-size: 12px; padding: 5px 8px; } #youtubeLecturePageControls { top: 60px; } #restartBtn, #videoSidebarToggleBtn { padding: 6px 10px; font-size: 10px; } #videoSidebarToggleBtn { top: 110px; font-size: 16px; } #videoSidebar { width: 250px; right: -270px; top: 50px; height: calc(100vh - 50px); } #lofiPlayer { padding: 10px; } #lofiPlayer button { padding: 5px 10px; font-size: 12px; min-width: 30px;} #fireBox { width: 45px; height: 45px; font-size: 22px; } #aiPopup { width: 90%; max-width: 300px; height: 400px; bottom: 65px; } .dialog-box { padding: 20px; } .dialog-box h3 { font-size: 18px; } .dialog-box p { font-size: 14px; margin-bottom: 20px; } .dialog-box button { padding: 8px 20px; font-size: 12px; }
+            #pomodoroContainer { padding: 20px; } #pomodoroTimer { font-size: 60px; margin: 15px 0;} #pomodoroDurationSetting { margin-bottom: 20px; } #pomodoroControls { gap: 15px; margin-top: 25px;} #pomodoroControls button { padding: 10px 20px; font-size: 14px; } #profileContainer { padding: 30px; } #profileIcon { font-size: 50px; width: 80px; height: 80px; line-height: 80px;} #profileUsername { font-size: 20px; } .profile-stat { font-size: 16px; } .setting-item label {font-size: 14px;} #focusStatsContainer { padding: 20px; max-width: 95%; } #focusStatsContainer h3 { font-size: 18px; margin-bottom: 25px; } .stat-item .value { font-size: 20px; } #todoList { max-width: 90%; } .task-line input[type="text"] { font-size: 14px; } .task-line .task-buttons { margin-left: 5px;} .task-line .set-deadline, .task-line .remove-task { font-size: 14px; padding: 3px;} .task-line .deadline-info, .task-line .points-info { font-size: 10px; margin-left: 4px;} .sidebar-trigger { left: 0px; /* Adjusted for consistency */ } .game-sidebar.open + .sidebar-trigger { left: 240px; }
+            #calendarHeader h4 { font-size: 14px; } #calendarHeader button { padding: 4px 8px; font-size: 10px; } .calendar-day { font-size: 10px; }
+         }
+         @media (max-width: 480px) {
+            .title { font-size: 18px; } .subtitle { font-size: 14px; }
+            #navLogo { display: none; }
+            #navClockContainer { flex-grow: 1; text-align: left; margin-left: 0px;}
+            #topNavBar { padding: 0 10px; } #navButtons { gap: 10px; } #navStreakDisplay { font-size: 12px; padding: 3px 6px; } #navProfileBtn { font-size: 20px; } #welcomeMessage { font-size: 18px; } #dateTimeDisplay { font-size: 14px; } #upcomingTaskDisplay { font-size: 13px; padding: 6px 10px;} #focusStatus { font-size: 16px; margin-bottom: 25px; padding: 8px;} #motivationQuote { font-size: 14px; } #youtubeInputContainer { padding: 10px 15px; } #youtubeInputContainer .subtitle { font-size: 14px; }
+            #urlInputs { max-width: 95%; } /* Adjust centering */
+            .url-container { flex-direction: column; align-items: stretch; gap: 5px; } .url-container button { width: 100%; margin-top: 5px; } #playlistManagement { flex-direction: column; gap: 8px; align-items: stretch;} #playlistManagement select, #playlistManagement input { max-width: 100%; } #timerDisplay { font-size: 12px; padding: 6px 8px; } #progressBar { width: 120px; } #pointsDisplay { font-size: 12px; padding: 5px 8px; } #achievementLevel { font-size: 10px; padding: 4px 6px; top: 100px;} #videoSidebar { width: 200px; right: -220px; padding: 15px; } #videoSidebar.open { right: 0; } /* Ensure open works */
+            .game-sidebar.open + .sidebar-trigger { left: 200px; }
+            #pomodoroTimer { font-size: 48px; } #pomodoroControls { gap: 10px; } #pomodoroControls button { padding: 8px 15px; font-size: 12px; } .dialog-box button { padding: 8px 15px; } .sidebar-trigger { width: 20px; height: 80px; font-size: 12px; left: 0px; /* Ensure correct initial pos */ } .game-sidebar { width: 200px; left: -220px; padding-top: 60px;} .sidebar-section { padding: 10px 15px; } .sidebar-section h3 { font-size: 14px; margin-bottom: 10px;} .sidebar-section a, .sidebar-section button { padding: 8px 10px; font-size: 13px; gap: 8px;} .sidebar-section button i, .sidebar-section a i { width: 16px; } .todo-badge { width: 18px; height: 18px; font-size: 10px;} #todoList { max-width: 95%; padding: 15px;} #todoList h3 { font-size: 16px;} .task-line { padding: 6px 8px;} .task-line input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px;} .task-line input[type="text"] { font-size: 13px;}
+            #calendarGrid { gap: 3px; } .calendar-day { font-size: 9px; }
+         }
+
+    /* PYQ iframe styles */
+    #pyqEmbedContainer {
+        position: relative;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: calc(100vh - 140px); /* account for header/margins */
+        border: 2px solid var(--primary);
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(65,105,225,0.25);
+        overflow: hidden;
+        background: var(--bg-light);
+    }
+    #pyqEmbedPage { padding: 20px; }
+    #pyqToolbar button { margin: 0; }
+    #pyqFallback { z-index: 5; }
+    </style>
