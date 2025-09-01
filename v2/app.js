@@ -1,6 +1,4 @@
 // ===== BEGIN supabase/client.js (inlined) =====
-      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
       const SUPABASE_URL = 'https://romjrhmjuopphgdkjeuz.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvbWpyaG1qdW9wcGhnZGtqZXV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2MTIyNjUsImV4cCI6MjA3MDE4ODI2NX0.FSudiaK1c17KyRBnh9ZKuaVSW3VAq4pUZICnAPhN2NE';
 
@@ -273,7 +271,7 @@
         try { await window.__sb?.client?.auth?.signOut(); } catch {}
       }
 
-      export function wireAuthButtons() {
+      window.wireAuthButtons = function() {
         window.wireAuthButtons = wireAuthButtons;
         const googleBtn = document.querySelector('#googleSignInBtn') || document.querySelector('#signinFormContainer button[data-action="google-sign-in"]');
         if (googleBtn && !googleBtn.dataset.fbwired) {
