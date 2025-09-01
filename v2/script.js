@@ -1,5 +1,4 @@
-    <script>
-        // Wrap entire script in IIFE
+      // Wrap entire script in IIFE
         ;(() => {
 
             // !!! WARNING: Storing API keys directly in client-side JS is insecure for public apps.
@@ -1922,4 +1921,3 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
             });
 
         })();
-    </script>
