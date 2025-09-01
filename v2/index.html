@@ -1,160 +1,307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
-    <title>Ultra Focus Mode</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
+  <title>Ultra Focus Mode</title>
 
-    <!-- Favicon Links -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <!-- End Favicon Links -->
-    <link rel="stylesheet" href="./styles.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Favicon Links (pointing to v2/) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/v2/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/v2/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/v2/favicon-16x16.png">
+  <link rel="manifest" href="/v2/site.webmanifest">
+  <!-- End Favicon Links -->
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <!-- App styles (single link, v2/) -->
+  <link rel="stylesheet" href="/v2/styles.css">
 
-    <!-- External libs -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
 
-    <!-- App styles -->
-    <link rel="stylesheet" href="styles.css">
-    <script defer src="/v2/app.js"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+
+  <!-- External libs -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+
+  <!-- App script (single, root-absolute to /v2/) -->
+  <script defer src="/v2/app.js"></script>
 </head>
 <body>
 
-    <!-- Main Game Container -->
-    <div class="game-container">
+  <!-- Main Game Container -->
+  <div class="game-container">
 
-        <!-- Top Navigation Bar -->
-        <nav id="topNavBar">
-             <!-- Logo Image -->
-            <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
-                <img src="logo.png" alt="Quest for Focus Logo"> <!-- Ensure logo.png exists -->
-            </a>
-            <div id="navClockContainer"> <span id="navClockTime">00:00:00</span> <span id="navClockPeriod">AM</span> </div>
-            <div id="navButtons">
-                <span id="navStreakDisplay"><i class="fas fa-fire"></i> 0 days focus</span>
-                <span id="navUserArea" style="display:none;align-items:center;gap:8px;">
-                    <img id="navUserPhoto" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--primary);display:none;">
-                    <span id="navUserName" style="font-size:14px;color:var(--text-dim);"></span>
-                </span>
-                <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile"> <i class="fas fa-user-circle"></i> </button>
-            </div>
-        </nav>
+    <!-- Top Navigation Bar -->
+    <nav id="topNavBar">
+      <!-- Logo Image -->
+      <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="landingPage">
+        <img src="/v2/logo.png" alt="Quest for Focus Logo">
+      </a>
+      <div id="navClockContainer">
+        <span id="navClockTime">00:00:00</span>
+        <span id="navClockPeriod">AM</span>
+      </div>
+      <div id="navButtons">
+        <span id="navStreakDisplay"><i class="fas fa-fire"></i> 0 days focus</span>
+        <span id="navUserArea" style="display:none;align-items:center;gap:8px;">
+          <img id="navUserPhoto" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--primary);display:none;">
+          <span id="navUserName" style="font-size:14px;color:var(--text-dim);"></span>
+        </span>
+        <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile"> <i class="fas fa-user-circle"></i> </button>
+      </div>
+    </nav>
 
-        <!-- == Page Views == -->
-        <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your l[...]</div></div></div>
-        <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input t[...]</div> <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Back</button> </div> </div>
-        <div id="homePage" class="page-view">
-            <div id="homePageContent">
-                <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
-                <div id="dateTimeDisplay">Loading...</div>
-                <!-- Added Upcoming Task Display -->
-                <div id="upcomingTaskDisplay" class="none"><i class="fas fa-star"></i> No urgent quests!</div>
-                <!-- End Upcoming Task Display -->
-                <div id="focusStatus">Ready to focus?</div>
-                <div id="motivationQuote">"Loading motivation..."</div>
-            </div>
+    <!-- == Page Views == -->
+    <div id="landingPage" class="page-view" style="display: flex;">
+      <div id="landingPageContainer">
+        <div class="title">QUEST FOR <span>FOCUS</span></div>
+        <div class="subtitle">Embark on your legendary focus journey.</div>
+        <div class="landing-actions">
+          <button data-action="show-view" data-view="signinForm" class="primary-btn">ENTER REALM</button>
+          <button data-action="show-view" data-view="homePage" class="accent-btn">TRY DEMO</button>
         </div>
-        <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playli[...]</select></div></div>
-        <div id="profile" class="page-view">
-            <div id="profileContainer">
-                <div id="profileIcon"><i class="fas fa-user-shield"></i></div>
-                <div id="profileUsername">Hero Name</div>
-                <div class="profile-stat">Level: <span id="profileLevel" class="level">Mortal</span></div>
-                <div class="profile-stat">XP: <span id="profileXP" class="xp">0</span></div>
-                <div class="profile-stat">Streak: <span id="profileStreak" class="streak">0 days</span></div>
+      </div>
+    </div>
 
-                <!-- Added Settings Section -->
-                <div id="profileSettings">
-                    <h4><i class="fas fa-cog"></i> Settings</h4>
-                    <div class="setting-item">
-                        <label for="browserNotificationSetting">Enable Browser Notifications for Deadlines</label>
-                        <input type="checkbox" id="browserNotificationSetting">
-                    </div>
-                    <small style="color: var(--text-dim); font-size: 12px; display: block; text-align: center; margin-top: -5px;">Requires browser permission.</small>
-                </div>
-                <!-- End Settings Section -->
-
-                <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Home</button>
-            </div>
+    <div id="signinForm" class="page-view" style="display:none;">
+      <div id="signinFormContainer">
+        <div class="title">ENTER <span>REALM</span></div>
+        <div class="subtitle">Log in or create hero profile.</div>
+        <input id="emailInput" type="email" placeholder="Email address">
+        <input id="passwordInput" type="password" placeholder="Password">
+        <div class="dialog-buttons">
+          <button data-action="email-sign-up" class="primary-btn">CREATE ACCOUNT</button>
+          <button data-action="email-sign-in" class="primary-btn" style="background: var(--bg-light);">SIGN IN</button>
+          <button data-action="email-sign-out" class="primary-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;">SIGN OUT</button>
         </div>
-        <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <s[...]</div></div></div>
-        <!-- PYQ Embedded View -->
-        <div id="pyqEmbedPage" class="page-view" style="display:none;">
-            <div id="pyqToolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <button id="pyqBackBtn" class="accent-btn" style="background: var(--bg-light);"><i class="fas fa-arrow-left"></i> Back</button>
-                <span style="color: var(--text-dim); font-size: 14px;"><i class="fas fa-dumbbell"></i> PYQs</span>
-                <span></span>
-            </div>
-            <div id="pyqEmbedContainer">
-                <iframe id="pyqIframe" title="ExamGoal PYQs" src="about:blank" loading="lazy" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write; fullscreen" style="width:100%;he[...]"></iframe>
-                <div id="pyqFallback" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;background:rgba(26,26,46,[...]">
-                    <div>
-                        <h3 style="color: var(--danger); margin-bottom:10px;"><i class="fas fa-ban"></i> Embedding blocked</h3>
-                        <p style="color: var(--text);">room.examgoal.com disallows embedding in an iframe. You can open it in a new tab:</p>
-                        <p style="margin-top:10px;"><a href="https://room.examgoal.com/" target="_blank" rel="noreferrer" style="color: var(--accent); text-decoration: underline;">Open PYQs</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"><i class="fas fa-arrow-left"></i> Back</button>
+      </div>
+    </div>
 
-        <!-- == Shared Components == -->
-        <div class="sidebar-trigger" title="Open Menu">MENU</div>
-        <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-ac[...]</div></div>
-        <div id="timerDisplay"> <span id="timerText">Focus: 00:00</span> <div id="progressBar"> <div id="progressFill"></div> </div> </div>
-        <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
-        <div id="achievementLevel">Mortal</div>
-        <div id="todoList"> <h3><i class="fas fa-tasks"></i> Quests</h3> <div id="tasks"></div> <div class="dialog-buttons"> <button data-action="save-tasks" class="primary-btn"><i class="fas fa-[..."></i> Save</button></div></div>
-        <div id="lofiPlayer"> <div class="lofi-title">LOFI ♬</div> <button id="lofiPrev" title="Prev"><i class="fas fa-backward-step"></i></button> <button id="lofiPlay" title="Play"><i class="[..."></i></button></div>
-        <div id="fireBox" title="AI Assistant"><i class="fas fa-robot"></i></div>
-        <div id="aiPopup"> <iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameBorder="0"></iframe> </div>
-        <div id="achievementOverlay">LEVEL UP!</div>
-        <div id="confirmationDialog" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-question-circle"></i> Confirm</h3> <p id="confirmationDialogText">Are you sure?</p> <div[...]</div></div>
-        <div id="streakShieldDialog" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-shield-alt"></i> Shield</h3> <p>Protect streak (1 week)? Costs 800 XP.</p> <div class="d[...]</div></div>
-        <div id="doublePointsDialog" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-bolt"></i> Double XP</h3> <p>Activate Double XP (24h)? Costs 800 XP.</p> <div class="dia[...]</div></div>
-        <div id="deadlineDialog" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-calendar-check"></i> Deadline</h3> <p>Set deadline & difficulty for bonus XP!</p> <input typ[...]</div></div>
-        <div id="sessionCompleteDialog" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-check-circle"></i> Session Done!</h3> <p>Great focus!</p> <p>Continue for +100 XP bon[...]</p></div></div>
-        <div id="mysteryBoxPopup" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-gift"></i> Mystery Box</h3> <p id="mysteryRewardText">Mystery box earned!</p> <div class="d[...]</div></div>
-        <div id="audioTracksStore" class="dialog-overlay"> <div class="dialog-box"> <h3><i class="fas fa-store"></i> Audio Store</h3> <p>Unlock Lo-Fi tracks!</p> <div id="audioTracksList"></div> [...]</div></div>
-        <div id="pomodoroOverlay" class="dialog-overlay">
-            <div id="pomodoroContainer">
-                <h3><i class="fas fa-brain"></i> POMODORO</h3>
-                <p>Focus deeply. Earn 1 XP per minute.</p>
-                <!-- Custom Duration Input -->
-                <div id="pomodoroDurationSetting">
-                    <label for="pomodoroDurationInput">Duration (min):</label>
-                    <input type="number" id="pomodoroDurationInput" value="60" min="1" max="180">
-                </div>
-                <!-- End Custom Duration Input -->
-                <div id="pomodoroTimer">60:00</div>
-                <div id="pomodoroStatus">Ready</div>
-                <div id="pomodoroControls">
-                    <button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button>
-                    <button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button>
-                    <button id="pomodoroCloseBtn"><i class="fas fa-times"></i> CLOSE</button>
-                </div>
-            </div>
+    <div id="homePage" class="page-view" style="display:none;">
+      <div id="homePageContent">
+        <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
+        <div id="dateTimeDisplay">Loading...</div>
+        <div id="upcomingTaskDisplay" class="none"><i class="fas fa-star"></i> No urgent quests!</div>
+        <div id="focusStatus">Ready to focus?</div>
+        <div id="motivationQuote">"Loading motivation..."</div>
+      </div>
+    </div>
+
+    <div id="youtubeLecturePage" class="page-view" style="display:none;">
+      <div id="youtubeInputContainer">
+        <div class="subtitle">Prepare Focus Session</div>
+        <select id="playlistSelect">
+          <option value="">Load Playlist</option>
+        </select>
+        <input id="youtubeUrl" placeholder="YouTube URL (optional)">
+        <button id="startFocusFromYoutube" class="primary-btn">START SESSION</button>
+      </div>
+    </div>
+
+    <div id="profile" class="page-view" style="display:none;">
+      <div id="profileContainer">
+        <div id="profileIcon"><i class="fas fa-user-shield"></i></div>
+        <div id="profileUsername">Hero Name</div>
+        <div class="profile-stat">Level: <span id="profileLevel" class="level">Mortal</span></div>
+        <div class="profile-stat">XP: <span id="profileXP" class="xp">0</span></div>
+        <div class="profile-stat">Streak: <span id="profileStreak" class="streak">0 days</span></div>
+
+        <div id="profileSettings">
+          <h4><i class="fas fa-cog"></i> Settings</h4>
+          <div class="setting-item">
+            <label for="browserNotificationSetting">Enable Browser Notifications for Deadlines</label>
+            <input type="checkbox" id="browserNotificationSetting">
+          </div>
+          <small style="color: var(--text-dim); font-size: 12px; display: block; text-align: center; margin-top: -5px;">Requires browser permission.</small>
         </div>
 
-        <!-- Audio Elements -->
-        <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio> <!-- Added loop attribute -->
-        <audio id="lofiAudio" preload="metadata" loop></audio>
-        <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
-        <audio id="levelUpAudio" preload="none" src="https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oek[..."></audio>
-        <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1"></audio>
+        <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"><i class="fas fa-arrow-left"></i> Home</button>
+      </div>
+    </div>
 
-    </div> <!-- End Game Container -->
+    <div id="focusStats" class="page-view" style="display:none;">
+      <div id="focusStatsContainer">
+        <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3>
+        <div id="statsDisplay">
+          <div class="stat-item"> <span class="stat-title">Total Focus</span> <span id="totalFocus">0 min</span> </div>
+          <div class="stat-item"> <span class="stat-title">Best Streak</span> <span id="bestStreak">0 days</span> </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- App script (module) -->
-    <script defer src="/v2/app.js"></script>
+    <!-- PYQ Embedded View -->
+    <div id="pyqEmbedPage" class="page-view" style="display:none;">
+      <div id="pyqToolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <button id="pyqBackBtn" class="accent-btn" style="background: var(--bg-light);"><i class="fas fa-arrow-left"></i> Back</button>
+        <span style="color: var(--text-dim); font-size: 14px;"><i class="fas fa-dumbbell"></i> PYQs</span>
+        <span></span>
+      </div>
+      <div id="pyqEmbedContainer" style="position:relative;">
+        <iframe id="pyqIframe" title="ExamGoal PYQs" src="about:blank" loading="lazy" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write; fullscreen" style="width:100%;height:70vh;border:0;"></iframe>
+        <div id="pyqFallback" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;background:rgba(26,26,46,0.9);">
+          <div>
+            <h3 style="color: var(--danger); margin-bottom:10px;"><i class="fas fa-ban"></i> Embedding blocked</h3>
+            <p style="color: var(--text);">room.examgoal.com disallows embedding in an iframe. You can open it in a new tab:</p>
+            <p style="margin-top:10px;"><a href="https://room.examgoal.com/" target="_blank" rel="noreferrer" style="color: var(--accent); text-decoration: underline;">Open PYQs</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Components -->
+    <div class="sidebar-trigger" title="Open Menu">MENU</div>
+    <div class="game-sidebar" style="display:none;">
+      <div class="sidebar-section">
+        <h3>Navigation</h3>
+        <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button>
+        <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-bar"></i> Stats</button>
+        <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button>
+      </div>
+    </div>
+
+    <div id="timerDisplay">
+      <span id="timerText">Focus: 00:00</span>
+      <div id="progressBar"><div id="progressFill"></div></div>
+    </div>
+
+    <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
+    <div id="achievementLevel">Mortal</div>
+
+    <div id="todoList">
+      <h3><i class="fas fa-tasks"></i> Quests</h3>
+      <div id="tasks"></div>
+      <div class="dialog-buttons">
+        <button data-action="save-tasks" class="primary-btn"><i class="fas fa-save"></i> Save</button>
+        <button data-action="clear-tasks" class="accent-btn">Clear</button>
+      </div>
+    </div>
+
+    <div id="lofiPlayer">
+      <div class="lofi-title">LOFI ♬</div>
+      <button id="lofiPrev" title="Prev"><i class="fas fa-backward-step"></i></button>
+      <button id="lofiPlay" title="Play"><i class="fas fa-play"></i></button>
+      <button id="lofiNext" title="Next"><i class="fas fa-forward-step"></i></button>
+    </div>
+
+    <div id="fireBox" title="AI Assistant"><i class="fas fa-robot"></i></div>
+    <div id="aiPopup" style="display:none;">
+      <iframe src="https://www.chatbase.co/chatbot-iframe/3dSdpryiYZlWipHUL8dNK" frameborder="0" style="width:100%;height:100%;"></iframe>
+    </div>
+
+    <div id="achievementOverlay" style="display:none;">LEVEL UP!</div>
+
+    <!-- Dialogs -->
+    <div id="confirmationDialog" class="dialog-overlay" style="display:none;">
+      <div class="dialog-box">
+        <h3><i class="fas fa-question-circle"></i> Confirm</h3>
+        <p id="confirmationDialogText">Are you sure?</p>
+        <div class="dialog-actions">
+          <button id="confirmYes" class="primary-btn">Yes</button>
+          <button id="confirmNo" class="accent-btn">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="streakShieldDialog" class="dialog-overlay" style="display:none;">
+      <div class="dialog-box">
+        <h3><i class="fas fa-shield-alt"></i> Shield</h3>
+        <p>Protect streak (1 week)? Costs 800 XP.</p>
+        <div class="dialog-actions">
+          <button class="primary-btn">Buy</button>
+          <button class="accent-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="doublePointsDialog" class="dialog-overlay" style="display:none;">
+      <div class="dialog-box">
+        <h3><i class="fas fa-bolt"></i> Double XP</h3>
+        <p>Activate Double XP (24h)? Costs 800 XP.</p>
+        <div class="dialog-actions">
+          <button class="primary-btn">Activate</button>
+          <button class="accent-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="deadlineDialog" class="dialog-overlay" style="display:none;">
+      <div class="dialog-box">
+        <h3><i class="fas fa-calendar-check"></i> Deadline</h3>
+        <p>Set deadline & difficulty for bonus XP!</p>
+        <input type="date" id="deadlineDate">
+        <input type="number" id="deadlineDifficulty" min="1" max="10" value="5">
+        <div class="dialog-actions">
+          <button class="primary-btn">Save</button>
+          <button class="accent-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sessionCompleteDialog" class="dialog-overlay" style="display:none;">
+      <div class="dialog-box">
+        <h3><i class="fas fa-check-circle"></i> Session Done!</h3>
+        <p>Great focus! Claim your rewards.</p>
+        <div class="dialog-actions">
+          <button class="primary-btn">Claim</button>
+          <button class="accent-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mysteryBoxPopup" class="dialog-overlay" style="display:none;">
+      <div class="dialog-box">
+        <h3><i class="fas fa-gift"></i> Mystery Box</h3>
+        <p id="mysteryRewardText">Mystery box earned!</p>
+        <div class="dialog-actions">
+          <button class="primary-btn">Open</button>
+          <button class="accent-btn">Later</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="audioTracksStore" class="dialog-overlay" style="display:none;">
+      <div class="dialog-box">
+        <h3><i class="fas fa-store"></i> Audio Store</h3>
+        <p>Unlock Lo-Fi tracks!</p>
+        <div id="audioTracksList"></div>
+        <div class="dialog-actions">
+          <button class="primary-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="pomodoroOverlay" class="dialog-overlay" style="display:none;">
+      <div id="pomodoroContainer">
+        <h3><i class="fas fa-brain"></i> POMODORO</h3>
+        <p>Focus deeply. Earn 1 XP per minute.</p>
+        <div id="pomodoroDurationSetting">
+          <label for="pomodoroDurationInput">Duration (min):</label>
+          <input type="number" id="pomodoroDurationInput" value="60" min="1" max="180">
+        </div>
+        <div id="pomodoroTimer">60:00</div>
+        <div id="pomodoroStatus">Ready</div>
+        <div id="pomodoroControls">
+          <button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button>
+          <button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button>
+          <button id="pomodoroCloseBtn"><i class="fas fa-times"></i> CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio>
+    <audio id="lofiAudio" preload="metadata" loop></audio>
+    <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
+    <audio id="levelUpAudio" preload="none" src="https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oek"></audio>
+    <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1"></audio>
+
+  </div> <!-- End Game Container -->
+
+  <!-- (No more duplicate app script tags) -->
 </body>
 </html>
