@@ -6,14 +6,13 @@
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
   <title>Ultra Focus Mode</title>
 
-  <!-- Favicon Links (pointing to v2/) -->
+  <!-- Favicon Links (pointing to /v2/) -->
   <link rel="apple-touch-icon" sizes="180x180" href="/v2/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/v2/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/v2/favicon-16x16.png">
   <link rel="manifest" href="/v2/site.webmanifest">
-  <!-- End Favicon Links -->
 
-  <!-- App styles (single link, v2/) -->
+  <!-- App styles (single link) -->
   <link rel="stylesheet" href="/v2/styles.css">
 
   <!-- Google Fonts -->
@@ -37,26 +36,29 @@
 
     <!-- Top Navigation Bar -->
     <nav id="topNavBar">
-      <!-- Logo Image -->
       <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="landingPage">
         <img src="/v2/logo.png" alt="Quest for Focus Logo">
       </a>
+
       <div id="navClockContainer">
         <span id="navClockTime">00:00:00</span>
         <span id="navClockPeriod">AM</span>
       </div>
+
       <div id="navButtons">
         <span id="navStreakDisplay"><i class="fas fa-fire"></i> 0 days focus</span>
         <span id="navUserArea" style="display:none;align-items:center;gap:8px;">
           <img id="navUserPhoto" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--primary);display:none;">
           <span id="navUserName" style="font-size:14px;color:var(--text-dim);"></span>
         </span>
-        <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile"> <i class="fas fa-user-circle"></i> </button>
+        <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile">
+          <i class="fas fa-user-circle"></i>
+        </button>
       </div>
     </nav>
 
     <!-- == Page Views == -->
-    <div id="landingPage" class="page-view" style="display: flex;">
+    <div id="landingPage" class="page-view" style="display:flex;">
       <div id="landingPageContainer">
         <div class="title">QUEST FOR <span>FOCUS</span></div>
         <div class="subtitle">Embark on your legendary focus journey.</div>
@@ -78,7 +80,9 @@
           <button data-action="email-sign-in" class="primary-btn" style="background: var(--bg-light);">SIGN IN</button>
           <button data-action="email-sign-out" class="primary-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;">SIGN OUT</button>
         </div>
-        <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"><i class="fas fa-arrow-left"></i> Back</button>
+        <button data-action="show-view" data-view="landingPage" style="margin-top:20px;background:var(--bg-light);font-size:12px;">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
       </div>
     </div>
 
@@ -117,10 +121,12 @@
             <label for="browserNotificationSetting">Enable Browser Notifications for Deadlines</label>
             <input type="checkbox" id="browserNotificationSetting">
           </div>
-          <small style="color: var(--text-dim); font-size: 12px; display: block; text-align: center; margin-top: -5px;">Requires browser permission.</small>
+          <small style="color:var(--text-dim);font-size:12px;display:block;text-align:center;margin-top:-5px;">Requires browser permission.</small>
         </div>
 
-        <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"><i class="fas fa-arrow-left"></i> Home</button>
+        <button data-action="show-view" data-view="homePage" style="margin-top:20px;background:var(--bg-light);font-size:12px;">
+          <i class="fas fa-arrow-left"></i> Home
+        </button>
       </div>
     </div>
 
@@ -128,8 +134,8 @@
       <div id="focusStatsContainer">
         <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3>
         <div id="statsDisplay">
-          <div class="stat-item"> <span class="stat-title">Total Focus</span> <span id="totalFocus">0 min</span> </div>
-          <div class="stat-item"> <span class="stat-title">Best Streak</span> <span id="bestStreak">0 days</span> </div>
+          <div class="stat-item"><span class="stat-title">Total Focus</span> <span id="totalFocus">0 min</span></div>
+          <div class="stat-item"><span class="stat-title">Best Streak</span> <span id="bestStreak">0 days</span></div>
         </div>
       </div>
     </div>
@@ -137,17 +143,17 @@
     <!-- PYQ Embedded View -->
     <div id="pyqEmbedPage" class="page-view" style="display:none;">
       <div id="pyqToolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <button id="pyqBackBtn" class="accent-btn" style="background: var(--bg-light);"><i class="fas fa-arrow-left"></i> Back</button>
-        <span style="color: var(--text-dim); font-size: 14px;"><i class="fas fa-dumbbell"></i> PYQs</span>
+        <button id="pyqBackBtn" class="accent-btn" style="background:var(--bg-light);"><i class="fas fa-arrow-left"></i> Back</button>
+        <span style="color:var(--text-dim);font-size:14px;"><i class="fas fa-dumbbell"></i> PYQs</span>
         <span></span>
       </div>
       <div id="pyqEmbedContainer" style="position:relative;">
         <iframe id="pyqIframe" title="ExamGoal PYQs" src="about:blank" loading="lazy" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write; fullscreen" style="width:100%;height:70vh;border:0;"></iframe>
         <div id="pyqFallback" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;background:rgba(26,26,46,0.9);">
           <div>
-            <h3 style="color: var(--danger); margin-bottom:10px;"><i class="fas fa-ban"></i> Embedding blocked</h3>
-            <p style="color: var(--text);">room.examgoal.com disallows embedding in an iframe. You can open it in a new tab:</p>
-            <p style="margin-top:10px;"><a href="https://room.examgoal.com/" target="_blank" rel="noreferrer" style="color: var(--accent); text-decoration: underline;">Open PYQs</a></p>
+            <h3 style="color:var(--danger);margin-bottom:10px;"><i class="fas fa-ban"></i> Embedding blocked</h3>
+            <p style="color:var(--text);">room.examgoal.com disallows embedding in an iframe. You can open it in a new tab:</p>
+            <p style="margin-top:10px;"><a href="https://room.examgoal.com/" target="_blank" rel="noreferrer" style="color:var(--accent);text-decoration:underline;">Open PYQs</a></p>
           </div>
         </div>
       </div>
@@ -169,7 +175,7 @@
       <div id="progressBar"><div id="progressFill"></div></div>
     </div>
 
-    <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
+    <div id="pointsDisplay"><span style="color:var(--secondary);">⭐</span> XP: 0</div>
     <div id="achievementLevel">Mortal</div>
 
     <div id="todoList">
@@ -302,6 +308,5 @@
 
   </div> <!-- End Game Container -->
 
-  <!-- (No more duplicate app script tags) -->
 </body>
 </html>
