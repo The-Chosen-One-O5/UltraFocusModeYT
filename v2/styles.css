@@ -1,4 +1,3 @@
-    <style>
         /* Reset and Base Styles */
         * {
             margin: 0;
@@ -927,4 +926,3 @@
     #pyqEmbedPage { padding: 20px; }
     #pyqToolbar button { margin: 0; }
     #pyqFallback { z-index: 5; }
-    </style>
