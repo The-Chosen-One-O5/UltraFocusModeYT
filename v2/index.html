@@ -1,231 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
-    <title>Ultra Focus Mode</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups" />
+  <title>Ultra Focus Mode</title>
 
-    <!-- NOTE: keep /v2/ prefix so deployed site resolves correctly -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/v2/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/v2/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/v2/favicon-16x16.png">
-    <link rel="manifest" href="/v2/site.webmanifest">
-    <link rel="stylesheet" href="/v2/styles.css">
+  <!-- Manifest and icons (use /v2/ so URLs resolve correctly under /v2/) -->
+  <link rel="manifest" href="/v2/site.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="/v2/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/v2/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/v2/favicon-16x16.png">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/v2/styles.css">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Fonts & icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
-    <!-- Supabase JS (UMD) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <!-- Canvas confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <style>
-      /* small helper styles for sign-in area so it looks OK even without full CSS */
-      #signinFormContainer input, #signinFormContainer button { display:block; width:100%; margin:8px 0; padding:8px; }
-      #signinFormContainer .two-col { display:flex; gap:8px; }
-      #signinFormContainer .two-col input { flex:1; }
-      #authMessage { color: var(--text-dim); margin-top:8px; font-size:13px; }
-    </style>
+  <!-- Supabase JS (UMD) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+
+  <style>
+    /* Small inline helpers so sign-in looks OK until your styles.css loads */
+    #signinFormContainer input, #signinFormContainer button { display:block; width:100%; margin:8px 0; padding:8px; box-sizing:border-box; }
+    #signinFormContainer .two-col { display:flex; gap:8px; }
+    #signinFormContainer .two-col input, #signinFormContainer .two-col button { flex:1; }
+    #authMessage { color: #9aa0b4; margin-top:8px; font-size:13px; }
+  </style>
 </head>
 <body>
 
-    <div class="game-container">
+  <div class="game-container">
 
-        <nav id="topNavBar"> ... <!-- trimmed for brevity in this view - keep original nav markup --> </nav>
+    <!-- Top nav -->
+    <nav id="topNavBar">
+      <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
+        <img src="/v2/logo.png" alt="Logo" style="height:36px;">
+      </a>
+      <div id="navClockContainer"><span id="navClockTime">00:00</span></div>
+      <div id="navButtons">
+        <span id="navStreakDisplay"><i class="fas fa-fire"></i> 0 days</span>
+        <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile"><i class="fas fa-user-circle"></i></button>
+      </div>
+    </nav>
 
-        <div id="landingPage" class="page-view" style="display: flex;">
-            <div id="landingPageContainer">
-                <div class="title">QUEST FOR <span>FOCUS</span></div>
-                <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div>
-                <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button>
-                <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button>
-            </div>
-        </div>
-
-        <div id="signinForm" class="page-view">
-            <div id="signinFormContainer">
-                <div class="title">ENTER <span>REALM</span></div>
-                <div class="subtitle">Local sign-in (for now) or use Supabase below</div>
-
-                <!-- Local sign-in -->
-                <input type="text" id="local-username" placeholder="Username (local)" />
-                <input type="password" id="local-password" placeholder="Secret Code (local)" />
-                <div class="two-col" style="margin-top:0;">
-                  <button id="localSignInBtn" class="primary-btn" style="flex:1;">SIGN IN (local)</button>
-                  <button id="localCreateBtn" class="accent-btn" style="flex:1;">Create Account (local)</button>
-                </div>
-
-                <!-- Guest -->
-                <button id="guestButton" class="github-btn">Sign in as Guest</button>
-
-                <p style="color: var(--text-dim); margin-top: 6px;">Or use Supabase Login (email/password)</p>
-
-                <!-- Supabase email/password -->
-                <input type="email" id="supabase-email" placeholder="Email for Supabase" />
-                <input type="password" id="supabase-password" placeholder="Password for Supabase" />
-                <div class="two-col">
-                  <button id="supabaseLoginBtn" class="primary-btn">Login with Email</button>
-                  <button id="supabaseSignupBtn" class="accent-btn">Sign Up with Email</button>
-                </div>
-
-                <div id="authMessage" aria-live="polite"></div>
-
-                <button data-action="show-view" data-view="landingPage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"><i class="fas fa-arrow-left"></i> Back</button>
-            </div>
-        </div>
-
-        <!-- rest of your page markup continues unchanged -->
-        ... <!-- keep the rest of your existing markup exactly as in your v2/index.html -->
-
+    <!-- Landing -->
+    <div id="landingPage" class="page-view" style="display:flex;">
+      <div id="landingPageContainer">
+        <div class="title">QUEST FOR <span>FOCUS</span></div>
+        <div class="subtitle">Conquer distractions. Learn more.</div>
+        <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button>
+      </div>
     </div>
 
-    <!-- Keep your main app script reference (still uses /v2/script.js for other app logic) -->
-    <script src="/v2/script.js" defer></script>
+    <!-- Sign-in form -->
+    <div id="signinForm" class="page-view" style="display:none;">
+      <div id="signinFormContainer">
+        <div class="title">ENTER <span>REALM</span></div>
+        <div class="subtitle">Local sign-in (for now) or use Supabase below</div>
 
-    <!-- Inline auth script - handles local auth, guest, and Supabase auth -->
-    <script>
-      // ---------- Supabase config ----------
-      // Using the project URL and anon key you provided
-      const SUPABASE_URL = 'https://diylqtulatifooqnojrg.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpeWxxdHVsYXRpZm9vcW5vanJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NzgwMDEsImV4cCI6MjA3MjI1NDAwMX0.N2HdLgw68ocGdASlojD83g9h-xkEyCEQP9NNH6Y8bYY';
+        <!-- Local sign-in -->
+        <input type="text" id="local-username" placeholder="Username (local)" />
+        <input type="password" id="local-password" placeholder="Secret Code (local)" />
+        <div class="two-col">
+          <button id="localSignInBtn" class="primary-btn">SIGN IN (local)</button>
+          <button id="localCreateBtn" class="accent-btn">Create Account (local)</button>
+        </div>
 
-      // Initialize Supabase client (UMD exposes 'supabase')
-      const supabase = supabaseJs.createClient
-        ? supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-        : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <!-- Guest -->
+        <button id="guestButton" class="github-btn">Sign in as Guest</button>
 
-      // ---------- Utility and DOM ----------
-      const authMessage = document.getElementById('authMessage');
+        <p style="color:#9aa0b4; margin-top:6px;">Or use Supabase Login (email/password)</p>
+        <input type="email" id="supabase-email" placeholder="Email for Supabase" />
+        <input type="password" id="supabase-password" placeholder="Password for Supabase" />
+        <div class="two-col">
+          <button id="supabaseLoginBtn" class="primary-btn">Login with Email</button>
+          <button id="supabaseSignupBtn" class="accent-btn">Sign Up with Email</button>
+        </div>
 
-      function showMessage(msg, isError = false) {
+        <div id="authMessage" aria-live="polite"></div>
+
+        <button data-action="show-view" data-view="landingPage" style="margin-top:12px;">Back</button>
+      </div>
+    </div>
+
+    <!-- Home page -->
+    <div id="homePage" class="page-view" style="display:none;">
+      <div id="homePageContent">
+        <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
+        <div id="focusStatus">Ready to focus?</div>
+      </div>
+    </div>
+
+    <!-- Profile, other views omitted for brevity but you can keep original markup -->
+    <!-- Make sure to keep any elements your script expects (IDs used by script.js) -->
+
+    <!-- Audio elements required by script.js -->
+    <audio id="focusAudio" preload="metadata" src="/v2/focus.mp3" loop></audio>
+    <audio id="lofiAudio" preload="metadata" loop src="/v2/lofi-sample.mp3"></audio>
+    <audio id="pomodoroCompleteAudio" preload="none" src="/v2/pomodoro-complete.mp3"></audio>
+    <audio id="levelUpAudio" preload="none" src="/v2/level-up.mp3"></audio>
+    <audio id="achievementAudio" preload="none" src="/v2/achievement.mp3"></audio>
+
+  </div>
+
+  <!-- Main app script (your original JS). Keep defer so it runs after parsing -->
+  <script src="/v2/script.js" defer></script>
+
+  <!-- Inline auth + Supabase init (fixed) -->
+  <script>
+    // ---------- Supabase config ----------
+    const SUPABASE_URL = 'https://diylqtulatifooqnojrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpeWxxdHVsYXRpZm9vcW5vanJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NzgwMDEsImV4cCI6MjA3MjI1NDAwMX0.N2HdLgw68ocGdASlojD83g9h-xkEyCEQP9NNH6Y8bYY';
+
+    // The UMD bundle creates a global window.supabase object.
+    // Use that to create the client. Avoid referencing non-existent globals.
+    const supabase = (typeof window !== 'undefined' && window.supabase && window.supabase.createClient)
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : (typeof supabase !== 'undefined' && supabase.createClient
+         ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+         : null);
+
+    if (!supabase) {
+      console.warn('Supabase client failed to initialize. Check CDN script load.');
+    }
+
+    // ---------- Simple UI helpers ----------
+    const authMessage = document.getElementById('authMessage');
+    const homeUsername = document.getElementById('homeUsername');
+    function showMessage(msg, isError = false) {
+      if (authMessage) {
         authMessage.textContent = msg;
-        authMessage.style.color = isError ? '#ff6b6b' : 'var(--text-dim)';
+        authMessage.style.color = isError ? '#ff6b6b' : '#9aa0b4';
+      } else {
+        console.log('AUTH MSG:', msg);
       }
+    }
+    function setCurrentUser(user) {
+      try { localStorage.setItem('ufm_current_user', JSON.stringify(user)); } catch(e){}
+      if (homeUsername && user) homeUsername.textContent = user.displayName || user.email || user.username || 'Hero';
+    }
 
-      function setCurrentUser(user) {
-        localStorage.setItem('ufm_current_user', JSON.stringify(user));
-        // update UI (nav, username, etc.) - simple demonstration:
-        const homeUsername = document.getElementById('homeUsername');
-        if (homeUsername) homeUsername.textContent = user?.displayName || user?.email || user?.username || 'Hero';
+    // ---------- Local auth ----------
+    function loadLocalUsers() {
+      try { return JSON.parse(localStorage.getItem('ufm_local_users') || '{}'); } catch(e){ return {}; }
+    }
+    function saveLocalUsers(users) { localStorage.setItem('ufm_local_users', JSON.stringify(users)); }
+
+    document.getElementById('localCreateBtn').addEventListener('click', () => {
+      const username = document.getElementById('local-username').value.trim();
+      const password = document.getElementById('local-password').value;
+      if (!username || !password) { showMessage('Local: username and password required', true); return; }
+      const users = loadLocalUsers();
+      if (users[username]) { showMessage('Local: username already exists', true); return; }
+      users[username] = { username, password };
+      saveLocalUsers(users);
+      showMessage('Local account created. You can sign in now.');
+    });
+
+    document.getElementById('localSignInBtn').addEventListener('click', () => {
+      const username = document.getElementById('local-username').value.trim();
+      const password = document.getElementById('local-password').value;
+      const users = loadLocalUsers();
+      const u = users[username];
+      if (u && u.password === password) {
+        showMessage('Local sign-in success');
+        setCurrentUser({ provider: 'local', username });
+        document.getElementById('signinForm').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
+      } else {
+        showMessage('Local sign-in failed', true);
       }
+    });
 
-      // ---------- Local auth (beginner-friendly, stored in localStorage) ----------
-      // local users stored as { username: { username, password } }
-      function loadLocalUsers() {
-        try {
-          return JSON.parse(localStorage.getItem('ufm_local_users') || '{}');
-        } catch (e) {
-          return {};
-        }
+    // Guest
+    document.getElementById('guestButton').addEventListener('click', () => {
+      const guestName = 'Guest-' + Math.random().toString(36).slice(2,8);
+      showMessage('Signed in as ' + guestName);
+      setCurrentUser({ provider: 'guest', username: guestName });
+      document.getElementById('signinForm').style.display = 'none';
+      document.getElementById('homePage').style.display = 'block';
+    });
+
+    // ---------- Supabase sign up / sign in ----------
+    async function upsertProfileForUser(supabaseUser, displayName = null) {
+      if (!supabase) return;
+      try {
+        await supabase.from('profiles').upsert({ id: supabaseUser.id, username: displayName || supabaseUser.email?.split('@')[0] || supabaseUser.id, updated_at: new Date().toISOString() });
+      } catch (err) {
+        console.error('profile upsert error', err);
       }
-      function saveLocalUsers(users) {
-        localStorage.setItem('ufm_local_users', JSON.stringify(users));
+    }
+
+    document.getElementById('supabaseSignupBtn').addEventListener('click', async () => {
+      if (!supabase) { showMessage('Supabase client not initialized', true); return; }
+      const email = document.getElementById('supabase-email').value.trim();
+      const password = document.getElementById('supabase-password').value;
+      if (!email || !password) { showMessage('Supabase: email and password required', true); return; }
+      showMessage('Signing up...');
+      const { user, session, error } = await supabase.auth.signUp({ email, password });
+      if (error) { showMessage('Sign-up error: ' + error.message, true); return; }
+      showMessage('Sign-up initiated. Check your email if confirmation is required.');
+      if (user) {
+        await upsertProfileForUser(user);
+        setCurrentUser({ provider: 'supabase', id: user.id, email: user.email });
+        document.getElementById('signinForm').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
       }
+    });
 
-      document.getElementById('localCreateBtn').addEventListener('click', () => {
-        const username = document.getElementById('local-username').value.trim();
-        const password = document.getElementById('local-password').value;
-        if (!username || !password) { showMessage('Local: username and password required', true); return; }
-        const users = loadLocalUsers();
-        if (users[username]) { showMessage('Local: username already exists', true); return; }
-        users[username] = { username, password };
-        saveLocalUsers(users);
-        showMessage('Local account created. You can sign in now.');
-      });
-
-      document.getElementById('localSignInBtn').addEventListener('click', () => {
-        const username = document.getElementById('local-username').value.trim();
-        const password = document.getElementById('local-password').value;
-        const users = loadLocalUsers();
-        const u = users[username];
-        if (u && u.password === password) {
-          showMessage('Local sign-in success');
-          setCurrentUser({ provider: 'local', username });
-        } else {
-          showMessage('Local sign-in failed', true);
-        }
-      });
-
-      // Guest sign-in
-      document.getElementById('guestButton').addEventListener('click', () => {
-        const guestName = 'Guest-' + Math.random().toString(36).slice(2, 8);
-        showMessage('Signed in as ' + guestName);
-        setCurrentUser({ provider: 'guest', username: guestName });
-      });
-
-      // ---------- Supabase sign-up / sign-in ----------
-      async function upsertProfileForUser(supabaseUser, displayName = null) {
-        try {
-          // profiles table should reference auth.users id
-          const payload = {
-            id: supabaseUser.id,
-            username: displayName || supabaseUser.email?.split('@')[0] || supabaseUser.id,
-            updated_at: new Date().toISOString()
-          };
-          await supabase.from('profiles').upsert(payload, { returning: 'representation' });
-        } catch (err) {
-          console.error('profile upsert error', err);
-        }
+    document.getElementById('supabaseLoginBtn').addEventListener('click', async () => {
+      if (!supabase) { showMessage('Supabase client not initialized', true); return; }
+      const email = document.getElementById('supabase-email').value.trim();
+      const password = document.getElementById('supabase-password').value;
+      if (!email || !password) { showMessage('Supabase: email and password required', true); return; }
+      showMessage('Signing in...');
+      const { user, session, error } = await supabase.auth.signIn({ email, password });
+      if (error) { showMessage('Sign-in error: ' + error.message, true); return; }
+      showMessage('Signed in with Supabase');
+      if (user) {
+        await upsertProfileForUser(user);
+        setCurrentUser({ provider: 'supabase', id: user.id, email: user.email });
+        document.getElementById('signinForm').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
       }
+    });
 
-      document.getElementById('supabaseSignupBtn').addEventListener('click', async () => {
-        const email = document.getElementById('supabase-email').value.trim();
-        const password = document.getElementById('supabase-password').value;
-        if (!email || !password) { showMessage('Supabase: email and password required', true); return; }
-        showMessage('Signing up...');
-        const { user, session, error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-          showMessage('Sign-up error: ' + error.message, true);
-          return;
-        }
-        showMessage('Sign-up initiated. Please check your email if confirmation is required.');
-        if (user) {
-          await upsertProfileForUser(user);
-          setCurrentUser({ provider: 'supabase', id: user.id, email: user.email });
-        }
-      });
-
-      document.getElementById('supabaseLoginBtn').addEventListener('click', async () => {
-        const email = document.getElementById('supabase-email').value.trim();
-        const password = document.getElementById('supabase-password').value;
-        if (!email || !password) { showMessage('Supabase: email and password required', true); return; }
-        showMessage('Signing in...');
-        const { user, session, error } = await supabase.auth.signIn({ email, password });
-        if (error) {
-          showMessage('Sign-in error: ' + error.message, true);
-          return;
-        }
-        showMessage('Signed in with Supabase');
-        if (user) {
-          await upsertProfileForUser(user);
-          setCurrentUser({ provider: 'supabase', id: user.id, email: user.email });
-        }
-      });
-
-      // Listen for auth state changes (optional, keeps UI in sync)
+    if (supabase && supabase.auth && supabase.auth.onAuthStateChange) {
       supabase.auth.onAuthStateChange((event, session) => {
         if (session && session.user) {
           setCurrentUser({ provider: 'supabase', id: session.user.id, email: session.user.email });
         }
       });
+    }
 
-      // Quick load of current user (if any)
-      (function loadInitialUser() {
+    // Restore a local saved user (if any)
+    (function() {
+      try {
         const saved = localStorage.getItem('ufm_current_user');
         if (saved) {
-          try {
-            setCurrentUser(JSON.parse(saved));
-            showMessage('Restored previous session');
-          } catch (e) {}
+          setCurrentUser(JSON.parse(saved));
+          // optionally auto-show home
         }
-      })();
-
-      // NOTE: This is intentionally minimal to keep things beginner-friendly.
-      // For production, never store client-side passwords in localStorage and use secure hashing + server validation.
-    </script>
+      } catch (e) {}
+    })();
+  </script>
 </body>
 </html>
