@@ -126,6 +126,14 @@
                     <label for="pomodoroDurationInput">Duration (min):</label>
                     <input type="number" id="pomodoroDurationInput" value="60" min="1" max="180">
                 </div>
+            <div id="pdfView" class="page-view" style="display: none; flex-direction: row; align-items: stretch; justify-content: center; gap: 10px; padding: 10px;">
+              <div id="adobe-dc-view" style="height: 100%; flex-grow: 1;"></div>
+              <div id="pomodoroTimerSmall" style="width: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-medium); padding: 10px; border-radius: 8px;">
+                <h3 style="color: var(--secondary);">Focus Time</h3>
+                <div id="pomodoroTimerSmallDisplay" style="font-size: 48px; font-family: 'Press Start 2P', cursive;">60:00</div>
+                <button id="exitPdfViewBtn" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a; margin-top: 20px;"><i class="fas fa-times"></i> EXIT</button>
+             </div>
+            </div>
                 <!-- End Custom Duration Input -->
                 <div id="pomodoroTimer">60:00</div>
                 <div id="pomodoroStatus">Ready</div>
@@ -133,6 +141,7 @@
                     <button id="pomodoroStartBtn"><i class="fas fa-play"></i> START</button>
                     <button id="pomodoroResetBtn"><i class="fas fa-redo"></i> RESET</button>
                     <button id="pomodoroCloseBtn"><i class="fas fa-times"></i> CLOSE</button>
+                    <button id="pomodoroWithPdfBtn"><i class="fas fa-book-open"></i> START WITH PDF</button>
                 </div>
             </div>
         </div>
@@ -149,6 +158,7 @@
     <script defer src="/v2/app.js"></script>
 </body>
 </html>
+
 
 
 
