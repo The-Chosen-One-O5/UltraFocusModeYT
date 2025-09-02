@@ -989,11 +989,24 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 if (pomodoroResetBtn) pomodoroResetBtn.disabled = true;
                 if (pomodoroOverlay) pomodoroOverlay.style.display = "flex";
             }
+            function showPdfView() {
+              showView('pdfView');
+              document.getElementById('pomodoroTimerSmallDisplay').textContent = `${currentPomodoroDurationSetting.toString().padStart(2, "0")}:00`;
 
-            function startPomodoro() {
+              const adobeDCView = new AdobeDC.View({clientId: "c2a3e0ee00ef42428971dfb99bc6d6af", divId: "adobe-dc-view"});
+              adobeDCView.previewFile({
+                 content:{ location:
+                     { url: "https://acrobatservices.adobe.com/view-sdk-demo/PDFs/Bodea%20Brochure.pdf"}},
+                 metaData:{fileName: "Bodea Brochure.pdf"}
+              },
+              {
+                 embedMode: "SIZED_CONTAINER"
+              });
+            }
+            function startPomodoro(isPdfMode = false) {
                  if (isPomodoroActive || !pomodoroDurationInput) return;
 
-                 // Get and validate custom duration
+     // Get and validate custom duration
                  const durationMinutes = parseInt(pomodoroDurationInput.value, 10);
                  if (isNaN(durationMinutes) || durationMinutes < 1 || durationMinutes > 180) {
                      showConfirmation("Invalid Time", "Set duration between 1 and 180 minutes.", false);
@@ -1007,20 +1020,24 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                  currentSessionFocusTime = 0; // Reset session focus time tracker
                  updateStreak(); // Check streak and potentially log previous session data
 
-                 if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing...";
-                 if (pomodoroStartBtn) pomodoroStartBtn.disabled = true;
-                 if (pomodoroResetBtn) pomodoroResetBtn.disabled = false;
-                 if (pomodoroDurationInput) pomodoroDurationInput.disabled = true; // Disable input while running
+                 if (isPdfMode) {
+                     showPdfView();
+                 } else {
+                     if (pomodoroStatusEl) pomodoroStatusEl.textContent = "Focusing...";
+                     if (pomodoroStartBtn) pomodoroStartBtn.disabled = true;
+                     if (pomodoroResetBtn) pomodoroResetBtn.disabled = false;
+                     if (pomodoroDurationInput) pomodoroDurationInput.disabled = true; // Disable input while running
+                     requestFullscreen(document.documentElement); // Enter fullscreen
+                 }
 
-                 requestFullscreen(document.documentElement); // Enter fullscreen
 
-                 updatePomodoroDisplay(); // Initial display update
+                 updatePomodoroDisplay(isPdfMode); // Initial display update
 
                  pomodoroInterval = setInterval(() => {
                      pomodoroTimeRemaining--;
                      currentSessionFocusTime++; // Increment focus time for this session
                      totalFocusTime++; // Increment global total focus time
-                     updatePomodoroDisplay(); // Update visual timer (handles color/shake)
+                     updatePomodoroDisplay(isPdfMode); // Update visual timer (handles color/shake)
 
                      if (pomodoroTimeRemaining % 60 === 0 && pomodoroTimeRemaining > 0) {
                          const earned = applyPowerUps(1);
@@ -1074,23 +1091,24 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                  }
              }
 
-            function updatePomodoroDisplay() {
-                 if (!pomodoroTimerEl) return;
-                 const minutes = Math.floor(pomodoroTimeRemaining / 60);
-                 const seconds = pomodoroTimeRemaining % 60;
-                 pomodoroTimerEl.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+             function updatePomodoroDisplay(isPdfMode = false) {
+                const timerEl = isPdfMode ? document.getElementById('pomodoroTimerSmallDisplay') : pomodoroTimerEl;
+                if (!timerEl) return;
+                const minutes = Math.floor(pomodoroTimeRemaining / 60);
+                const seconds = pomodoroTimeRemaining % 60;
+                timerEl.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
-                 // Update timer styles based on remaining time
-                 if (pomodoroTimeRemaining < 10 && pomodoroTimeRemaining >= 0) { // Only shake when >= 0
-                     pomodoroTimerEl.classList.add('timer-shake');
-                     pomodoroTimerEl.classList.add('timer-warning'); // Also keep red
-                 } else if (pomodoroTimeRemaining < 60 && pomodoroTimeRemaining >= 0) { // Only warn when >= 0
-                     pomodoroTimerEl.classList.add('timer-warning');
-                     pomodoroTimerEl.classList.remove('timer-shake');
-                 } else {
-                     pomodoroTimerEl.classList.remove('timer-warning', 'timer-shake');
-                 }
-             }
+                // Update timer styles based on remaining time
+                if (pomodoroTimeRemaining < 10 && pomodoroTimeRemaining >= 0) { // Only shake when >= 0
+                    timerEl.classList.add('timer-shake');
+                    timerEl.classList.add('timer-warning'); // Also keep red
+                } else if (pomodoroTimeRemaining < 60 && pomodoroTimeRemaining >= 0) { // Only warn when >= 0
+                    timerEl.classList.add('timer-warning');
+                    timerEl.classList.remove('timer-shake');
+                } else {
+                    timerEl.classList.remove('timer-warning', 'timer-shake');
+                }
+            }
 
             function completePomodoroSession() {
                 clearInterval(pomodoroInterval);
@@ -2320,9 +2338,14 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 document.getElementById('openMysteryBox')?.addEventListener('click', openMysteryBox); document.getElementById('closeMysteryBoxBtn')?.addEventListener('click', closeMysteryBoxPopup);
                 document.getElementById('closeAudioStore')?.addEventListener('click', closeAudioTracksStore);
                 // Pomodoro Listeners
-                document.getElementById('pomodoroStartBtn')?.addEventListener('click', startPomodoro);
+                document.getElementById('pomodoroStartBtn')?.addEventListener('click', () => startPomodoro(false));
                 document.getElementById('pomodoroResetBtn')?.addEventListener('click', resetPomodoro);
                 document.getElementById('pomodoroCloseBtn')?.addEventListener('click', closePomodoroOverlay);
+                document.getElementById('pomodoroWithPdfBtn')?.addEventListener('click', () => startPomodoro(true));
+                document.getElementById('exitPdfViewBtn')?.addEventListener('click', () => {
+                    showView('homePage');
+                    resetPomodoro();
+                });
                  // Update duration setting when input changes
                  if(pomodoroDurationInput) {
                     pomodoroDurationInput.addEventListener('change', () => {
