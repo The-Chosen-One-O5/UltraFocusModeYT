@@ -5,32 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
     <title>Ultra Focus Mode</title>
-    <!-- Favicon Links -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
-    <!-- End Favicon Links -->
-    <!-- Include Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <!-- App stylesheet (v2) -->
-    <link rel="stylesheet" href="/v2/styles.css">
-    <!-- Canvas Confetti Library -->
-    <!-- Supabase + Firebase ESM modules -->
-</head>
+    <link rel="stylesheet" href="styles.css">
+    </head>
 <body>
-    <!-- Main Game Container -->
     <div class="game-container">
-        <!-- Top Navigation Bar -->
         <nav id="topNavBar">
-             <!-- Logo Image -->
-            <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
-                <img src="logo.png" alt="Quest for Focus Logo"> <!-- Ensure logo.png exists -->
-            </a>
+             <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
+                <img src="logo.png" alt="Quest for Focus Logo"> </a>
             <div id="navClockContainer"> <span id="navClockTime">00:00:00</span> <span id="navClockPeriod">AM</span> </div>
             <div id="navButtons">
                 <span id="navStreakDisplay"><i class="fas fa-fire"></i> 0 days focus</span>
@@ -41,7 +30,6 @@
                 <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile"> <i class="fas fa-user-circle"></i> </button>
             </div>
         </nav>
-        <!-- == Page Views == -->
         <div id="landingPage" class="page-view" style="display: flex;"> <div id="landingPageContainer"> <div class="title">QUEST FOR <span>FOCUS</span></div> <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div> <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button> <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button> <div id="features"> <div class="feature"> <i class="fas fa-ban"></i> <p>Ad-Free Zone<br>Focus!</p> </div> <div class="feature"> <i class="fas fa-moon"></i> <p>Dark Mode<br>Easy on eyes</p> </div> <div class="feature"> <i class="fas fa-gamepad"></i> <p>Gamified<br>Level up!</p> </div> </div> </div> </div>
         <div id="signinForm" class="page-view"> <div id="signinFormContainer"> <div class="title">ENTER <span>REALM</span></div> <div class="subtitle">Log in or create hero profile.</div> <input type="email" id="username" placeholder="Email" required /> <input type="password" id="password" placeholder="Secret Code" required /> <button data-action="sign-in" class="primary-btn">SIGN IN</button> <p style="color: var(--text-dim); margin-top: 15px;">New? <button data-action="create-account" class="accent-btn" style="margin-left: 5px; background: var(--secondary); box-shadow: 3px 3px 0 var(--primary-dark);">CREATE</button> </p> <div style="margin-top:15px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
   <button data-action="email-sign-up" class="primary-btn">CREATE ACCOUNT</button>
@@ -52,14 +40,50 @@
             <div id="homePageContent">
                 <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
                 <div id="dateTimeDisplay">Loading...</div>
-                <!-- Added Upcoming Task Display -->
                 <div id="upcomingTaskDisplay" class="none"><i class="fas fa-star"></i> No urgent quests!</div>
-                <!-- End Upcoming Task Display -->
                 <div id="focusStatus">Ready to focus?</div>
                 <div id="motivationQuote">"Loading motivation..."</div>
             </div>
         </div>
-        <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playlist</option> </select> <div id="urlInputs"> <div class="url-container"> <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Playlist)" required /> </div> </div> <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button> <div id="playlistManagement"> <input type="text" id="playlistName" placeholder="Save As..." /> <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button> <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button> </div> <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button> </div> <div id="playerContainer"> <div id="player"></div> </div> <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button> <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div> <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div> </div>
+        <div id="youtubeLecturePage" class="page-view">
+            <div id="youtubeInputContainer">
+                <div class="subtitle">Prepare YouTube Focus Session (Press 'P' for Telegram)</div>
+                <select id="playlistSelect"> <option value="">Load Playlist</option> </select>
+                <div id="urlInputs">
+                    <div class="url-container">
+                        <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Playlist)" required />
+                    </div>
+                </div>
+                <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button>
+                <div id="playlistManagement">
+                    <input type="text" id="playlistName" placeholder="Save As..." />
+                    <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button>
+                    <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+                <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button>
+            </div>
+            <div id="telegramInputContainer" style="display: none;">
+                <div class="subtitle">Prepare Telegram Focus Session (Press 'P' for YouTube)</div>
+                <select id="telegramPlaylistSelect"> <option value="">Load Telegram List</option> </select>
+                <div id="telegramUrlInputs">
+                    <div class="url-container">
+                        <input type="text" class="telegram-url" placeholder="Telegram Post URL" required />
+                    </div>
+                </div>
+                <button data-action="add-telegram-url"><i class="fas fa-plus"></i> Add URL</button>
+                <div id="telegramPlaylistManagement">
+                    <input type="text" id="telegramPlaylistName" placeholder="Save As..." />
+                    <button data-action="save-telegram-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button>
+                    <button data-action="remove-telegram-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+                <button data-action="start-telegram-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button>
+            </div>
+            <div id="playerContainer"> <div id="player"></div> </div>
+            <div id="telegramEmbedContainer" style="display: none; width: 100%; max-width: 600px; margin: 0 auto;"></div>
+            <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button>
+            <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div>
+            <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div>
+        </div>
         <div id="profile" class="page-view">
             <div id="profileContainer">
                 <div id="profileIcon"><i class="fas fa-user-shield"></i></div>
@@ -67,7 +91,6 @@
                 <div class="profile-stat">Level: <span id="profileLevel" class="level">Mortal</span></div>
                 <div class="profile-stat">XP: <span id="profileXP" class="xp">0</span></div>
                 <div class="profile-stat">Streak: <span id="profileStreak" class="streak">0 days</span></div>
-                <!-- Added Settings Section -->
                 <div id="profileSettings">
                     <h4><i class="fas fa-cog"></i> Settings</h4>
                     <div class="setting-item">
@@ -76,12 +99,10 @@
                     </div>
                     <small style="color: var(--text-dim); font-size: 12px; display: block; text-align: center; margin-top: -5px;">Requires browser permission.</small>
                 </div>
-                <!-- End Settings Section -->
                 <button data-action="show-view" data-view="homePage" style="margin-top: 20px; background: var(--bg-light); font-size: 12px;"> <i class="fas fa-arrow-left"></i> Home</button>
             </div>
         </div>
-        <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <span class="label"><i class="fas fa-stopwatch"></i> Focus Time</span> <span id="statsTotalFocusTime" class="value">0m</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-eye-slash"></i> Distractions</span> <span id="statsTotalDistractions" class="value distractions">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-film"></i> Videos Done</span> <span id="statsTotalVideosWatched" class="value videos">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-fire"></i> Current Streak</span> <span id="statsCurrentStreak" class="value streak">0 days</span> </div> </div> <div id="focusCalendar"> <div id="calendarHeader"> <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button> <h4 id="calendarMonthYear"><i class="fas fa-calendar-alt"></i> Calendar</h4> <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button> </div> <div id="calendarGrid"> <!-- Calendar grid will be generated here --> </div> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
-        <!-- PYQ Embedded View -->
+        <div id="focusStats" class="page-view"> <div id="focusStatsContainer"> <h3><i class="fas fa-chart-line"></i> Hero <span>Stats</span></h3> <div id="statsDisplay"> <div class="stat-item"> <span class="label"><i class="fas fa-stopwatch"></i> Focus Time</span> <span id="statsTotalFocusTime" class="value">0m</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-eye-slash"></i> Distractions</span> <span id="statsTotalDistractions" class="value distractions">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-film"></i> Videos Done</span> <span id="statsTotalVideosWatched" class="value videos">0</span> </div> <div class="stat-item"> <span class="label"><i class="fas fa-fire"></i> Current Streak</span> <span id="statsCurrentStreak" class="value streak">0 days</span> </div> </div> <div id="focusCalendar"> <div id="calendarHeader"> <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button> <h4 id="calendarMonthYear"><i class="fas fa-calendar-alt"></i> Calendar</h4> <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button> </div> <div id="calendarGrid"> </div> </div> <button data-action="show-view" data-view="homePage" style="margin-top: 30px; background: var(--bg-light); font-size: 12px; display: block; margin-left: auto; margin-right: auto;"> <i class="fas fa-arrow-left"></i> Home</button> </div> </div>
         <div id="pyqEmbedPage" class="page-view" style="display:none;">
             <div id="pyqToolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <button id="pyqBackBtn" class="accent-btn" style="background: var(--bg-light);"><i class="fas fa-arrow-left"></i> Back</button>
@@ -99,9 +120,8 @@
                 </div>
             </div>
         </div>
-        <!-- == Shared Components == -->
         <div class="sidebar-trigger" title="Open Menu">MENU</div>
-        <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button> <button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do<span id="todoBadge" class="todo-badge">0</span></button> <!-- Badge added here --> </div> <div class="sidebar-section"> <h3>Progress</h3> <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button> <button id="pyqOpenBtn"><i class="fas fa-dumbbell"></i> PYQs</button> </div> <div class="sidebar-section"> <h3>Self Study</h3> <button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button> </div> <div class="sidebar-section"> <h3>Shops & Realms</h3> <button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button> <button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button> <button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button> <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a> <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a> <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a> </div> <div class="sidebar-section"> <h3>Account</h3> <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button> <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button> </div> </div>
+        <div class="game-sidebar"> <div class="sidebar-section"> <h3>Navigation</h3> <button data-action="show-view" data-view="homePage"><i class="fas fa-home"></i> Home</button> <button data-action="show-view" data-view="youtubeLecturePage"><i class="fab fa-youtube"></i> Lectures</button> <button data-action="toggle-todo"><i class="fas fa-list-check"></i> To-Do<span id="todoBadge" class="todo-badge">0</span></button> </div> <div class="sidebar-section"> <h3>Progress</h3> <button data-action="show-view" data-view="focusStats"><i class="fas fa-chart-line"></i> Stats</button> <button id="pyqOpenBtn"><i class="fas fa-dumbbell"></i> PYQs</button> </div> <div class="sidebar-section"> <h3>Self Study</h3> <button id="quietPomodoroBtn"><i class="fas fa-brain"></i> Pomodoro</button> </div> <div class="sidebar-section"> <h3>Shops & Realms</h3> <button id="streakShieldBtn"><i class="fas fa-shield-alt"></i> Shield</button> <button id="doublePointsBtn"><i class="fas fa-bolt"></i> Double XP</button> <button id="audioStoreBtn"><i class="fas fa-music"></i> Audio</button> <a href="https://forestquest.vercel.app/" target="_blank" rel="noreferrer"><i class="fas fa-tree"></i> Forest</a> <a href="https://focuswithpomodoro.netlify.app/" target="_blank" rel="noreferrer"><i class="fas fa-clock"></i> Pomodoro Realm</a> <a href="https://the-chosen-one-o5.github.io/Daily-Schedule/" target="_blank" rel="noreferrer"><i class="fas fa-calendar-alt"></i> Planner</a> </div> <div class="sidebar-section"> <h3>Account</h3> <button data-action="show-view" data-view="profile"><i class="fas fa-user"></i> Profile</button> <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button> </div> </div>
         <div id="timerDisplay"> <span id="timerText">Focus: 00:00</span> <div id="progressBar"> <div id="progressFill"></div> </div> </div>
         <div id="pointsDisplay"><span style="color: var(--secondary);">⭐</span> XP: 0</div>
         <div id="achievementLevel">Mortal</div>
@@ -121,7 +141,6 @@
             <div id="pomodoroContainer">
                 <h3><i class="fas fa-brain"></i> POMODORO</h3>
                 <p>Focus deeply. Earn 1 XP per minute.</p>
-                <!-- Custom Duration Input -->
                 <div id="pomodoroDurationSetting">
                     <label for="pomodoroDurationInput">Duration (min):</label>
                     <input type="number" id="pomodoroDurationInput" value="60" min="1" max="180">
@@ -134,7 +153,6 @@
                 <button id="exitPdfViewBtn" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a; margin-top: 20px;"><i class="fas fa-times"></i> EXIT</button>
              </div>
             </div>
-                <!-- End Custom Duration Input -->
                 <div id="pomodoroTimer">60:00</div>
                 <div id="pomodoroStatus">Ready</div>
                 <div id="pomodoroControls">
@@ -145,21 +163,12 @@
                 </div>
             </div>
         </div>
-        <!-- Audio Elements -->
-        <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio> <!-- Added loop attribute -->
-        <audio id="lofiAudio" preload="metadata" loop></audio>
+        <audio id="focusAudio" preload="metadata" src="https://the-chosen-one-o5.github.io/UltraFocusModeYT/focus.mp3" loop></audio> <audio id="lofiAudio" preload="metadata" loop></audio>
         <audio id="pomodoroCompleteAudio" preload="none" src="https://www.dropbox.com/scl/fi/ihrcv1s3o4m4abhn6oa5z/level-up-4-243762.mp3?rlkey=qkaf4zrhipxtxpu51an0do45r&st=boipxpb5&dl=1"></audio>
         <audio id="levelUpAudio" preload="none" src="https://www.dropbox.com/scl/fi/ykeun00q1t03kzpeow819/music-to-make-your-brain-shut-up-a-dark-academia-playlist-4.mp3?rlkey=3hnw2vk2ck0yjnr9oekk2xqld&st=hh77z1k0&dl=1"></audio>
         <audio id="achievementAudio" preload="none" src="https://www.dropbox.com/scl/fi/pe09xx1c680gzymsa2gdf/NEOTIC-Calm-Your-Anxiety.mp3?rlkey=2hp7su9j541mpcdkw4ccavx58&st=yles17dd&dl=1"></audio>
-    </div> <!-- End Game Container -->
-    <!-- Firebase wiring (inline) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    </div> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://acrobatservices.adobe.com/view-sdk/viewer.js"></script>
-    <script defer src="/v2/app.js"></script>
+    <script defer src="app.js"></script>
 </body>
 </html>
-
-
-
-
-
