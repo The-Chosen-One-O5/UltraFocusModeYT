@@ -1194,6 +1194,9 @@ window.__sb = {
         pomodoroTimerEl = document.getElementById('pomodoroTimer'); pomodoroDurationInput = document.getElementById('pomodoroDurationInput'); pomodoroStatusEl = document.getElementById('pomodoroStatus'); pomodoroStartBtn = document.getElementById('pomodoroStartBtn'); pomodoroResetBtn = document.getElementById('pomodoroResetBtn'); pomodoroCloseBtn = document.getElementById('pomodoroCloseBtn'); pomodoroWithPdfBtn = document.getElementById('pomodoroWithPdfBtn');
         todoBadgeEl = document.getElementById('todoBadge'); browserNotificationSettingCheckbox = document.getElementById('browserNotificationSetting'); upcomingTaskDisplayEl = document.getElementById('upcomingTaskDisplay');
 
+        // Explicitly hide popups on start, in case of CSS errors
+        if (todoListPopup) todoListPopup.style.display = 'none';
+
         initAudio();
         setupEventListeners();
         setInterval(updateClock, 1000);
@@ -1221,3 +1224,4 @@ window.__sb = {
     });
 
 })();
+
