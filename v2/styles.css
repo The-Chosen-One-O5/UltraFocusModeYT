@@ -562,6 +562,27 @@
          #playlistManagement button { margin: 0; padding: 10px 15px; font-size: 12px; pointer-events: auto; }
          #youtubeInputContainer button[data-action="start-playback"] { margin-top: 25px; padding: 12px 30px; display: block; margin-left: auto; margin-right: auto; pointer-events: auto; }
 
+        /* Focus Buttons Container Styles */
+        #focusButtonsContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            pointer-events: auto;
+            min-height: 60px; /* Ensure consistent height */
+        }
+        
+        #focusButtonsContainer button {
+            flex-shrink: 0; /* Prevent buttons from shrinking */
+            min-width: 140px; /* Ensure consistent button width */
+        }
+        
+        #strictFocusBtn {
+            /* Ensure strict focus button stays visible */
+            display: inline-block !important;
+        }
 
         #playerContainer {
             width: 100%; max-width: 1200px; aspect-ratio: 16 / 9; position: relative;
