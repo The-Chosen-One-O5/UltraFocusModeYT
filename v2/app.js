@@ -601,6 +601,7 @@
             const YOUTUBE_API_KEY = 'AIzaSyA16li1kPmHxCkcIw87ThOHmpBB1fuBPFY'; // <-- PASTE YOUR KEY HERE
 
             // --- State Variables ---
+            let isStrictMode = false;
             let currentView = 'landingPage';
             let player; let videoIds = []; let currentVideoIndex = 0;
             let isFocusModeActive = false; let countdownInterval;
@@ -717,7 +718,11 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 }
 
                 // View Specific Updates
-                if (viewId === 'homePage') { updateHomePageInfo(); displayRandomMotivation(); updateUpcomingTaskDisplay(); /* Update task on home view */ }
+                if (viewId === 'homePage') {
+                    updateHomePageInfo();
+                    displayRandomMotivation();
+                    updateUpcomingTaskDisplay(); /* Update task on home view */
+                }
                 else if (viewId === 'profile') { displayProfileInfo(); }
                 else if (viewId === 'focusStats') { displayFocusStatsInfo(); showCalendar(); /* Show calendar when view loads */ }
 
@@ -1580,8 +1585,9 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
              }
 
             // --- UPDATED: prepareAndStartPlayback to handle API calls ---
-            async function prepareAndStartPlayback() { // Make async to handle API calls
+            async function prepareAndStartPlayback(strictMode = false) { // Make async to handle API calls, add strictMode parameter
                 try {
+                    isStrictMode = strictMode; // Set strict mode flag
                     if (!urlInputsContainer) { console.error("URL input container missing"); return; }
                     const urlElements = urlInputsContainer.querySelectorAll(".youtube-url");
                     const urls = Array.from(urlElements).map(input => input.value.trim()).filter(url => url);
@@ -1657,6 +1663,11 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 }
             }
 
+            // --- NEW: Function to start strict playback ---
+            async function startStrictPlayback() {
+                await prepareAndStartPlayback(true);
+            }
+
 
             function loadYouTubeAPI() { return new Promise((resolve, reject) => { if (isYouTubeAPILoaded) { resolve(); return; } console.log("Loading YT API..."); const tag = document.createElement("script"); tag.src = "https://www.youtube.com/iframe_api"; tag.async = true; window.onYouTubeIframeAPIReady = () => { console.log("YT API Ready."); isYouTubeAPILoaded = true; if (typeof YT !== 'undefined' && YT.Player) { resolve(); } else { setTimeout(() => { if (typeof YT !== 'undefined' && YT.Player) { resolve(); } else { console.error("YT.Player unavailable."); reject(new Error("YT Player missing.")); } }, 500); } }; tag.onerror = (error) => { console.error("YT API load failed:", error); reject(new Error("YT API script load failed.")); }; document.head.appendChild(tag); setTimeout(() => { if (!isYouTubeAPILoaded) { console.error("YT API timeout."); reject(new Error("YT API load timeout.")); } }, 15000); }); }
             function initializeYouTubeView() { if (videoIds.length === 0) { console.warn("No video IDs"); showView('homePage'); return; } const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'flex'; currentSessionFocusTime = 0; // Reset session focus time
@@ -1664,7 +1675,49 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
             loadYouTubeAPI().then(() => { console.log("API loaded, setup player."); setupYouTubePlayer(); startTimer(focusDuration, "Focus Time"); if(timerDisplay) timerDisplay.style.display = 'block'; setupVideoSidebar(); updateFocusStatus(); }).catch((err) => { console.error("YT View Init Error:", err); showConfirmation("Player Error", "Cannot load YT player.", false); showView('youtubeLecturePage'); isFocusModeActive = false; if(controls) controls.style.display = 'none'; }); }
             function setupYouTubePlayer() { if (!isYouTubeAPILoaded || typeof YT === 'undefined' || !YT.Player) { console.error("YT API not ready."); return; } if (!playerDiv) { console.error("Player div missing."); return; } if (videoIds.length === 0) { console.warn("No video IDs."); return; } if (player && typeof player.destroy === 'function') { console.log("Destroying prev player."); player.destroy(); player = null; } console.log("Creating YT.Player:", videoIds[currentVideoIndex]); try { player = new YT.Player("player", { height: "100%", width: "100%", videoId: videoIds[currentVideoIndex], playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0, showinfo: 0, iv_load_policy: 3, fs: 1 }, events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError }, }); } catch (error) { console.error("YT.Player error:", error); showConfirmation("Player Fail", "Error creating player.", false); showView('youtubeLecturePage'); } }
             function onPlayerReady(event) { console.log("Player Ready:", videoIds[currentVideoIndex]); event.target.playVideo(); isFocusModeActive = true; highlightCurrentThumbnail(); }
-            function onPlayerStateChange(event) { console.log("Player State:", event.data); if (event.data === YT.PlayerState.ENDED) { console.log("Video ended:", videoIds[currentVideoIndex]); completedVideos.add(videoIds[currentVideoIndex]); totalVideosWatched++; const earnedPoints = applyPowerUps(50); points += earnedPoints; if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`; checkLevelUp(); saveState(); if (currentView === 'focusStats') displayFocusStatsInfo(); currentVideoIndex++; if (currentVideoIndex < videoIds.length) { console.log("Loading next:", videoIds[currentVideoIndex]); player.loadVideoById(videoIds[currentVideoIndex]); highlightCurrentThumbnail(); } else { console.log("Playlist complete."); allVideosCompleted = true; showConfirmation("Playlist Done!", "All videos watched.", false); player.stopVideo(); } } else if (event.data === YT.PlayerState.PLAYING) { console.log("Playing."); isFocusModeActive = true; highlightCurrentThumbnail(); } else if (event.data === YT.PlayerState.PAUSED) { console.log("Paused."); } }
+            function onPlayerStateChange(event) {
+                console.log("Player State:", event.data);
+                
+                // Handle strict mode - prevent pausing
+                if (isStrictMode && event.data === YT.PlayerState.PAUSED) {
+                    console.log("Strict mode: Auto-resuming paused video");
+                    setTimeout(() => {
+                        if (player && typeof player.playVideo === 'function') {
+                            player.playVideo();
+                        }
+                    }, 100); // Small delay to prevent rapid firing
+                    return;
+                }
+                
+                if (event.data === YT.PlayerState.ENDED) {
+                    console.log("Video ended:", videoIds[currentVideoIndex]);
+                    completedVideos.add(videoIds[currentVideoIndex]);
+                    totalVideosWatched++;
+                    const earnedPoints = applyPowerUps(50);
+                    points += earnedPoints;
+                    if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                    checkLevelUp();
+                    saveState();
+                    if (currentView === 'focusStats') displayFocusStatsInfo();
+                    currentVideoIndex++;
+                    if (currentVideoIndex < videoIds.length) {
+                        console.log("Loading next:", videoIds[currentVideoIndex]);
+                        player.loadVideoById(videoIds[currentVideoIndex]);
+                        highlightCurrentThumbnail();
+                    } else {
+                        console.log("Playlist complete.");
+                        allVideosCompleted = true;
+                        showConfirmation("Playlist Done!", "All videos watched.", false);
+                        player.stopVideo();
+                    }
+                } else if (event.data === YT.PlayerState.PLAYING) {
+                    console.log("Playing.");
+                    isFocusModeActive = true;
+                    highlightCurrentThumbnail();
+                } else if (event.data === YT.PlayerState.PAUSED) {
+                    console.log("Paused.");
+                }
+            }
             function onPlayerError(event) { console.error("YT Player Error:", event.data); let errorMsg = "Unknown YT error."; switch (event.data) { case 2: errorMsg = "Invalid parameter."; break; case 5: errorMsg = "HTML5 error."; break; case 100: errorMsg = "Not found."; break; case 101: case 150: errorMsg = "Embedding disallowed."; break; } showConfirmation("Video Error", `${errorMsg} Skipping. (Code: ${event.data})`, false); setTimeout(() => { currentVideoIndex++; if (currentVideoIndex < videoIds.length) { console.log("Attempt next:", videoIds[currentVideoIndex]); player.loadVideoById(videoIds[currentVideoIndex]); } else { console.log("All videos attempted."); allVideosCompleted = true; endFocusSession("Error playing videos."); } }, 2000); }
             function setupVideoSidebar() { if (!videoThumbnailList || !videoSidebar) return; videoThumbnailList.innerHTML = ''; const showSidebar = videoIds.length > 1; videoSidebar.style.display = showSidebar ? 'block' : 'none'; if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = showSidebar ? 'block' : 'none'; if (!showSidebar) { closeVideoSidebar(); return; } videoIds.forEach((id, index) => { const thumbnail = document.createElement("img"); thumbnail.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`; thumbnail.alt = `Video ${index + 1}`; thumbnail.className = "thumbnail"; thumbnail.dataset.index = index; thumbnail.title = `Play Video ${index + 1}`; thumbnail.loading = 'lazy'; // <<< LAZY LOADING ADDED
             thumbnail.onclick = () => { if (index !== currentVideoIndex) { currentVideoIndex = index; player.loadVideoById(videoIds[currentVideoIndex]); highlightCurrentThumbnail(); closeVideoSidebar(); } }; thumbnail.onerror = () => { thumbnail.alt = `Thumb unavailable`; thumbnail.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; thumbnail.style.cssText = 'border: 1px dashed var(--text-dim); height: 70px; object-fit: cover;'; }; videoThumbnailList.appendChild(thumbnail); }); highlightCurrentThumbnail(); }
@@ -2174,8 +2227,106 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
 
 
             function checkExpiredPowerups() { let stateChanged = false; const now = Date.now(); if (activePowerUps.doublePoints.active && activePowerUps.doublePoints.expiry && now > activePowerUps.doublePoints.expiry) { console.log("Double XP expired."); activePowerUps.doublePoints.active = false; activePowerUps.doublePoints.expiry = null; stateChanged = true; } if (activePowerUps.streakShield.active && activePowerUps.streakShield.expiry && now > activePowerUps.streakShield.expiry) { console.log("Shield expired."); activePowerUps.streakShield.active = false; activePowerUps.streakShield.expiry = null; activePowerUps.streakShield.used = false; stateChanged = true; } if (stateChanged) { saveState(); } }
-            function requestFullscreen(element) { try { if (element.requestFullscreen) element.requestFullscreen().catch(err => console.warn("FS Req Catch:", err.message)); else if (element.mozRequestFullScreen) element.mozRequestFullScreen(); else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen(); else if (element.msRequestFullscreen) element.msRequestFullscreen(); } catch(e){ console.warn("Fullscreen fail:", e.message)} }
-            function exitFullscreen() { try { if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) { if (document.exitFullscreen) document.exitFullscreen().catch(err => console.warn("FS Exit Catch:", err.message)); else if (document.mozCancelFullScreen) document.mozCancelFullScreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); else if (document.msExitFullscreen) document.msExitFullscreen(); } } catch(e){ console.warn("Exit fullscreen fail:", e.message)} }
+            function requestFullscreen(element) {
+                try {
+                    if (element.requestFullscreen) {
+                        element.requestFullscreen().catch(err => console.warn("FS Req Catch:", err.message));
+                    } else if (element.mozRequestFullScreen) {
+                        element.mozRequestFullScreen();
+                    } else if (element.webkitRequestFullscreen) {
+                        element.webkitRequestFullscreen();
+                    } else if (element.msRequestFullscreen) {
+                        element.msRequestFullscreen();
+                    } else {
+                        console.warn("Fullscreen API not supported");
+                    }
+                } catch(e){
+                    console.warn("Fullscreen fail:", e.message);
+                }
+            }
+            function exitFullscreen() {
+                try {
+                    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().catch(err => console.warn("FS Exit Catch:", err.message));
+                        } else if (document.mozCancelFullScreen) {
+                            document.mozCancelFullScreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        } else if (document.msExitFullscreen) {
+                            document.msExitFullscreen();
+                        }
+                    }
+                } catch(e){
+                    console.warn("Exit fullscreen fail:", e.message);
+                }
+            }
+
+            function showView(viewId) {
+                console.log("Show View:", viewId);
+                if (!document.getElementById(viewId)) { console.error(`View "${viewId}" missing!`); viewId = 'landingPage'; }
+                const protectedViews = ['homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'pyqEmbedPage'];
+                // Check Supabase session for auth
+                const getUser = () => window.__sbUser || null;
+                const u = getUser();
+                if (u && !isSignedIn) { isSignedIn = true; currentUser = u.id; }
+                if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denied to "${viewId}".`); showView('signinForm'); return; }
+                document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
+                const targetView = document.getElementById(viewId); targetView.style.display = 'flex'; currentView = viewId;
+                const showNav = isSignedIn && (viewId !== 'landingPage' && viewId !== 'signinForm');
+                const showShared = isSignedIn && (viewId === 'homePage' || viewId === 'youtubeLecturePage' || viewId === 'pyqEmbedPage');
+                if(topNavBar) topNavBar.style.display = showNav ? 'flex' : 'none';
+                if(pointsDisplay) pointsDisplay.style.display = showNav ? 'block' : 'none';
+                if(achievementLevelDiv) achievementLevelDiv.style.display = showNav ? 'block' : 'none';
+                if(lofiPlayer) lofiPlayer.style.display = showShared ? 'block' : 'none';
+                if(fireBox) fireBox.style.display = showShared ? 'flex' : 'none';
+                // Hide or show sidebar trigger/sidebar via CSS class on body
+                const bodyEl = document.body;
+                if (bodyEl) {
+                    if (!isSignedIn || viewId === 'landingPage' || viewId === 'signinForm') {
+                        bodyEl.classList.add('hide-menu');
+                    } else {
+                        bodyEl.classList.remove('hide-menu');
+                    }
+                }
+
+                // YT Page UI Logic - FIXED: Always show strict focus button
+                if (viewId === 'youtubeLecturePage') {
+                    const showInput = !isFocusModeActive; const showPlayerArea = isFocusModeActive; const showMultiVideoUI = showPlayerArea && videoIds.length > 1;
+                    if(youtubeInputContainer) youtubeInputContainer.style.display = showInput ? 'block' : 'none';
+                    if(playerContainer) playerContainer.style.display = showPlayerArea ? 'block' : 'none';
+                    if(videoSidebar) videoSidebar.style.display = showMultiVideoUI ? 'block' : 'none';
+                    if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = showMultiVideoUI ? 'block' : 'none';
+                    if(timerDisplay) timerDisplay.style.display = showPlayerArea ? 'block' : 'none';
+                    const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = showPlayerArea ? 'flex' : 'none';
+                    
+                    // FIXED: Always ensure strict focus button is visible when input is shown
+                    const strictBtn = document.getElementById('strictFocusBtn');
+                    if (showInput && strictBtn) {
+                        strictBtn.style.display = 'inline-block';
+                        strictBtn.disabled = false;
+                    }
+                    
+                    if (showInput) { if (isSignedIn) { populatePlaylistSelect(); restoreUrlInputs(); } }
+                    if (showPlayerArea) { highlightCurrentThumbnail(); } else { closeVideoSidebar(); }
+                } else if (viewId === 'pyqEmbedPage') {
+                    // nothing extra for now
+                } else {
+                    if(timerDisplay) timerDisplay.style.display = 'none'; if(videoSidebar) videoSidebar.style.display = 'none'; if(videoSidebarToggleBtn) videoSidebarToggleBtn.style.display = 'none'; const controls = document.getElementById('youtubeLecturePageControls'); if(controls) controls.style.display = 'none'; if(playerContainer) playerContainer.style.display = 'none'; closeVideoSidebar();
+                    if (player && typeof player.pauseVideo === 'function' && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) { player.pauseVideo(); console.log("Paused video: view change."); }
+                }
+
+                // View Specific Updates
+                if (viewId === 'homePage') {
+                    updateHomePageInfo();
+                    displayRandomMotivation();
+                    updateUpcomingTaskDisplay(); /* Update task on home view */
+                }
+                else if (viewId === 'profile') { displayProfileInfo(); }
+                else if (viewId === 'focusStats') { displayFocusStatsInfo(); showCalendar(); /* Show calendar when view loads */ }
+
+                closeSidebar(); saveState();
+            }
             function showConfirmation(title, message, isCancellable = false, onConfirm = () => {}, onCancel = () => {}, dialogClass = '') { const dialog = document.getElementById("confirmationDialog"); const dialogBox = dialog?.querySelector(".dialog-box"); const titleEl = dialog?.querySelector("h3"); const messageEl = dialog?.querySelector("p"); const confirmBtn = document.getElementById("confirmBtn"); const cancelBtn = document.getElementById("cancelBtn"); if (!dialog || !dialogBox || !titleEl || !messageEl || !confirmBtn || !cancelBtn) { console.error("Confirm dialog missing elements."); return; } dialogBox.className = 'dialog-box'; if (dialogClass) { dialogBox.classList.add(dialogClass); } titleEl.innerHTML = `<i class="fas ${isCancellable ? 'fa-question-circle' : (dialogClass === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle')}"></i> ${title}`; messageEl.textContent = message; cancelBtn.style.display = isCancellable ? "inline-block" : "none"; const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); const newCancelBtn = cancelBtn.cloneNode(true); cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn); newConfirmBtn.textContent = isCancellable ? "YES" : "OK"; newConfirmBtn.onclick = () => { dialog.style.display = 'none'; onConfirm(); }; if (isCancellable) { newCancelBtn.onclick = () => { dialog.style.display = 'none'; onCancel(); }; } dialog.style.display = "flex"; }
 
              // --- Calendar Functions ---
@@ -2320,6 +2471,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 document.querySelector('#youtubeLecturePage button[data-action="save-playlist"]')?.addEventListener('click', savePlaylist);
                 document.querySelector('#youtubeLecturePage button[data-action="remove-playlist"]')?.addEventListener('click', removePlaylist);
                 document.querySelector('#youtubeLecturePage button[data-action="start-playback"]')?.addEventListener('click', prepareAndStartPlayback); // THIS NOW CALLS THE ASYNC VERSION
+                document.querySelector('#youtubeLecturePage button[data-action="start-strict-playback"]')?.addEventListener('click', startStrictPlayback); // Add strict mode listener
                 document.getElementById('restartBtn')?.addEventListener('click', requestExitSession);
                 if(videoSidebarToggleBtn) videoSidebarToggleBtn.addEventListener('click', toggleVideoSidebar);
                 document.addEventListener('keydown', (e) => { if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return; if (currentView === 'youtubeLecturePage' && (e.key === 't' || e.key === 'T')) { toggleVideoSidebar(); } });
