@@ -18,7 +18,7 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <!-- App stylesheet (v2) -->
-    <link rel="stylesheet" href="/v2/styles.css">
+    <link rel="stylesheet" href="styles.css">
     <!-- Canvas Confetti Library -->
     <!-- Supabase + Firebase ESM modules -->
 </head>
@@ -59,7 +59,7 @@
                 <div id="motivationQuote">"Loading motivation..."</div>
             </div>
         </div>
-        <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playlist</option> </select> <div id="urlInputs"> <div class="url-container"> <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Playlist)" required /> </div> </div> <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button> <div id="playlistManagement"> <input type="text" id="playlistName" placeholder="Save As..." /> <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button> <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button> </div> <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button> </div> <div id="playerContainer"> <div id="player"></div> </div> <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button> <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div> <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div> </div>
+        <div id="youtubeLecturePage" class="page-view"> <div id="youtubeInputContainer"> <div class="subtitle">Prepare Focus Session</div> <select id="playlistSelect"> <option value="">Load Playlist</option> </select> <div id="urlInputs"> <div class="url-container"> <input type="text" class="youtube-url" placeholder="YouTube URL (Video or Playlist)" required /> </div> </div> <button data-action="add-url"><i class="fas fa-plus"></i> Add URL</button> <div id="playlistManagement"> <input type="text" id="playlistName" placeholder="Save As..." /> <button data-action="save-playlist" class="primary-btn"><i class="fas fa-save"></i> Save</button> <button data-action="remove-playlist" class="accent-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-trash"></i> Delete</button> </div> <div id="focusButtonsContainer" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 25px; flex-wrap: wrap;"> <button data-action="start-playback" class="primary-btn"><i class="fas fa-play-circle"></i> BEGIN FOCUS</button> <button id="strictFocusBtn" data-action="start-strict-playback" class="primary-btn" style="background: var(--danger); box-shadow: 3px 3px 0 #a71d2a;"><i class="fas fa-lock"></i> STRICT MODE</button> </div> </div> <div id="playerContainer"> <div id="player"></div> </div> <button id="videoSidebarToggleBtn" title="Toggle List (T)"> <i class="fas fa-list"></i> </button> <div id="youtubeLecturePageControls"> <button id="restartBtn" title="Exit Session"><i class="fas fa-times-circle"></i> Exit</button> </div> <div id="videoSidebar"> <h3><i class="fas fa-video"></i> Playlist</h3> <div id="videoThumbnailList"></div> </div> </div>
         <div id="profile" class="page-view">
             <div id="profileContainer">
                 <div id="profileIcon"><i class="fas fa-user-shield"></i></div>
@@ -155,7 +155,7 @@
     <!-- Firebase wiring (inline) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://acrobatservices.adobe.com/view-sdk/viewer.js"></script>
-    <script defer src="/v2/app.js"></script>
+    <script defer src="app.js"></script>
 </body>
 </html>
 
