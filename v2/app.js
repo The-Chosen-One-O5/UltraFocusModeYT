@@ -1823,65 +1823,116 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
             function closeSidebar() { if (!gameSidebar || !sidebarTrigger || !isSidebarOpen) return; isSidebarOpen = false; gameSidebar.classList.remove('open'); sidebarTrigger.style.left = '0px'; }
             function showSignInForm() { showView('signinForm'); if(usernameInput) usernameInput.value = ''; if(passwordInput) passwordInput.value = ''; }
 
-                         async function signIn() {
-                 if(!usernameInput || !passwordInput) return;
-                 const email = usernameInput.value.trim();
-                 const password = passwordInput.value;
-                 if (!email || !password) { showConfirmation("Missing", "Enter Email & Password.", false); return; }
-                 try {
-                     const { data, error } = await window.__sb?.client?.auth?.signInWithPassword({ email, password }) || {};
-                     if (error) { showConfirmation("Login Failed", error.message || "Invalid credentials.", false); return; }
-                     const user = data?.user;
-                     if (!user) { showConfirmation("Login Failed", "No user returned.", false); return; }
-                     // Mark session and migrate local data once
-                     isSignedIn = true; currentUser = user.id;
-                     try {
-                         const flagKey = `sb_migrated_${user.id}`;
-                         if (!localStorage.getItem(flagKey)) {
-                             const g = window;
-                             const stateForSb = {
-                               points: g.points || 0,
-                               previousPoints: g.previousPoints || 0,
-                               totalFocusTime: g.totalFocusTime || 0,
-                               totalDistractions: g.totalDistractions || 0,
-                               totalVideosWatched: g.totalVideosWatched || 0,
-                               streakDays: g.streakDays || 0,
-                               lastFocusDate: g.lastFocusDate || null,
-                               mysteryBoxCount: g.mysteryBoxCount || 0,
-                               activePowerUps: g.activePowerUps || null,
-                               premiumLofiTracks: Array.isArray(g.premiumLofiTracks) ? g.premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })) : [],
-                               dailyFocusData: g.dailyFocusData || {},
-                               browserNotificationsEnabled: !!g.browserNotificationsEnabled,
-                               currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
-                               currentView: 'homePage'
-                             };
-                             const flatTasks = Array.isArray(g.tasks) ? g.tasks.map(t => ({
-                               title: t.text ?? t.title ?? '',
-                               completed: !!t.completed,
-                               deadline: t.deadline ?? null,
-                               difficulty: t.points ?? t.difficulty ?? null,
-                               points_awarded: t.points_awarded ?? null
-                             })) : [];
-                             const flatPlaylists = Array.isArray(g.playlists) ? g.playlists.map(p => ({ name: p.name ?? '', urls: Array.isArray(p.urls) ? p.urls : [] })) : [];
-                             await window.__sb?.upsertAppState(stateForSb);
-                             await window.__sb?.replaceTasks(flatTasks);
-                             await window.__sb?.upsertPlaylists(flatPlaylists);
-                             localStorage.setItem(flagKey, '1');
-                         }
-                     } catch {}
-                     showView('homePage');
-                 } catch (err) {
-                     console.error("Sign-in error:", err);
-                     showConfirmation("Sign-in Error", "An error occurred during sign-in.", false);
-                 }
-             }
+                         // Auth View Switching Functions
+           function showAuthView(viewId) {
+               // Hide all auth views
+               document.querySelectorAll('.auth-view').forEach(view => {
+                   view.style.display = 'none';
+               });
+               // Show the requested view
+               const targetView = document.getElementById(viewId);
+               if (targetView) {
+                   targetView.style.display = 'block';
+               }
+           }
+
+           function handleAuthButtonClicks() {
+               // Create Account button
+               document.getElementById('createAccountBtn')?.addEventListener('click', () => {
+                   showAuthView('createAccountView');
+               });
+
+               // Sign In button
+               document.getElementById('signInBtn')?.addEventListener('click', () => {
+                   showAuthView('signInView');
+               });
+
+               // Guest Sign In button
+               document.getElementById('guestSignInBtn')?.addEventListener('click', () => {
+                   showAuthView('guestSignInView');
+               });
+
+               // Back buttons
+               document.getElementById('backToMain1')?.addEventListener('click', () => {
+                   showAuthView('mainAuthView');
+               });
+
+               document.getElementById('backToMain2')?.addEventListener('click', () => {
+                   showAuthView('mainAuthView');
+               });
+
+               document.getElementById('backToMain3')?.addEventListener('click', () => {
+                   showAuthView('mainAuthView');
+               });
+           }
+
+           async function signIn() {
+               const emailInput = document.getElementById('signInEmail');
+               const passwordInput = document.getElementById('signInPassword');
+               
+               if(!emailInput || !passwordInput) return;
+               const email = emailInput.value.trim();
+               const password = passwordInput.value;
+               if (!email || !password) { showConfirmation("Missing", "Enter Email & Password.", false); return; }
+               try {
+                   const { data, error } = await window.__sb?.client?.auth?.signInWithPassword({ email, password }) || {};
+                   if (error) { showConfirmation("Login Failed", error.message || "Invalid credentials.", false); return; }
+                   const user = data?.user;
+                   if (!user) { showConfirmation("Login Failed", "No user returned.", false); return; }
+                   // Mark session and migrate local data once
+                   isSignedIn = true; currentUser = user.id;
+                   try {
+                       const flagKey = `sb_migrated_${user.id}`;
+                       if (!localStorage.getItem(flagKey)) {
+                           const g = window;
+                           const stateForSb = {
+                             points: g.points || 0,
+                             previousPoints: g.previousPoints || 0,
+                             totalFocusTime: g.totalFocusTime || 0,
+                             totalDistractions: g.totalDistractions || 0,
+                             totalVideosWatched: g.totalVideosWatched || 0,
+                             streakDays: g.streakDays || 0,
+                             lastFocusDate: g.lastFocusDate || null,
+                             mysteryBoxCount: g.mysteryBoxCount || 0,
+                             activePowerUps: g.activePowerUps || null,
+                             premiumLofiTracks: Array.isArray(g.premiumLofiTracks) ? g.premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })) : [],
+                             dailyFocusData: g.dailyFocusData || {},
+                             browserNotificationsEnabled: !!g.browserNotificationsEnabled,
+                             currentPomodoroDurationSetting: g.currentPomodoroDurationSetting || 60,
+                             currentView: 'homePage'
+                           };
+                           const flatTasks = Array.isArray(g.tasks) ? g.tasks.map(t => ({
+                             title: t.text ?? t.title ?? '',
+                             completed: !!t.completed,
+                             deadline: t.deadline ?? null,
+                             difficulty: t.points ?? t.difficulty ?? null,
+                             points_awarded: t.points_awarded ?? null
+                           })) : [];
+                           const flatPlaylists = Array.isArray(g.playlists) ? g.playlists.map(p => ({ name: p.name ?? '', urls: Array.isArray(p.urls) ? p.urls : [] })) : [];
+                           await window.__sb?.upsertAppState(stateForSb);
+                           await window.__sb?.replaceTasks(flatTasks);
+                           await window.__sb?.upsertPlaylists(flatPlaylists);
+                           localStorage.setItem(flagKey, '1');
+                       }
+                   } catch {}
+                   showView('homePage');
+               } catch (err) {
+                   console.error("Sign-in error:", err);
+                   showConfirmation("Sign-in Error", "An error occurred during sign-in.", false);
+               }
+           }
 
              async function createAccount() {
-                 if(!usernameInput || !passwordInput) return;
+                 const usernameInput = document.getElementById('createUsername');
+                 const emailInput = document.getElementById('createEmail');
+                 const passwordInput = document.getElementById('createPassword');
+                 
+                 if(!usernameInput || !emailInput || !passwordInput) return;
                  const username = usernameInput.value.trim();
+                 const email = emailInput.value.trim();
                  const password = passwordInput.value;
-                 if (!username || !password) { showConfirmation("Missing", "Enter Hero Name & Secret Code.", false); return; }
-                 if (password.length < 4) { showConfirmation("Weak Code", "Secret Code needs 4+ characters.", false); return; }
+                 if (!username || !email || !password) { showConfirmation("Missing", "Enter Username, Email & Password.", false); return; }
+                 if (password.length < 4) { showConfirmation("Weak Password", "Password needs 4+ characters.", false); return; }
                  try {
                      const users = JSON.parse(localStorage.getItem("users") || "{}");
                      if (users[username]) {
@@ -1890,6 +1941,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                          // Initialize new user data
                          users[username] = {
                              password: password,
+                             email: email,
                              points: 0,
                              totalFocusTime: 0,
                              totalDistractions: 0,
@@ -1930,6 +1982,36 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                      console.error("Account creation error:", err);
                      showConfirmation("Creation Error", "An error occurred creating the account.", false);
                  }
+             }
+
+             function guestSignIn() {
+                 const usernameInput = document.getElementById('guestUsername');
+                 const passwordInput = document.getElementById('guestPassword');
+                 
+                 if(!usernameInput || !passwordInput) return;
+                 const username = usernameInput.value.trim();
+                 const password = passwordInput.value;
+                 if (!username || !password) { showConfirmation("Missing", "Enter Username & Password.", false); return; }
+                 
+                 // Set current state for guest session
+                 isSignedIn = true;
+                 currentUser = username;
+                 points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {};
+                 browserNotificationsEnabled = false;
+                 browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
+
+                 premiumLofiTracks.forEach(t => t.unlocked = false);
+                 updateAvailableLofiTracks();
+
+                 // Update UI
+                 if(pointsDisplay) pointsDisplay.innerHTML = `<span style="color: var(--secondary);">⭐</span> XP: ${points}`;
+                 updateAchievementLevel();
+                 updateStreakDisplay();
+                 showView('homePage');
+                 restoreTasks();
+                 sentNotificationTaskIds.clear();
+                 console.log(`Guest signed in: ${currentUser}.`);
+                 showConfirmation("Welcome Guest!", `Welcome to the Quest for Focus, ${currentUser}!`, false);
              }
 
             function logout() { showConfirmation( "Logout?", "Are you sure you want to logout?", true, () => { console.log(`Logging out ${currentUser}`); logDailyFocus(); // Log any pending session time before logging out
@@ -2417,10 +2499,14 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 document.querySelectorAll('button[data-action="show-view"], a[data-action="show-view"]').forEach(element => { element.addEventListener('click', (e) => { e.preventDefault(); const viewId = element.dataset.view; if (viewId) { showView(viewId); } else { console.warn("Element missing data-view:", element); } }); });
                 if(sidebarTrigger) sidebarTrigger.addEventListener('click', toggleSidebar);
                 document.addEventListener('click', (event) => { if (gameSidebar && !gameSidebar.contains(event.target) && sidebarTrigger && !sidebarTrigger.contains(event.target) && isSidebarOpen) { closeSidebar(); } });
-                document.querySelector('button[data-action="sign-in"]')?.addEventListener('click', signIn);
-                document.querySelector('button[data-action="create-account"]')?.addEventListener('click', createAccount);
                 document.getElementById('logoutBtn')?.addEventListener('click', logout);
                 document.querySelector('button[data-action="github"]')?.addEventListener('click', () => window.open("https://github.com/The-Chosen-One-o5/UltraFocusModeYT", "_blank"));
+                // Handle auth button clicks
+                handleAuthButtonClicks();
+                // Update sign in, create account, and guest sign in button listeners
+                document.getElementById('signInSubmit')?.addEventListener('click', signIn);
+                document.getElementById('createAccountSubmit')?.addEventListener('click', createAccount);
+                document.getElementById('guestSignInSubmit')?.addEventListener('click', guestSignIn);
                 // PYQ open inline
                 document.getElementById('pyqOpenBtn')?.addEventListener('click', (e) => {
                     e.preventDefault();
