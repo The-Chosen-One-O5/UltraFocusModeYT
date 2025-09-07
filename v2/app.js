@@ -675,11 +675,14 @@
                 console.log("Show View:", viewId);
                 if (!document.getElementById(viewId)) { console.error(`View "${viewId}" missing!`); viewId = 'landingPage'; }
                 const protectedViews = ['homePage', 'youtubeLecturePage', 'profile', 'focusStats', 'pyqEmbedPage'];
-                // Check Supabase session for auth
-const getUser = () => window.__sbUser || null;
-const u = getUser();
-if (u && !isSignedIn) { isSignedIn = true; currentUser = u.id; }
-if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denied to "${viewId}".`); showView('signinForm'); return; }
+                
+                // Check if user is trying to access protected views without proper authentication
+                if (protectedViews.includes(viewId) && !isSignedIn) {
+                    console.warn(`Access denied to "${viewId}". User not authenticated.`);
+                    showView('signinForm');
+                    return;
+                }
+                
                 document.querySelectorAll('.page-view').forEach(v => v.style.display = 'none');
                 const targetView = document.getElementById(viewId); targetView.style.display = 'flex'; currentView = viewId;
                 const showNav = isSignedIn && (viewId !== 'landingPage' && viewId !== 'signinForm');
@@ -1238,11 +1241,15 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                     }
                 }
 
-                // Supabase mirror for tasks (best-effort, replace-all to keep consistency)
-                try {
-                  await window.__sb?.replaceTasks(tasks);
-                } catch (e) {
-                  console.warn('[Supabase] tasks replace failed:', e?.message || e);
+                // Supabase mirror for tasks (best-effort, replace-all to keep consistency) - SKIP FOR GUEST USERS
+                if (!currentUser?.startsWith?.('guest_')) {
+                  try {
+                    await window.__sb?.replaceTasks(tasks);
+                  } catch (e) {
+                    console.warn('[Supabase] tasks replace failed:', e?.message || e);
+                  }
+                } else {
+                  console.log("[Supabase] Skipping tasks sync for guest user:", currentUser);
                 }
 
                 console.log("Tasks saved:", tasks);
@@ -1873,6 +1880,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
            }
 
            async function signIn() {
+                console.log("signIn function CALLED");
                const emailInput = document.getElementById('signInEmail');
                const passwordInput = document.getElementById('signInPassword');
                
@@ -1951,6 +1959,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
            }
 
              async function createAccount() {
+                 
                  const usernameInput = document.getElementById('createUsername');
                  const emailInput = document.getElementById('createEmail');
                  const passwordInput = document.getElementById('createPassword');
@@ -1979,6 +1988,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                  
                  try {
                      // Use Supabase to create account
+                     console.log("Attempting to create account with email:", email);
                      const { data, error } = await supabase.auth.signUp({
                          email: email,
                          password: password,
@@ -2030,17 +2040,17 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
              }
 
              function guestSignIn() {
-                 const usernameInput = document.getElementById('guestUsername');
-                 const passwordInput = document.getElementById('guestPassword');
                  
-                 if(!usernameInput || !passwordInput) return;
+                 const usernameInput = document.getElementById('guestUsername');
+                 
+                 if(!usernameInput) return;
                  const username = usernameInput.value.trim();
-                 const password = passwordInput.value;
-                 if (!username || !password) { showConfirmation("Missing", "Enter Username & Password.", false); return; }
+                 if (!username) { showConfirmation("Missing", "Enter a Username.", false); return; }
                  
                  // Set current state for guest session - LOCAL STORAGE ONLY
+                 console.log("Attempting guest sign in with username:", username);
                  isSignedIn = true;
-                 currentUser = username;
+                 currentUser = "guest_" + username; // Prefix to distinguish from real users
                  points = 0; previousPoints = 0; totalFocusTime = 0; totalDistractions = 0; totalVideosWatched = 0; tasks = []; streakDays = 0; lastFocusDate = null; mysteryBoxCount = 0; activePowerUps = { doublePoints: { active: false, expiry: null }, streakShield: { active: false, used: false, expiry: null }, }; playlists = []; dailyFocusData = {};
                  browserNotificationsEnabled = false;
                  browserNotificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
@@ -2059,7 +2069,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                  // Save guest user data to localStorage only
                  try {
                      const users = JSON.parse(localStorage.getItem("users") || "{}");
-                     users[username] = {
+                     users[currentUser] = {
                          points: points,
                          totalFocusTime: totalFocusTime,
                          totalDistractions: totalDistractions,
@@ -2082,7 +2092,7 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                  }
                  
                  console.log(`Guest signed in: ${currentUser} (local storage only).`);
-                 showConfirmation("Welcome Guest!", `Welcome to the Quest for Focus, ${currentUser}!`, false);
+                 showConfirmation("Welcome Guest!", `Welcome to the Quest for Focus, ${username}!`, false);
              }
 
             function logout() { showConfirmation( "Logout?", "Are you sure you want to logout?", true, () => { console.log(`Logging out ${currentUser}`); logDailyFocus(); // Log any pending session time before logging out
@@ -2116,9 +2126,13 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                         await __dbExports.saveStateToCloud(currentUser);
                         console.log("Playlists saved to cloud.");
 
-                        // Supabase mirror (best-effort)
-                        try { await window.__sb?.upsertPlaylists(playlists); } catch (e) {
-                          console.warn("[Supabase] playlists upsert failed:", e?.message || e);
+                        // Supabase mirror (best-effort) - SKIP FOR GUEST USERS
+                        if (!currentUser?.startsWith?.('guest_')) {
+                          try { await window.__sb?.upsertPlaylists(playlists); } catch (e) {
+                            console.warn("[Supabase] playlists upsert failed:", e?.message || e);
+                          }
+                        } else {
+                          console.log("[Supabase] Skipping playlists sync for guest user:", currentUser);
                         }
                     } catch (e) {
                         console.warn("Cloud save (playlists) failed, kept local:", e);
@@ -2242,28 +2256,32 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                   console.warn("Cloud save (state) failed, local mirrors kept:", e);
                 }
 
-                // Supabase mirror for app_state (best-effort, non-blocking)
-                try {
-                  const g = window;
-                  const stateForSb = {
-                    points,
-                    previousPoints: g.previousPoints ?? points,
-                    totalFocusTime,
-                    totalDistractions,
-                    totalVideosWatched,
-                    streakDays,
-                    lastFocusDate,
-                    mysteryBoxCount,
-                    activePowerUps,
-                    premiumLofiTracks: premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })),
-                    dailyFocusData,
-                    browserNotificationsEnabled,
-                    currentPomodoroDurationSetting,
-                    currentView
-                  };
-                  await window.__sb?.upsertAppState(stateForSb);
-                } catch (e) {
-                  console.warn("[Supabase] app_state upsert failed:", e?.message || e);
+                // Supabase mirror for app_state (best-effort, non-blocking) - SKIP FOR GUEST USERS
+                if (!currentUser?.startsWith?.('guest_')) {
+                  try {
+                    const g = window;
+                    const stateForSb = {
+                      points,
+                      previousPoints: g.previousPoints ?? points,
+                      totalFocusTime,
+                      totalDistractions,
+                      totalVideosWatched,
+                      streakDays,
+                      lastFocusDate,
+                      mysteryBoxCount,
+                      activePowerUps,
+                      premiumLofiTracks: premiumLofiTracks.map(t => ({ id: t.id, unlocked: !!t.unlocked })),
+                      dailyFocusData,
+                      browserNotificationsEnabled,
+                      currentPomodoroDurationSetting,
+                      currentView
+                    };
+                    await window.__sb?.upsertAppState(stateForSb);
+                  } catch (e) {
+                    console.warn("[Supabase] app_state upsert failed:", e?.message || e);
+                  }
+                } else {
+                  console.log("[Supabase] Skipping sync for guest user:", currentUser);
                 }
             }
 
@@ -2575,9 +2593,29 @@ if (protectedViews.includes(viewId) && !isSignedIn) { console.warn(`Access denie
                 // Handle auth button clicks
                 handleAuthButtonClicks();
                 // Update sign in, create account, and guest sign in button listeners
-                document.getElementById('signInSubmit')?.addEventListener('click', signIn);
-                document.getElementById('createAccountSubmit')?.addEventListener('click', createAccount);
-                document.getElementById('guestSignInSubmit')?.addEventListener('click', guestSignIn);
+                const signInSubmitBtn = document.getElementById('signInSubmit');
+                if (signInSubmitBtn) {
+                    console.log("Attaching listener to signInSubmit");
+                    signInSubmitBtn.addEventListener('click', signIn);
+                } else {
+                    console.log("signInSubmit button not found");
+                }
+
+                const createAccountSubmitBtn = document.getElementById('createAccountSubmit');
+                if (createAccountSubmitBtn) {
+                    console.log("Attaching listener to createAccountSubmit");
+                    createAccountSubmitBtn.addEventListener('click', createAccount);
+                } else {
+                    console.log("createAccountSubmit button not found");
+                }
+
+                const guestSignInSubmitBtn = document.getElementById('guestSignInSubmit');
+                if (guestSignInSubmitBtn) {
+                    console.log("Attaching listener to guestSignInSubmit");
+                    guestSignInSubmitBtn.addEventListener('click', guestSignIn);
+                } else {
+                    console.log("guestSignInSubmit button not found");
+                }
                 // PYQ open inline
                 document.getElementById('pyqOpenBtn')?.addEventListener('click', (e) => {
                     e.preventDefault();
