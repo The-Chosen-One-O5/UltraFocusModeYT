@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultra Focus Mode v3</title>
     <!-- Favicon Links -->
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    <link rel="manifest" href="site.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/v3/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/v3/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/v3/favicon-16x16.png">
+    <link rel="manifest" href="/v3/site.webmanifest">
     <!-- Google Fonts and Font Awesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/v3/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -22,7 +22,7 @@
         <!-- New Sidebar -->
         <div class="main-sidebar">
             <div class="sidebar-header">
-                <img src="logo.png" alt="Logo" class="sidebar-logo">
+                <img src="/v3/logo.png" alt="Logo" class="sidebar-logo">
                 <h2>Study Hub</h2>
             </div>
             <div class="sidebar-content">
@@ -54,7 +54,7 @@
         <div class="main-content">
             <nav id="topNavBar">
                 <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
-                    <img src="logo.png" alt="Quest for Focus Logo">
+                    <img src="/v3/logo.png" alt="Quest for Focus Logo">
                 </a>
                 <div id="navClockContainer">
                     <span id="navClockTime">00:00:00</span>
@@ -69,33 +69,76 @@
             </nav>
 
             <div class="page-view" id="main-view-container">
-                <!-- YouTube Lecture Notes Section -->
-                <div id="youtube-lecture-section" class="page-view" style="display: block;">
-                    <h2>YouTube Lecture Notes</h2>
-                    <div id="youtube-input-container">
-                        <input type="text" id="youtube-url-input" placeholder="Enter YouTube URL...">
-                        <button id="get-notes-btn">Get Notes</button>
-                    </div>
-                    <div id="youtube-notes-output"></div>
-                </div>
-
                  <!-- Original pages will be loaded here -->
                 <div id="page-content-wrapper">
                      <!-- Landing Page -->
                     <div id="landingPage" class="page-view" style="display: flex;">
-                        <!-- ... content from v2/index.html ... -->
+                        <div id="landingPageContainer">
+                            <div class="title">QUEST FOR <span>FOCUS</span></div>
+                            <div class="subtitle">Embark on your learning adventure! Conquer distractions, master knowledge.</div>
+                            <button data-action="show-view" data-view="signinForm" class="primary-btn">START QUEST</button>
+                            <button class="github-btn" data-action="github"><i class="fab fa-github"></i> GITHUB</button>
+                            <div id="features">
+                                <div class="feature"><i class="fas fa-ban"></i><p>Ad-Free Zone<br>Focus!</p></div>
+                                <div class="feature"><i class="fas fa-moon"></i><p>Dark Mode<br>Easy on eyes</p></div>
+                                <div class="feature"><i class="fas fa-gamepad"></i><p>Gamified<br>Level up!</p></div>
+                            </div>
+                        </div>
                     </div>
                     <!-- Signin Form -->
-                    <div id="signinForm" class="page-view" style="display: none;">
-                         <!-- ... content from v2/index.html ... -->
+                    <div id="signinForm" class="page-view">
+                        <div class="auth-container">
+                            <div class="title">ENTER <span>REALM</span></div>
+                            <div class="subtitle">Choose your path to enter the realm.</div>
+                            <div id="mainAuthView" class="auth-view" style="display: block;">
+                                <button id="createAccountBtn" class="auth-btn auth-btn--primary">CREATE ACCOUNT</button>
+                                <button id="signInBtn" class="auth-btn auth-btn--primary">SIGN IN</button>
+                                <button id="guestSignInBtn" class="auth-btn auth-btn--secondary">SIGN IN AS GUEST</button>
+                            </div>
+                            <div id="createAccountView" class="auth-view" style="display: none;">
+                                <div class="subtitle">Create Your Hero Account</div>
+                                <input type="text" id="createUsername" placeholder="Enter Username" required />
+                                <input type="email" id="createEmail" placeholder="Enter Email" required />
+                                <input type="password" id="createPassword" placeholder="Enter Password" required />
+                                <button id="createAccountSubmit" class="auth-btn auth-btn--primary">CREATE ACCOUNT</button>
+                                <button id="backToMain1" class="auth-btn auth-btn--secondary">BACK</button>
+                            </div>
+                            <div id="signInView" class="auth-view" style="display: none;">
+                                <div class="subtitle">Sign In to Your Account</div>
+                                <input type="email" id="signInEmail" placeholder="Enter Email" required />
+                                <input type="password" id="signInPassword" placeholder="Enter Password" required />
+                                <button id="signInSubmit" class="auth-btn auth-btn--primary">SIGN IN</button>
+                                <button id="backToMain2" class="auth-btn auth-btn--secondary">BACK</button>
+                            </div>
+                            <div id="guestSignInView" class="auth-view" style="display: none;">
+                                <div class="subtitle">Sign In as Guest</div>
+                                <input type="text" id="guestUsername" placeholder="Enter Username" required />
+                                <button id="guestSignInSubmit" class="auth-btn auth-btn--secondary">SIGN IN AS GUEST</button>
+                                <button id="backToMain3" class="auth-btn auth-btn--secondary">BACK</button>
+                            </div>
+                            <button data-action="show-view" data-view="landingPage" class="auth-btn auth-btn--secondary" style="margin-top: 20px;"> <i class="fas fa-arrow-left"></i> Back</button>
+                        </div>
                     </div>
                     <!-- Home Page -->
-                    <div id="homePage" class="page-view" style="display: none;">
-                        <!-- ... content from v2/index.html ... -->
+                    <div id="homePage" class="page-view">
+                        <div id="homePageContent">
+                            <div id="welcomeMessage">Welcome, <span id="homeUsername">Hero</span>!</div>
+                            <div id="dateTimeDisplay">Loading...</div>
+                            <div id="upcomingTaskDisplay" class="none"><i class="fas fa-star"></i> No urgent quests!</div>
+                            <div id="focusStatus">Ready to focus?</div>
+                            <div id="motivationQuote">"Loading motivation..."</div>
+                        </div>
                     </div>
                      <!-- YouTube Lecture Page -->
                     <div id="youtubeLecturePage" class="page-view" style="display: none;">
-                        <!-- ... content from v2/index.html ... -->
+                        <div id="youtube-lecture-section" class="page-view" style="display: block;">
+                            <h2>YouTube Lecture Notes</h2>
+                            <div id="youtube-input-container">
+                                <input type="text" id="youtube-url-input" placeholder="Enter YouTube URL...">
+                                <button id="get-notes-btn">Get Notes</button>
+                            </div>
+                            <div id="youtube-notes-output"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -111,3 +154,4 @@
     <script src="/v3/tools.js"></script>
 </body>
 </html>
+
