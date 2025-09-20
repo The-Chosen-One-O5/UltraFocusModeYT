@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra Focus Mode v3</title>
+    <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+    <!-- Google Fonts and Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <!-- New Sidebar -->
+        <div class="main-sidebar">
+            <div class="sidebar-header">
+                <img src="logo.png" alt="Logo" class="sidebar-logo">
+                <h2>Study Hub</h2>
+            </div>
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <h3>AI Assistant</h3>
+                    <div id="ai-chat-container">
+                        <div id="chat-messages"></div>
+                        <div id="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Ask your AI assistant...">
+                            <button id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <h3>Study Tools</h3>
+                    <button class="sidebar-btn" id="quiz-btn"><i class="fas fa-question-circle"></i> Create Quiz</button>
+                    <button class="sidebar-btn" id="timetable-btn"><i class="fas fa-calendar-alt"></i> Make Timetable</button>
+                    <button class="sidebar-btn" id="flashcards-btn"><i class="fas fa-clone"></i> Make Flashcards</button>
+                </div>
+                 <div class="sidebar-section">
+                    <h3>Proactive Tools</h3>
+                    <button class="sidebar-btn" id="reminders-btn"><i class="fas fa-bell"></i> Exam Reminders</button>
+                    <button class="sidebar-btn" id="spaced-repetition-btn"><i class="fas fa-sync-alt"></i> Spaced Repetition</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <nav id="topNavBar">
+                <a href="#" id="navLogo" title="Quest for Focus" data-action="show-view" data-view="homePage">
+                    <img src="logo.png" alt="Quest for Focus Logo">
+                </a>
+                <div id="navClockContainer">
+                    <span id="navClockTime">00:00:00</span>
+                    <span id="navClockPeriod">AM</span>
+                </div>
+                <div id="navButtons">
+                    <span id="navStreakDisplay"><i class="fas fa-fire"></i> 0 days focus</span>
+                    <button id="navProfileBtn" title="Profile" data-action="show-view" data-view="profile">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <div class="page-view" id="main-view-container">
+                <!-- YouTube Lecture Notes Section -->
+                <div id="youtube-lecture-section" class="page-view" style="display: block;">
+                    <h2>YouTube Lecture Notes</h2>
+                    <div id="youtube-input-container">
+                        <input type="text" id="youtube-url-input" placeholder="Enter YouTube URL...">
+                        <button id="get-notes-btn">Get Notes</button>
+                    </div>
+                    <div id="youtube-notes-output"></div>
+                </div>
+
+                 <!-- Original pages will be loaded here -->
+                <div id="page-content-wrapper">
+                     <!-- Landing Page -->
+                    <div id="landingPage" class="page-view" style="display: flex;">
+                        <!-- ... content from v2/index.html ... -->
+                    </div>
+                    <!-- Signin Form -->
+                    <div id="signinForm" class="page-view" style="display: none;">
+                         <!-- ... content from v2/index.html ... -->
+                    </div>
+                    <!-- Home Page -->
+                    <div id="homePage" class="page-view" style="display: none;">
+                        <!-- ... content from v2/index.html ... -->
+                    </div>
+                     <!-- YouTube Lecture Page -->
+                    <div id="youtubeLecturePage" class="page-view" style="display: none;">
+                        <!-- ... content from v2/index.html ... -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals and other elements from v2 -->
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script src="ai.js"></script>
+    <script src="youtube.js"></script>
+    <script src="tools.js"></script>
+</body>
+</html>
